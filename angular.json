@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "amplify-angular-template": {
+    "garlasco": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/amplify-angular-template",
+            "outputPath": "dist/garlasco",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -26,6 +26,7 @@
               "src/assets"
             ],
             "styles": [
+              "node_modules/@aws-amplify/ui-angular/theme.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -58,10 +59,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "amplify-angular-template:build:production"
+              "buildTarget": "garlasco:build:production"
             },
             "development": {
-              "buildTarget": "amplify-angular-template:build:development"
+              "buildTarget": "garlasco:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -69,7 +70,7 @@
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
           "options": {
-            "buildTarget": "amplify-angular-template:build"
+            "buildTarget": "garlasco:build"
           }
         },
         "test": {
