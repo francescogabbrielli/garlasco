@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { AuthenticatorService } from '@aws-amplify/ui-angular';
+import * as Auth from 'aws-amplify/auth';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -14,16 +16,27 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'garlasco' title`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('garlasco');
+  it('should load attributes for a logged-in user', async () => {
+    spyOn(Auth, 'fetchUserAttributes').and.resolveTo({
+      given_name: 'Mario',
+      family_name: 'Rossi',
+    });
+    const app = new AppComponent({} as AuthenticatorService);
+
+    await app.ngOnInit();
+
+    expect(app.userAttributes).toEqual({
+      given_name: 'Mario',
+      family_name: 'Rossi',
+    });
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, garlasco');
+  it('should keep attributes empty for a logged-out user', async () => {
+    spyOn(Auth, 'fetchUserAttributes').and.rejectWith(new Error('Not signed in'));
+    const app = new AppComponent({} as AuthenticatorService);
+
+    await app.ngOnInit();
+
+    expect(app.userAttributes).toEqual({});
   });
 });
