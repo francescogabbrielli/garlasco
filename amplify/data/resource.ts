@@ -1,17 +1,44 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
+const Coordinates = a.customType({
+  latitude: a.float().required(),
+  longitude: a.float().required(),
+  radius: a.float().required(),
+});
+
+const Person = a.model({
+  name: a.string().required(),
+  surname: a.string().required(),
+  profession: a.string(),
+  initials: a.string().required(),
+}).authorization((allow) => [allow.publicApiKey()]);
+
+const EventActor = a.customType({
+  personId: a.id().required(),
+  role: a.string().required(),
+});
+
+const Event = a.model({
+  owner: a.id().required(),
+  name: a.string().required(),
+  description: a.string().required(),
+  start_date: a.datetime().required(),
+  end_date: a.datetime(),
+  start_position: Coordinates.required(),
+  end_position: Coordinates,
+  center_position: Coordinates.required(),
+  geoHash: a.string().required(),
+  actors: EventActor.array(),
+  reliability: a.integer().required(),
+})
+  .secondaryIndexes((index) => [
+    index('geoHash').sortKeys(['start_date']).name('geoHash-startDate-index'),
+  ])
+  .authorization((allow) => [allow.publicApiKey()]);
+
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.publicApiKey()]),
+  Person,
+  Event,
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -20,7 +47,6 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'apiKey',
-    // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },
