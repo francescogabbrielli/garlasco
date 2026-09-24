@@ -43,5 +43,17 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "tsx": "^4.7.2",
     "typescript": "^5.8.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.0": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.20.2": true,
+    "esbuild@0.28.2": true,
+    "@aws-amplify/hosting@1.0.1": true,
+    "@parcel/watcher@2.6.0": true,
+    "core-js@2.6.12": true,
+    "core-js@3.50.0": true,
+    "lmdb@3.2.6": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
