@@ -20,9 +20,9 @@ const Event = a.model({
   description: a.string().required(),
   start_date: a.datetime().required(),
   end_date: a.datetime(),
-  start_position: Coordinates.required(),
-  end_position: Coordinates,
-  center_position: Coordinates.required(),
+  start_position: a.ref('Coordinates').required(),
+  end_position: a.ref('Coordinates'),
+  center_position: a.ref('Coordinates').required(),
   geoHash: a.string().required(),
   actors: a.hasMany('EventPerson', 'eventId'),
   reliability: a.integer().required(),
@@ -45,6 +45,7 @@ const EventPerson = a.model({
   .authorization((allow) => [allow.publicApiKey()]);
 
 const schema = a.schema({
+  Coordinates,
   Person,
   Event,
   EventPerson,
