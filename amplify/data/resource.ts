@@ -11,12 +11,8 @@ const Person = a.model({
   surname: a.string().required(),
   profession: a.string(),
   initials: a.string().required(),
+  events: a.hasMany('EventPerson', 'personId'),
 }).authorization((allow) => [allow.publicApiKey()]);
-
-const EventActor = a.customType({
-  personId: a.id().required(),
-  role: a.string().required(),
-});
 
 const Event = a.model({
   owner: a.id().required(),
@@ -28,7 +24,7 @@ const Event = a.model({
   end_position: Coordinates,
   center_position: Coordinates.required(),
   geoHash: a.string().required(),
-  actors: EventActor.array(),
+  actors: a.hasMany('EventPerson', 'eventId'),
   reliability: a.integer().required(),
 })
   .secondaryIndexes((index) => [
@@ -36,9 +32,22 @@ const Event = a.model({
   ])
   .authorization((allow) => [allow.publicApiKey()]);
 
+const EventPerson = a.model({
+  eventId: a.id().required(),
+  personId: a.id().required(),
+  role: a.string().required(),
+  event: a.belongsTo('Event', 'eventId'),
+  person: a.belongsTo('Person', 'personId'),
+})
+  .secondaryIndexes((index) => [
+    index('personId').name('personId-index'),
+  ])
+  .authorization((allow) => [allow.publicApiKey()]);
+
 const schema = a.schema({
   Person,
   Event,
+  EventPerson,
 });
 
 export type Schema = ClientSchema<typeof schema>;
