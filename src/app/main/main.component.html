@@ -2,6 +2,17 @@
   <a class="brand" routerLink="/" aria-label="Torna alla home">Garlasco</a>
 
   <nav class="menu" aria-label="Menu principale">
+    @if (isAdminVisible) {
+      <a
+        class="admin-link"
+        routerLink="/admin"
+        routerLinkActive="active"
+        aria-label="Amministrazione"
+        title="Amministrazione"
+      >
+        ✎
+      </a>
+    }
     <div class="user-menu">
       <button
         class="user-label"
@@ -14,16 +25,22 @@
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
-          <button type="button" role="menuitem" (click)="logout()">Esci</button>
+          <button
+            class="submit-event-button"
+            type="button"
+            role="menuitem"
+            (click)="openSubmitDialog()"
+          >
+            <span aria-hidden="true">＋</span>
+            Invia nuovo evento
+          </button>
+          <button class="logout-menuitem" type="button" role="menuitem" (click)="logout()">
+            <span aria-hidden="true">⎋</span>
+            Esci
+          </button>
         </div>
       }
     </div>
-    @if (isAdminVisible) {
-      <a routerLink="/admin" routerLinkActive="active">Console admin</a>
-    }
-    <button amplify-button type="button" variation="primary" (click)="openSubmitDialog()">
-      Invia nuovo elemento
-    </button>
   </nav>
 </header>
 
@@ -42,17 +59,19 @@
     >
       <div class="dialog-heading">
         <div>
-          <p class="eyebrow">Nuovo elemento</p>
-          <h2 id="submit-dialog-title">Invia un nuovo elemento</h2>
+          <p class="eyebrow">Nuovo evento</p>
+          <h2 id="submit-dialog-title">Invia un nuovo evento</h2>
         </div>
         <button
+          class="dialog-close"
           amplify-button
           type="button"
           variation="link"
           aria-label="Chiudi finestra"
+          title="Chiudi finestra"
           (click)="closeSubmitDialog()"
         >
-          Chiudi
+          ×
         </button>
       </div>
       <div class="dialog-empty" aria-live="polite"></div>

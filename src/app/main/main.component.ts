@@ -54,6 +54,7 @@ export class MainComponent {
   }
 
   openSubmitDialog(): void {
+    this.isUserMenuOpen = false;
     this.isSubmitDialogOpen = true;
   }
 
