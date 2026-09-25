@@ -25,7 +25,8 @@ const Event = a.model({
   center_position: a.ref('Coordinates').required(),
   geoHash: a.string().required(),
   actors: a.hasMany('EventPerson', 'eventId'),
-  reliability: a.integer().required(),
+  reliability: a.integer(),
+  relevance: a.integer().required().default(0),
 })
   .secondaryIndexes((index) => [
     index('geoHash').sortKeys(['start_date']).name('geoHash-startDate-index'),
