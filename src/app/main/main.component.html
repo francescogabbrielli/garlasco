@@ -34,6 +34,7 @@
             <span aria-hidden="true">＋</span>
             Invia nuovo evento
           </button>
+          <hr role="separator" />
           <button class="logout-menuitem" type="button" role="menuitem" (click)="logout()">
             <span aria-hidden="true">⎋</span>
             Esci
@@ -114,7 +115,7 @@
               required
             />
             @if (eventFormSubmitted && eventForm.controls.start_position.controls.start_date.invalid) {
-              <span class="field-error">Indica l'inizio dell'evento.</span>
+              <span class="field-error">Indica data e ora dell'evento.</span>
             }
           </div>
           <label class="field-group-label" for="start-map-button">Posizione</label>
@@ -122,6 +123,9 @@
             <span aria-hidden="true">⌖</span>
             Scegli sulla mappa
           </button>
+            @if (eventFormSubmitted && eventForm.controls.start_position.invalid) {
+              <span class="field-error">Indica la posizione dell'evento.</span>
+            }
           <div class="coordinate-fields" aria-label="Coordinate di inizio">
             <div class="form-field form-field-small">
               <label for="start-latitude">Latitudine</label>
@@ -132,7 +136,7 @@
               <input id="start-longitude" type="number" formControlName="longitude" readonly />
             </div>
             <div class="form-field form-field-small">
-              <label for="start-radius">Raggio</label>
+              <label for="start-radius">Raggio <span>(m)</span></label>
               <input id="start-radius" type="number" formControlName="radius" readonly />
             </div>
           </div>
@@ -154,17 +158,25 @@
             <span aria-hidden="true">⌖</span>
             Scegli sulla mappa
           </button>
-          <div class="coordinate-fields" aria-label="Coordinate di fine">
+              <button 
+                class="dialog-close" 
+                amplify-button 
+                variation="link"
+                aria-label="Cancella posizione"
+                title="Cancella posizione"
+                (click)="clearPosition()">×</button>
+
+           <div class="coordinate-fields" aria-label="Coordinate di fine">
             <div class="form-field form-field-small">
               <label for="end-latitude">Latitudine</label>
               <input id="end-latitude" type="number" formControlName="latitude" readonly />
             </div>
             <div class="form-field form-field-small">
               <label for="end-longitude">Longitudine</label>
-              <input id="end-longitude" type="number" formControlName="longitude" readonly />
+              <input id="end-longitude" type="number" formControlName="longitude" readonly/>
             </div>
             <div class="form-field form-field-small">
-              <label for="end-radius">Raggio</label>
+              <label for="end-radius">Raggio <span>(m)</span></label>
               <input id="end-radius" type="number" formControlName="radius" readonly />
             </div>
           </div>
@@ -205,11 +217,17 @@
           ×
         </button>
       </div>
-      <ul class="help-list">
-        <li>Inserisci nome e descrizione dell'evento.</li>
-        <li>Indica la data di inizio; la data di fine è opzionale.</li>
-        <li>Usa i pulsanti mappa per scegliere le posizioni.</li>
-      </ul>
+      <p class="help-intro">
+        Contribuisci ad arricchire il database degli eventi di Garlasco! Ogni evento verrà effettivamente inserito dopo accurata verifica da parte del team di moderazione. Per favore, compila i campi con attenzione e precisione, assicurandoti che non sia già presente un evento simile.
+      </p>
+      <h3>Informazioni necessarie</h3>
+      <p class="help-intro">
+        Viene richiesto titolo, descrizione (sintetica ma il più possible completa) e almeno una data e una posizione. Se si tratta di un evento che si protrae nel tempo indicare gli estremi di inizio e fine per data o luogo o entrambi.
+      </p>
+      <h3>Scelta della posizione</h3>
+      <p class="help-intro">
+        Le posizioni devono essere specificate tramite la mappa interattiva. Cliccando un punto preciso sulla mappa si seleziona la precisione esatta, se conosciuta. Se invece la posizione è approssimativa, centrare e zoomare la mappa al livello desiderato e cliccare direttamente su "Usa questa posizione".
+      </p>
     </section>
   </div>
 }

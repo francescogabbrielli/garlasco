@@ -91,8 +91,10 @@ export class MainComponent {
   }
 
   logout(): void {
-    this.isUserMenuOpen = false;
-    void this.authenticator.signOut();
+    if (confirm('Sei sicuro di voler uscire? Tutte le operazioni non salvate andranno perse.')) {
+      this.isUserMenuOpen = false;
+      void this.authenticator.signOut();
+    }
   }
 
   openSubmitDialog(): void {
@@ -135,6 +137,11 @@ export class MainComponent {
     this.mapSelection = null;
     this.hasPreciseMapSelection = false;
   }
+
+  clearPosition() {
+    throw new Error('Method not implemented.');
+  }
+
 
   private async initializeMap(): Promise<void> {
     const apiKey = window.__appConfig?.googleMapsApiKey;
@@ -194,8 +201,8 @@ export class MainComponent {
       ? this.eventForm.controls.start_position
       : this.eventForm.controls.end_position;
     positionGroup.patchValue({
-      latitude: latitude.toFixed(6),
-      longitude: longitude.toFixed(6),
+      latitude: latitude.toFixed(4),
+      longitude: longitude.toFixed(4),
       radius: String(this.hasPreciseMapSelection ? 0 : this.getMapRadiusMeters()),
     });
     this.closeMapPicker();

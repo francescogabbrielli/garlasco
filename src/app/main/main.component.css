@@ -3,7 +3,17 @@ div.form-field.form-field-small > label, div.form-field.form-field-small > input
   line-height: 0.6em;
   font-style: italic;
   height: 0.5em;
+}
 
+div.form-field.form-field-small > label > span {
+    color: rgba(34, 31, 43, 0.58);
+    font-weight: 400;
+}
+
+.help-intro {
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+  text-align: justify;
 }
 
 .position-section > .field-group-label {
