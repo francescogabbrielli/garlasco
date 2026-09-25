@@ -7,7 +7,6 @@
     let-user="user"
     let-signOut="signOut"
   >
-    <h1>Welcome, {{ userAttributes['given_name'] ?? '...' }}!</h1>
-    <button (click)="signOut()">Sign Out</button>
+    <router-outlet />
   </ng-template>
 </amplify-authenticator>

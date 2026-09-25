@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { Amplify } from 'aws-amplify';
 import outputs from '../../amplify_outputs.json';
 
@@ -19,7 +20,7 @@ I18n.setLanguage('it');
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrl: './app.component.css',
-    imports: [AmplifyAuthenticatorModule]
+    imports: [AmplifyAuthenticatorModule, RouterOutlet]
 })
 export class AppComponent {
 

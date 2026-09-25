@@ -1,0 +1,61 @@
+<header class="topbar">
+  <a class="brand" routerLink="/" aria-label="Torna alla home">Garlasco</a>
+
+  <nav class="menu" aria-label="Menu principale">
+    <div class="user-menu">
+      <button
+        class="user-label"
+        type="button"
+        [attr.aria-expanded]="isUserMenuOpen"
+        aria-haspopup="menu"
+        (click)="toggleUserMenu()"
+      >
+        {{ loggedUser }}
+      </button>
+      @if (isUserMenuOpen) {
+        <div class="user-dropdown" role="menu">
+          <button type="button" role="menuitem" (click)="logout()">Esci</button>
+        </div>
+      }
+    </div>
+    @if (isAdminVisible) {
+      <a routerLink="/admin" routerLinkActive="active">Console admin</a>
+    }
+    <button amplify-button type="button" variation="primary" (click)="openSubmitDialog()">
+      Invia nuovo elemento
+    </button>
+  </nav>
+</header>
+
+<main class="page-content">
+  <router-outlet />
+</main>
+
+@if (isSubmitDialogOpen) {
+  <div class="dialog-backdrop" (click)="closeSubmitDialog()">
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="submit-dialog-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Nuovo elemento</p>
+          <h2 id="submit-dialog-title">Invia un nuovo elemento</h2>
+        </div>
+        <button
+          amplify-button
+          type="button"
+          variation="link"
+          aria-label="Chiudi finestra"
+          (click)="closeSubmitDialog()"
+        >
+          Chiudi
+        </button>
+      </div>
+      <div class="dialog-empty" aria-live="polite"></div>
+    </section>
+  </div>
+}
