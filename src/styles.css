@@ -215,6 +215,12 @@ body {
       gap: 1rem;
     }
 
+  .dialog-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
   .dialog-close {
       display: grid;
       width: 2.25rem;
@@ -235,6 +241,25 @@ body {
       color: #7551c2;
     }
 
+  .dialog-help {
+      display: grid;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgba(117, 81, 194, 0.35);
+      border-radius: 50%;
+      background: transparent;
+      color: #7551c2;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+  .dialog-help:hover {
+      border-color: #7551c2;
+      background: #dadbf9;
+    }
+
   .eyebrow {
       margin: 0 0 0.5rem;
       color: #7551c2;
@@ -252,8 +277,225 @@ body {
       font-weight: 500;
     }
 
-  .dialog-empty {
-      min-height: 8rem;
+  .event-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+  .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+  .form-field-wide,
+  .event-form-actions {
+      grid-column: 1 / -1;
+    }
+
+  .position-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      grid-column: auto;
+      min-width: 0;
+      margin: 0;
+      padding: 1rem;
+      border: 1px solid rgba(34, 31, 43, 0.14);
+      border-radius: 8px;
+    }
+
+  .form-field label,
+  .field-group-label,
+  .position-section legend {
+      color: #221f2b;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+  .field-group-label {
+      display: block;
+    }
+
+  .field-group-label span {
+      color: rgba(34, 31, 43, 0.58);
+      font-weight: 400;
+    }
+
+  .form-field input,
+  .form-field textarea {
+      width: 100%;
+      padding: 0.7rem 0.75rem;
+      border: 1px solid rgba(34, 31, 43, 0.2);
+      border-radius: 6px;
+      background: #fff;
+      color: #221f2b;
+      font: inherit;
+    }
+
+  .form-field textarea {
+      resize: vertical;
+    }
+
+  .form-field input:focus,
+  .form-field textarea:focus {
+      border-color: #7551c2;
+      outline: 2px solid rgba(117, 81, 194, 0.2);
+    }
+
+  .position-section legend {
+      padding: 0 0.35rem;
+    }
+
+  .position-section legend span {
+      color: rgba(34, 31, 43, 0.58);
+      font-weight: 400;
+    }
+
+  .map-picker-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      min-height: 3rem;
+      border: 1px dashed rgba(117, 81, 194, 0.55);
+      border-radius: 6px;
+      background: rgba(218, 219, 249, 0.35);
+      color: #7551c2;
+    }
+
+  .map-picker-button:hover {
+      border-color: #7551c2;
+      background: #dadbf9;
+    }
+
+  .coordinate-fields {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+  .coordinate-fields input[readonly] {
+      background: rgba(34, 31, 43, 0.05);
+      color: rgba(34, 31, 43, 0.78);
+    }
+
+  .coordinate-fields input {
+      width: 100%;
+    }
+
+  .field-error {
+      color: #a32929;
+      font-size: 0.75rem;
+    }
+
+  .event-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 0.25rem;
+    }
+
+  .submit-event-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+  .map-picker-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background: rgba(34, 31, 43, 0.56);
+    }
+
+  .map-picker-dialog {
+      width: min(100%, 42rem);
+      min-height: 24rem;
+      padding: 1.75rem;
+      border: 1px solid rgba(34, 31, 43, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 1.5rem 4rem rgba(34, 31, 43, 0.28);
+    }
+
+  .google-map {
+      width: 100%;
+      min-height: 17rem;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #ececf5;
+    }
+
+  .map-error {
+      margin: 1rem 0;
+      color: #a32929;
+      font-size: 0.85rem;
+    }
+
+  .map-picker-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+
+  .map-confirm-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 0;
+      border-radius: 6px;
+      background: #7551c2;
+      color: #fff;
+    }
+
+  .map-confirm-button:hover:not(:disabled) {
+      background: #5d3fa4;
+    }
+
+  .map-confirm-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+  .help-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+      background: rgba(34, 31, 43, 0.56);
+    }
+
+  .help-dialog {
+      width: min(100%, 32rem);
+      padding: 1.75rem;
+      border: 1px solid rgba(34, 31, 43, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 1.5rem 4rem rgba(34, 31, 43, 0.28);
+    }
+
+  .help-list {
+      display: grid;
+      gap: 0.75rem;
+      margin: 1.5rem 0 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: rgba(34, 31, 43, 0.78);
+      list-style: none;
+    }
+
+  .help-list li {
+      padding: 0;
+      background: transparent;
     }
 
   @media (max-width: 700px) {
@@ -270,6 +512,33 @@ body {
       }
 
       .dialog {
+        padding: 1.25rem;
+      }
+
+      .event-form {
+        grid-template-columns: 1fr;
+      }
+
+      .form-field-wide,
+      .event-form-actions,
+      .position-section {
+        grid-column: auto;
+      }
+
+      .map-picker-dialog {
+        min-height: 20rem;
+        padding: 1.25rem;
+      }
+
+      .coordinate-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .coordinate-fields input {
+        width: 100%;
+      }
+
+      .help-dialog {
         padding: 1.25rem;
       }
     }

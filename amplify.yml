@@ -12,6 +12,7 @@ frontend:
         - npx ng version
     build:
       commands:
+        - node scripts/generate-runtime-config.mjs
         - npx ng build --configuration=production
   artifacts:
     baseDirectory: dist/garlasco/browser

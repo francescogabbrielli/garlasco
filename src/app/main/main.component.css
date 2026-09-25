@@ -1,0 +1,12 @@
+div.form-field.form-field-small > label, div.form-field.form-field-small > input {
+  font-size: 0.6em;
+  line-height: 0.6em;
+  font-style: italic;
+  height: 0.5em;
+
+}
+
+.position-section > .field-group-label {
+  margin-bottom: -0.65rem;
+}
+

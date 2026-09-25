@@ -62,19 +62,199 @@
           <p class="eyebrow">Nuovo evento</p>
           <h2 id="submit-dialog-title">Invia un nuovo evento</h2>
         </div>
+        <div class="dialog-controls">
+          <button
+            class="dialog-help"
+            type="button"
+            aria-label="Apri aiuto"
+            title="Apri aiuto"
+            (click)="openHelpDialog()"
+          >
+            ?
+          </button>
+          <button
+            class="dialog-close"
+            amplify-button
+            type="button"
+            variation="link"
+            aria-label="Chiudi finestra"
+            title="Chiudi finestra"
+            (click)="closeSubmitDialog()"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" novalidate>
+        <div class="form-field">
+          <label for="event-name">Nome evento</label>
+          <input id="event-name" type="text" formControlName="name" required />
+          @if (eventFormSubmitted && eventForm.controls.name.invalid) {
+            <span class="field-error">Inserisci il nome dell'evento.</span>
+          }
+        </div>
+
+        <div class="form-field form-field-wide">
+          <label for="event-description">Descrizione</label>
+          <textarea id="event-description" rows="4" formControlName="description" required></textarea>
+          @if (eventFormSubmitted && eventForm.controls.description.invalid) {
+            <span class="field-error">Inserisci una descrizione.</span>
+          }
+        </div>
+
+        <fieldset class="position-section" formGroupName="start_position">
+          <legend>Inizio</legend>
+          <div class="form-field">
+            <label class="field-group-label" for="event-start-date">Data</label>
+            <input
+              id="event-start-date"
+              type="datetime-local"
+              formControlName="start_date"
+              aria-label="Data e ora di inizio"
+              required
+            />
+            @if (eventFormSubmitted && eventForm.controls.start_position.controls.start_date.invalid) {
+              <span class="field-error">Indica l'inizio dell'evento.</span>
+            }
+          </div>
+          <label class="field-group-label" for="start-map-button">Posizione</label>
+          <button id="start-map-button" class="map-picker-button" type="button" (click)="openMapPicker('start')">
+            <span aria-hidden="true">⌖</span>
+            Scegli sulla mappa
+          </button>
+          <div class="coordinate-fields" aria-label="Coordinate di inizio">
+            <div class="form-field form-field-small">
+              <label for="start-latitude">Latitudine</label>
+              <input id="start-latitude" type="number" formControlName="latitude" readonly />
+            </div>
+            <div class="form-field form-field-small">
+              <label for="start-longitude">Longitudine</label>
+              <input id="start-longitude" type="number" formControlName="longitude" readonly />
+            </div>
+            <div class="form-field form-field-small">
+              <label for="start-radius">Raggio</label>
+              <input id="start-radius" type="number" formControlName="radius" readonly />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="position-section" formGroupName="end_position">
+          <legend>Fine</legend>
+          <div class="form-field">
+            <label class="field-group-label" for="event-end-date">Data <span>(opzionale)</span></label>
+            <input
+              id="event-end-date"
+              type="datetime-local"
+              formControlName="end_date"
+              aria-label="Data e ora di fine"
+            />
+          </div>
+          <label class="field-group-label" for="end-map-button">Posizione <span>(opzionale)</span></label>
+          <button id="end-map-button" class="map-picker-button" type="button" (click)="openMapPicker('end')">
+            <span aria-hidden="true">⌖</span>
+            Scegli sulla mappa
+          </button>
+          <div class="coordinate-fields" aria-label="Coordinate di fine">
+            <div class="form-field form-field-small">
+              <label for="end-latitude">Latitudine</label>
+              <input id="end-latitude" type="number" formControlName="latitude" readonly />
+            </div>
+            <div class="form-field form-field-small">
+              <label for="end-longitude">Longitudine</label>
+              <input id="end-longitude" type="number" formControlName="longitude" readonly />
+            </div>
+            <div class="form-field form-field-small">
+              <label for="end-radius">Raggio</label>
+              <input id="end-radius" type="number" formControlName="radius" readonly />
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="event-form-actions">
+          <button class="submit-event-action" amplify-button type="submit" variation="primary">
+            <span aria-hidden="true">➤</span>
+            Invia evento
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+}
+
+@if (isHelpDialogOpen) {
+  <div class="help-dialog-backdrop" (click)="closeHelpDialog()">
+    <section
+      class="help-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="event-help-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Guida rapida</p>
+          <h2 id="event-help-title">Come compilare l'evento</h2>
+        </div>
         <button
           class="dialog-close"
-          amplify-button
           type="button"
-          variation="link"
-          aria-label="Chiudi finestra"
-          title="Chiudi finestra"
-          (click)="closeSubmitDialog()"
+          aria-label="Chiudi aiuto"
+          title="Chiudi aiuto"
+          (click)="closeHelpDialog()"
         >
           ×
         </button>
       </div>
-      <div class="dialog-empty" aria-live="polite"></div>
+      <ul class="help-list">
+        <li>Inserisci nome e descrizione dell'evento.</li>
+        <li>Indica la data di inizio; la data di fine è opzionale.</li>
+        <li>Usa i pulsanti mappa per scegliere le posizioni.</li>
+      </ul>
+    </section>
+  </div>
+}
+
+@if (isMapPickerOpen) {
+  <div class="map-picker-backdrop" (click)="closeMapPicker()">
+    <section
+      class="map-picker-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="map-picker-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Posizione evento</p>
+          <h2 id="map-picker-title">
+            {{ mapPickerTarget === 'start' ? 'Posizione di inizio' : 'Posizione di fine' }}
+          </h2>
+        </div>
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Chiudi mappa"
+          title="Chiudi mappa"
+          (click)="closeMapPicker()"
+        >
+          ×
+        </button>
+      </div>
+      @if (mapError) {
+        <p class="map-error" role="alert">{{ mapError }}</p>
+      }
+      <div #mapCanvas class="google-map" aria-label="Mappa per selezionare la posizione"></div>
+      <div class="map-picker-actions">
+        <button
+          class="map-confirm-button"
+          type="button"
+          [disabled]="!isMapReady"
+          (click)="confirmMapSelection()"
+        >
+          <span aria-hidden="true">✓</span>
+          Usa questa posizione
+        </button>
+      </div>
     </section>
   </div>
 }
