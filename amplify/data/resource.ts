@@ -36,7 +36,8 @@ const Event = a.model({
 const EventPerson = a.model({
   eventId: a.id().required(),
   personId: a.id().required(),
-  role: a.string().required(),
+  role: a.string().required(), //transform to enum? (e.g. 'actor', 'director', 'producer', etc.)
+  //role: a.string().required().enum(['actor', 'director', 'producer', 'writer', 'editor', 'cinematographer', 'composer', 'costume designer', 'production designer', 'sound designer', 'visual effects supervisor']),
   event: a.belongsTo('Event', 'eventId'),
   person: a.belongsTo('Person', 'personId'),
 })

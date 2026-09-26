@@ -1,0 +1,28 @@
+<div class="seed-container">
+    <h3 class="seed-title">🛠 Area Sviluppo: Importatore JSON</h3>
+    <p class="seed-text">Incolla qui sotto il codice JSON degli eventi da caricare su DynamoDB.</p>
+
+    <!-- Textarea per il JSON -->
+    <div class="textarea-wrapper">
+        <textarea rows="12" placeholder="[ { 'name': 'Evento', ... } ]" [ngModel]="jsonInput()"
+            (ngModelChange)="jsonInput.set($event)" class="custom-textarea">
+        </textarea>
+    </div>
+
+    <!-- Azioni -->
+    <div class="actions-panel">
+        <button 
+            class="btn btn-secondary"
+            [disabled]="isLoading()"
+            (click)="eseguiUploadDaTextarea()">
+             {{ isLoading() ? 'Caricamento in corso...' : '🚀 Invia Dati al Database' }}
+        </button>
+
+        <button 
+            class="btn btn-secondary"
+            [disabled]="isLoading()"
+            (click)="cleanInputData()">
+            Cancella
+        </button>
+    </div>
+</div>

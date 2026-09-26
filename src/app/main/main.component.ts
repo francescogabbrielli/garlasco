@@ -1,8 +1,9 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
+
 import { AuthAccessService } from '../auth-access.service';
 import { UserProfileService } from '../user-profile.service';
 
@@ -39,7 +40,7 @@ export class MainComponent {
   isHelpDialogOpen = false;
   mapPickerTarget: 'start' | 'end' | null = null;
   eventFormSubmitted = false;
-  private ownerId = '';
+  @Output() ownerId = '';
   private givenName = '';
   private familyName = '';
   private map?: google.maps.Map;
