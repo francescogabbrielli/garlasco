@@ -1,4 +1,4 @@
-import { Component, inject, input, signal} from '@angular/core'
+import { Component, inject, signal} from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { generateClient } from 'aws-amplify/data'
@@ -7,6 +7,44 @@ import type { Schema } from '../../../../amplify/data/resource'
 import { UserProfileService } from '../../user-profile.service'
 
 const client = generateClient<Schema>()
+
+type EventActorImport = [personId: string, role: string];
+
+type EventImportRecord = Omit<Schema['Event']['type'], 'actors'> & {
+  actors?: unknown;
+};
+
+interface PersonImportRecord {
+  id?: string;
+  name?: string;
+  surname?: string;
+  profession?: string | null;
+  initials?: string;
+  events?: unknown;
+}
+
+type PersonCreateInput = Parameters<typeof client.models.Person.create>[0];
+
+export function isValidEventActors(actors: unknown): actors is EventActorImport[] {
+  return Array.isArray(actors) && actors.every((actor) =>
+    Array.isArray(actor)
+    && actor.length === 2
+    && typeof actor[0] === 'string'
+    && actor[0].trim().length > 0
+    && typeof actor[1] === 'string'
+    && actor[1].trim().length > 0,
+  );
+}
+
+export function toPersonCreateInput(person: PersonImportRecord): PersonCreateInput {
+  return {
+    ...(person.id ? { id: person.id } : {}),
+    name: person.name!,
+    surname: person.surname!,
+    initials: person.initials!,
+    ...(person.profession ? { profession: person.profession } : {}),
+  };
+}
 
 @Component({
   selector: 'app-import',
@@ -19,6 +57,7 @@ export class ImportComponent {
   userProfile = inject(UserProfileService)
 
   jsonInput = signal<string>('');
+  peopleJsonInput = signal<string>('');
   isLoading = signal<boolean>(false);
 
   async eseguiUploadDaTextarea() {
@@ -29,12 +68,12 @@ export class ImportComponent {
       return
     }
 
-    let dataset: Schema['Event']['type'][];
+    let dataset: EventImportRecord[];
     
     // 1. Validazione sintattica del JSON inserito
     try {
       const parsing = JSON.parse(rawText);
-      dataset = Array.isArray(parsing) ? parsing : [parsing];
+      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as EventImportRecord[];
     } catch (e) {
       alert("❌ Errore di sintassi nel JSON. Verifica che le virgolette e le virgole siano corrette.");
       console.error(e);
@@ -54,8 +93,27 @@ export class ImportComponent {
           continue;
         }
 
+        if (event.actors !== undefined && !isValidEventActors(event.actors)) {
+          console.warn('Evento ignorato: actors deve essere una lista di coppie [personId, role].', event);
+          continue;
+        }
+
+        const actors = event.actors ?? [];
+        const actorPeople = await Promise.all(actors.map(async ([personId]) => {
+          const { data, errors } = await client.models.Person.get({ id: personId });
+          if (errors?.length) {
+            throw new Error(`Impossibile verificare la persona ${personId}: ${errors.map((error) => error.message).join(', ')}`);
+          }
+          return data;
+        }));
+
+        if (actorPeople.some((person) => !person)) {
+          console.warn('Evento ignorato: uno o più personId in actors non corrispondono a persone esistenti.', event);
+          continue;
+        }
+
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
-        await client.models['Event'].create({
+        const { data: createdEvent, errors: eventErrors } = await client.models.Event.create({
           owner: (await this.userProfile.logIn()).getId(),
           name: event.name,
           description: event.description || '',
@@ -74,6 +132,23 @@ export class ImportComponent {
           relevance: 0,
           reliability: 0
         });
+
+        if (eventErrors?.length || !createdEvent?.id) {
+          console.error('Errore durante la creazione dell’evento:', event, eventErrors);
+          continue;
+        }
+
+        for (const [personId, role] of actors) {
+          const { errors } = await client.models.EventPerson.create({
+            eventId: createdEvent.id,
+            personId,
+            role,
+          });
+
+          if (errors?.length) {
+            throw new Error(`Impossibile associare la persona ${personId} all’evento ${createdEvent.id}: ${errors.map((error) => error.message).join(', ')}`);
+          }
+        }
         
         contatoreSuccessi++;
       }
@@ -90,5 +165,57 @@ export class ImportComponent {
 
   cleanInputData() {
     this.jsonInput.set('');
+  }
+
+  async importaPersoneDaTextarea(): Promise<void> {
+    const rawText = this.peopleJsonInput().trim();
+
+    if (!rawText) {
+      alert('Incolla prima il JSON delle persone.');
+      return;
+    }
+
+    let dataset: PersonImportRecord[];
+    try {
+      const parsing: unknown = JSON.parse(rawText);
+      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as PersonImportRecord[];
+    } catch (error) {
+      alert('JSON delle persone non valido.');
+      console.error(error);
+      return;
+    }
+
+    this.isLoading.set(true);
+    let importedCount = 0;
+
+    try {
+      for (const person of dataset) {
+        if (!person.name || !person.surname || !person.initials) {
+          console.warn('Persona ignorata: nome, cognome e iniziali sono obbligatori.', person);
+          continue;
+        }
+
+        const { errors } = await client.models.Person.create(toPersonCreateInput(person));
+
+        if (errors?.length) {
+          console.error('Errore durante la creazione della persona:', person, errors);
+          continue;
+        }
+
+        importedCount++;
+      }
+
+      alert(`Importate ${importedCount} persone su ${dataset.length}.`);
+      this.cleanPeopleInput();
+    } catch (error) {
+      console.error('Errore durante l’importazione delle persone:', error);
+      alert('Impossibile importare le persone. Controlla la console degli sviluppatori.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  cleanPeopleInput(): void {
+    this.peopleJsonInput.set('');
   }
 }

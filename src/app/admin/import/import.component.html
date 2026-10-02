@@ -1,28 +1,38 @@
 <div class="seed-container">
-    <h3 class="seed-title">🛠 Area Sviluppo: Importatore JSON</h3>
-    <p class="seed-text">Incolla qui sotto il codice JSON degli eventi da caricare su DynamoDB.</p>
+    <h1 class="seed-title">Importazione JSON</h1>
+    <p class="seed-text">Carica separatamente gli eventi e le persone nel database.</p>
 
-    <!-- Textarea per il JSON -->
-    <div class="textarea-wrapper">
-        <textarea rows="12" placeholder="[ { 'name': 'Evento', ... } ]" [ngModel]="jsonInput()"
-            (ngModelChange)="jsonInput.set($event)" class="custom-textarea">
-        </textarea>
-    </div>
+    <div class="import-grid">
+      <section class="import-panel" aria-labelledby="events-import-title">
+        <h2 id="events-import-title">Eventi</h2>
+        <label for="events-json">JSON eventi</label>
+        <textarea id="events-json" rows="14" placeholder='[{ "name": "Evento", ... }]' [ngModel]="jsonInput()"
+            (ngModelChange)="jsonInput.set($event)" class="custom-textarea"></textarea>
+        <p class="import-note">Per associare persone già importate, indica <code>"actors": [["personId", "ruolo"]]</code>.</p>
+        <div class="actions-panel">
+            <button class="btn btn-primary" type="button" [disabled]="isLoading()" (click)="eseguiUploadDaTextarea()">
+                {{ isLoading() ? 'Caricamento...' : 'Importa eventi' }}
+            </button>
+            <button class="btn btn-secondary" type="button" [disabled]="isLoading()" (click)="cleanInputData()">
+                Azzera
+            </button>
+        </div>
+      </section>
 
-    <!-- Azioni -->
-    <div class="actions-panel">
-        <button 
-            class="btn btn-secondary"
-            [disabled]="isLoading()"
-            (click)="eseguiUploadDaTextarea()">
-             {{ isLoading() ? 'Caricamento in corso...' : '🚀 Invia Dati al Database' }}
-        </button>
-
-        <button 
-            class="btn btn-secondary"
-            [disabled]="isLoading()"
-            (click)="cleanInputData()">
-            Cancella
-        </button>
+      <section class="import-panel" aria-labelledby="people-import-title">
+        <h2 id="people-import-title">Persone</h2>
+        <label for="people-json">JSON persone</label>
+        <textarea id="people-json" rows="14" placeholder='[{ "name": "Mario", "surname": "Rossi", "initials": "MR" }]' [ngModel]="peopleJsonInput()"
+            (ngModelChange)="peopleJsonInput.set($event)" class="custom-textarea"></textarea>
+        <div class="actions-panel">
+            <button class="btn btn-primary" type="button" [disabled]="isLoading()" (click)="importaPersoneDaTextarea()">
+                {{ isLoading() ? 'Caricamento...' : 'Importa persone' }}
+            </button>
+            <button class="btn btn-secondary" type="button" [disabled]="isLoading()" (click)="cleanPeopleInput()">
+                Azzera
+            </button>
+        </div>
+        <p class="import-note">I campi relazione, come <code>events</code>, vengono ignorati. Gli ID forniti vengono mantenuti.</p>
+      </section>
     </div>
 </div>

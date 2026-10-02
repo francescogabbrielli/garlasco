@@ -42,6 +42,8 @@ export class UserProfileService {
   /**
    * To be called after the user has logged in, to fetch and cache the user attributes and groups
    * 
+   * TODO: store user data in local storage to avoid fetching it on every page load
+   * 
    * @returns a Promise with the user attributes.
    */
   async logIn(): Promise<UserData> {
@@ -57,8 +59,6 @@ export class UserProfileService {
         fetchAuthSession()
       ]);
 
-    console.log("User logged in", this.user.attributes)
-
     const groups = authSession.tokens?.idToken?.payload['cognito:groups']
     this.user.groups = Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []
 
@@ -68,7 +68,6 @@ export class UserProfileService {
   }
 
   logOut(): void {
-    console.log("User logged out, clearing cached attributes and groups")
     this.user.clear()
     this.loggedIn = false
   }
