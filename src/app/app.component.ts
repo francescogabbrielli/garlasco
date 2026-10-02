@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Amplify } from 'aws-amplify';
 import outputs from '../../amplify_outputs.json';
@@ -9,8 +9,9 @@ import {
   translations,
 } from '@aws-amplify/ui-angular';
 
-import { fetchUserAttributes, UserAttributeKey } from 'aws-amplify/auth';
 import { Hub, I18n } from 'aws-amplify/utils';
+
+import { UserProfileService } from './user-profile.service';
 
 Amplify.configure(outputs);
 I18n.putVocabularies(translations);
@@ -23,6 +24,8 @@ I18n.setLanguage('it');
     imports: [AmplifyAuthenticatorModule, RouterOutlet]
 })
 export class AppComponent {
+
+  userService: UserProfileService = inject(UserProfileService);
 
   title = 'Garlasco Home';
 
@@ -72,29 +75,11 @@ export class AppComponent {
     },
   };
 
-  userAttributes: Partial<Record<UserAttributeKey, string>> = {};
-
-  async ngOnInit(): Promise<void> {
-    await this.loadUserAttributes();
-  }
-
   private readonly authHubListener = Hub.listen('auth', ({ payload }) => {
-    if (payload.event === 'signedIn') {
-      void this.loadUserAttributes();
-    } else if (payload.event === 'signedOut') {
-      this.userAttributes = {};
+    if (payload.event === 'signedOut') {
+      this.userService.loggedOut();
     }
   });
-
-  async loadUserAttributes(
-    fetchAttributes: () => Promise<Partial<Record<UserAttributeKey, string>>> = fetchUserAttributes,
-  ): Promise<void> {
-    try {
-      this.userAttributes = await fetchAttributes();
-    } catch {
-      this.userAttributes = {};
-    }
-  }
 
   constructor(public authenticator: AuthenticatorService) {
     Amplify.configure(outputs)

@@ -1,13 +1,14 @@
-import { Routes } from '@angular/router';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthAccessService } from './auth-access.service';
+import { Routes } from '@angular/router'
+import { inject } from '@angular/core'
+import { Router } from '@angular/router'
+import { UserProfileService } from './user-profile.service'
 
 const adminAccessGuard = async () => {
-	const authAccess = inject(AuthAccessService);
-	const router = inject(Router);
-
-	return (await authAccess.canAccessAdmin()) ? true : router.parseUrl('/');
+	const userService = inject(UserProfileService)
+	const router = inject(Router)
+	const attr = await userService.loggedIn()
+	console.log('Checking admin access for user:', userService.getId(), userService.userGroups)
+	return userService.isAdmin() || router.parseUrl('/')
 };
 
 export const routes: Routes = [
@@ -35,4 +36,4 @@ export const routes: Routes = [
 			},
 		],
 	},
-];
+]

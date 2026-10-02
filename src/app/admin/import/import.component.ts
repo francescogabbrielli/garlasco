@@ -1,11 +1,12 @@
-import { Component, Input, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { generateClient } from 'aws-amplify/data';
+import { Component, inject, input, signal} from '@angular/core'
+import { CommonModule } from '@angular/common'
+import { FormsModule } from '@angular/forms'
+import { generateClient } from 'aws-amplify/data'
 
-import type { Schema } from '../../../../amplify/data/resource'; 
+import type { Schema } from '../../../../amplify/data/resource'
+import { UserProfileService } from '../../user-profile.service'
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>()
 
 @Component({
   selector: 'app-import',
@@ -15,7 +16,8 @@ const client = generateClient<Schema>();
 })
 export class ImportComponent {
 
-  @Input() ownerId:string = "";
+  userProfile = inject(UserProfileService)
+  ownerId = this.userProfile.loggedIn().then(() => this.userProfile.getId())
 
   jsonInput = signal<string>('');
   isLoading = signal<boolean>(false);
@@ -24,8 +26,8 @@ export class ImportComponent {
     const rawText = this.jsonInput().trim();
     
     if (!rawText) {
-      alert("⚠️ L'area di testo è vuota. Incolla prima un JSON valido.");
-      return;
+      alert("⚠️ L'area di testo è vuota. Incolla prima un JSON valido.")
+      return
     }
 
     let dataset: Schema['Event']['type'][];
@@ -55,7 +57,7 @@ export class ImportComponent {
 
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
         await client.models['Event'].create({
-          owner: this.ownerId,
+          owner: this.ownerId(),
           name: event.name,
           description: event.description || '',
           start_date: event.start_date,

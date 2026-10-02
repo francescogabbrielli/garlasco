@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ImportComponent } from './import/import.component';
+import { UserProfileService } from '../user-profile.service';
 
 @Component({
   selector: 'app-admin',
@@ -11,4 +12,7 @@ import { ImportComponent } from './import/import.component';
       <app-import></app-import>
     </main>`
 })
-export class AdminComponent {}
+export class AdminComponent {
+
+
+}

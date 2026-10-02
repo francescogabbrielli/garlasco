@@ -1,42 +1,28 @@
+/// <reference types="jasmine" />
+
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
-import * as Auth from 'aws-amplify/auth';
+import { UserProfileService } from './user-profile.service';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
+      providers: [
+        { provide: AuthenticatorService, useValue: {} },
+        { provide: UserProfileService, useValue: { loggedOut: jasmine.createSpy('loggedOut') } },
+      ],
     }).compileComponents();
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
+  it('should configure the Italian sign-up fields', () => {
+    const app = TestBed.runInInjectionContext(
+      () => new AppComponent(TestBed.inject(AuthenticatorService)),
+    );
 
-  it('should load attributes for a logged-in user', async () => {
-    spyOn(Auth, 'fetchUserAttributes').and.resolveTo({
-      given_name: 'Mario',
-      family_name: 'Rossi',
-    });
-    const app = new AppComponent({} as AuthenticatorService);
-
-    await app.ngOnInit();
-
-    expect(app.userAttributes).toEqual({
-      given_name: 'Mario',
-      family_name: 'Rossi',
-    });
-  });
-
-  it('should keep attributes empty for a logged-out user', async () => {
-    spyOn(Auth, 'fetchUserAttributes').and.rejectWith(new Error('Not signed in'));
-    const app = new AppComponent({} as AuthenticatorService);
-
-    await app.ngOnInit();
-
-    expect(app.userAttributes).toEqual({});
+    expect(app.title).toBe('Garlasco Home');
+    expect(app.signUpAttributes).toEqual(['email', 'given_name', 'family_name']);
+    expect(app.formFields.signUp.given_name.label).toBe('Nome');
   });
 });
