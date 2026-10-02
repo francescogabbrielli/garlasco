@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { Amplify } from 'aws-amplify';
 import outputs from '../../amplify_outputs.json';
 
@@ -11,6 +11,7 @@ import {
 
 import { fetchUserAttributes, UserAttributeKey } from 'aws-amplify/auth';
 import { Hub, I18n } from 'aws-amplify/utils';
+import { AuthAccessService } from './auth-access.service';
 
 Amplify.configure(outputs);
 I18n.putVocabularies(translations);
@@ -80,9 +81,10 @@ export class AppComponent {
 
   private readonly authHubListener = Hub.listen('auth', ({ payload }) => {
     if (payload.event === 'signedIn') {
-      void this.loadUserAttributes();
+      void this.handleSignedIn();
     } else if (payload.event === 'signedOut') {
       this.userAttributes = {};
+      void this.router.navigateByUrl('/');
     }
   });
 
@@ -96,7 +98,19 @@ export class AppComponent {
     }
   }
 
-  constructor(public authenticator: AuthenticatorService) {
+  constructor(
+    public authenticator: AuthenticatorService,
+    private readonly router: Router,
+    private readonly authAccess: AuthAccessService,
+  ) {
     Amplify.configure(outputs)
+  }
+
+  async handleSignedIn(): Promise<void> {
+    await this.loadUserAttributes();
+
+    if (this.router.url.startsWith('/admin') && !(await this.authAccess.canAccessAdmin())) {
+      await this.router.navigateByUrl('/');
+    }
   }
 }
