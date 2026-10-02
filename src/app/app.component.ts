@@ -1,21 +1,21 @@
-import { Component } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
-import { Amplify } from 'aws-amplify';
-import outputs from '../../amplify_outputs.json';
+import { Component, inject } from '@angular/core'
+import { Router, RouterOutlet } from '@angular/router'
+import { Amplify } from 'aws-amplify'
+import outputs from '../../amplify_outputs.json'
 
 import {
   AmplifyAuthenticatorModule,
   AuthenticatorService,
   translations,
-} from '@aws-amplify/ui-angular';
+} from '@aws-amplify/ui-angular'
 
-import { fetchUserAttributes, UserAttributeKey } from 'aws-amplify/auth';
-import { Hub, I18n } from 'aws-amplify/utils';
-import { AuthAccessService } from './auth-access.service';
+import { Hub, I18n } from 'aws-amplify/utils'
 
-Amplify.configure(outputs);
-I18n.putVocabularies(translations);
-I18n.setLanguage('it');
+import { UserProfileService } from './user-profile.service'
+
+Amplify.configure(outputs)
+I18n.putVocabularies(translations)
+I18n.setLanguage('it')
 
 @Component({
     selector: 'app-root',
@@ -25,13 +25,17 @@ I18n.setLanguage('it');
 })
 export class AppComponent {
 
-  title = 'Garlasco Home';
+  userService: UserProfileService = inject(UserProfileService)
+
+  router: Router = inject(Router)
+
+  title = 'Garlasco Home'
 
   signUpAttributes: ('email' | 'given_name' | 'family_name')[] = [
     'email',
     'given_name',
     'family_name',
-  ];
+  ]
 
   formFields = {
     signIn: {
@@ -71,46 +75,21 @@ export class AppComponent {
         order: 4,
       },
     },
-  };
-
-  userAttributes: Partial<Record<UserAttributeKey, string>> = {};
-
-  async ngOnInit(): Promise<void> {
-    await this.loadUserAttributes();
   }
 
-  private readonly authHubListener = Hub.listen('auth', ({ payload }) => {
+  private readonly authHubListener = Hub.listen('auth', async ({ payload }) => {
     if (payload.event === 'signedIn') {
-      void this.handleSignedIn();
+      await this.userService.loggedIn()
+      if (this.router.url.startsWith('/admin') && !this.userService.isAdmin()) {
+        await this.router.navigateByUrl('/')
+      }
     } else if (payload.event === 'signedOut') {
-      this.userAttributes = {};
-      void this.router.navigateByUrl('/');
+      this.userService.loggedOut()
     }
-  });
+  })
 
-  async loadUserAttributes(
-    fetchAttributes: () => Promise<Partial<Record<UserAttributeKey, string>>> = fetchUserAttributes,
-  ): Promise<void> {
-    try {
-      this.userAttributes = await fetchAttributes();
-    } catch {
-      this.userAttributes = {};
-    }
-  }
-
-  constructor(
-    public authenticator: AuthenticatorService,
-    private readonly router: Router,
-    private readonly authAccess: AuthAccessService,
-  ) {
+  constructor() {
     Amplify.configure(outputs)
   }
 
-  async handleSignedIn(): Promise<void> {
-    await this.loadUserAttributes();
-
-    if (this.router.url.startsWith('/admin') && !(await this.authAccess.canAccessAdmin())) {
-      await this.router.navigateByUrl('/');
-    }
-  }
 }

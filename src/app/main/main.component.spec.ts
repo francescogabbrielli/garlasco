@@ -1,7 +1,8 @@
+/// <reference types="google.maps" />
+
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
-import { AuthAccessService } from '../auth-access.service';
 import { UserProfileService } from '../user-profile.service';
 import { MainComponent } from './main.component';
 
@@ -22,14 +23,15 @@ describe('MainComponent', () => {
           },
         },
         {
-          provide: AuthAccessService,
-          useValue: { canAccessAdmin: () => Promise.resolve(true) },
-        },
-        {
           provide: UserProfileService,
           useValue: {
-            getUserAttributes: () =>
-              Promise.resolve({ given_name: 'Mario', family_name: 'Rossi' }),
+            loggedIn: () => Promise.resolve({
+              sub: 'user-123',
+              given_name: 'Mario',
+              family_name: 'Rossi',
+            }),
+            isAdmin: () => true,
+            loggedOut: jasmine.createSpy('loggedOut'),
           },
         },
       ],
@@ -45,6 +47,11 @@ describe('MainComponent', () => {
     const userLabel = fixture.nativeElement.querySelector('.user-label');
 
     expect(userLabel.textContent.trim()).toBe('Mario Rossi');
+  });
+
+  it('should show the admin link for administrators', () => {
+    expect(fixture.nativeElement.querySelector('.admin-link')).not.toBeNull();
+    expect(fixture.componentInstance.ownerId).toBe('user-123');
   });
 
   it('should open the user menu from the user name', () => {
@@ -69,14 +76,17 @@ describe('MainComponent', () => {
   });
 
   it('should sign out when the logout menu item is clicked', () => {
+    spyOn(window, 'confirm').and.returnValue(true);
     const userLabel = fixture.nativeElement.querySelector('.user-label');
     const authenticator = TestBed.inject(AuthenticatorService);
+    const userProfile = TestBed.inject(UserProfileService);
 
     userLabel.click();
     fixture.detectChanges();
     fixture.nativeElement.querySelector('.logout-menuitem').click();
 
     expect(authenticator.signOut).toHaveBeenCalled();
+    expect(userProfile.loggedOut).toHaveBeenCalled();
   });
 
   it('should open and close the submit dialog', () => {

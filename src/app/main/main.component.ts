@@ -1,10 +1,9 @@
-import { Component, ElementRef, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
-import { AuthAccessService } from '../auth-access.service';
 import { UserProfileService } from '../user-profile.service';
 
 declare global {
@@ -66,24 +65,18 @@ export class MainComponent {
 
   constructor(
     public readonly authenticator: AuthenticatorService,
-    private readonly authAccess: AuthAccessService,
     private readonly userProfile: UserProfileService,
   ) {}
 
   async ngOnInit(): Promise<void> {
-    const [canAccessAdmin, attributes] = await Promise.all([
-      this.authAccess.canAccessAdmin(),
-      this.userProfile.getUserAttributes(),
-    ]);
-
-    this.isAdminVisible = canAccessAdmin;
-    this.ownerId = attributes['sub'] ?? '';
+    this.isAdminVisible = this.userProfile.isAdmin();
+    this.ownerId = this.userProfile.getId();
     this.eventForm.controls.owner.setValue(this.ownerId);
-    this.givenName = attributes['given_name'] ?? '';
-    this.familyName = attributes['family_name'] ?? '';
+    this.givenName = this.userProfile.getName() ?? '';
+    this.familyName = this.userProfile.getSurname() ?? '';
   }
 
-  get loggedUser(): string {
+  get loggedIn(): string {
     return `${this.givenName} ${this.familyName}`.trim() || 'Utente';
   }
 
@@ -94,7 +87,7 @@ export class MainComponent {
   logout(): void {
     if (confirm('Sei sicuro di voler uscire? Tutte le operazioni non salvate andranno perse.')) {
       this.isUserMenuOpen = false;
-      void this.authenticator.signOut();
+      this.authenticator.signOut();
     }
   }
 
