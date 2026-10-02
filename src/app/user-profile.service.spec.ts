@@ -11,30 +11,36 @@ describe('UserProfileService', () => {
     service = TestBed.inject(UserProfileService);
   });
 
-  it('should return cached attributes and recognize user roles', async () => {
-    const attributes = { sub: 'user-123', given_name: 'Mario' };
-    service.userAttributes = attributes;
-    service.userGroups = ['Admin', 'Editor'];
-    service.logged = true;
+  it('should return the cached user and recognize user roles', async () => {
+    const attributes = {
+      sub: 'user-123',
+      given_name: 'Mario',
+      family_name: 'Rossi',
+    };
+    service.user.attributes = attributes;
+    service.user.groups = ['Admin', 'Editor'];
+    service.loggedIn = true;
 
-    await expectAsync(service.loggedIn()).toBeResolvedTo(attributes);
+    await expectAsync(service.logIn()).toBeResolvedTo(service.user);
 
-    expect(service.getId()).toBe('user-123');
+    expect(service.user.getId()).toBe('user-123');
+    expect(service.user.getName()).toBe('Mario');
+    expect(service.user.getSurname()).toBe('Rossi');
     expect(service.isLoggedIn()).toBeTrue();
-    expect(service.isAdmin()).toBeTrue();
-    expect(service.isEditor()).toBeTrue();
+    expect(service.user.isAdmin()).toBeTrue();
+    expect(service.user.isEditor()).toBeTrue();
   });
 
   it('should clear cached user data on logout', () => {
-    service.userAttributes = { sub: 'user-123' };
-    service.userGroups = ['Admin'];
-    service.logged = true;
+    service.user.attributes = { sub: 'user-123' };
+    service.user.groups = ['Admin'];
+    service.loggedIn = true;
 
-    service.loggedOut();
+    service.logOut();
 
-    expect(service.getId()).toBe('');
+    expect(service.user.getId()).toBe('');
     expect(service.isLoggedIn()).toBeFalse();
-    expect(service.isAdmin()).toBeFalse();
-    expect(service.isEditor()).toBeFalse();
+    expect(service.user.isAdmin()).toBeFalse();
+    expect(service.user.isEditor()).toBeFalse();
   });
 });

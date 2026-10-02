@@ -86,7 +86,7 @@ describe('MainComponent', () => {
     fixture.nativeElement.querySelector('.logout-menuitem').click();
 
     expect(authenticator.signOut).toHaveBeenCalled();
-    expect(userProfile.loggedOut).toHaveBeenCalled();
+    expect(userProfile.logOut).toHaveBeenCalled();
   });
 
   it('should open and close the submit dialog', () => {

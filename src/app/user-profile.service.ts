@@ -1,69 +1,80 @@
 import { Injectable } from '@angular/core'
 import { fetchUserAttributes, fetchAuthSession, UserAttributeKey } from 'aws-amplify/auth'
 
+export class UserData {
+  attributes: Partial<Record<UserAttributeKey, string>> = {}
+  groups: string[] = []
+
+  clear() {
+    this.attributes = {}
+    this.groups = []
+  }
+
+  getId(): string {
+    return this.attributes['sub'] ?? ''
+  }
+
+  getName(): string {
+    return this.attributes['given_name'] ?? ''
+  }
+
+  getSurname(): string {
+    return this.attributes['family_name'] ?? ''
+  }
+
+  isAdmin(): boolean {
+    return this.groups.includes('Admin')
+  }
+
+  isEditor(): boolean {
+    return this.groups.some(group => group === 'Admin' || group === 'Editor')
+  }
+
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserProfileService {
 
-  userAttributes: Partial<Record<UserAttributeKey, string>> = {}
+  user: UserData = new UserData()
 
-  userGroups: string[] = []
-
-  logged:boolean = false
+  loggedIn:boolean = false
 
   /**
    * To be called after the user has logged in, to fetch and cache the user attributes and groups
    * 
    * @returns a Promise with the user attributes.
    */
-  async loggedIn(): Promise<Partial<Record<UserAttributeKey, string>>> {
+  async logIn(): Promise<UserData> {
 
-    if (this.logged) {
-      return this.userAttributes
+    if (this.loggedIn) {
+      return this.user
     }
     
     let authSession: any
 
-    [this.userAttributes, authSession] = await Promise.all([
+    [this.user.attributes, authSession] = await Promise.all([
         fetchUserAttributes(),
         fetchAuthSession()
       ]);
 
+    console.log("User logged in", this.user.attributes)
+
     const groups = authSession.tokens?.idToken?.payload['cognito:groups']
-    this.userGroups = Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []
+    this.user.groups = Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []
 
-    this.logged = true
+    this.loggedIn = true
 
-    return this.userAttributes;
+    return this.user;
   }
 
-  loggedOut(): void {
-    this.logged = false
-    this.userAttributes = {}
-    this.userGroups = []
-  }
-
-  getId(): string {
-    return this.userAttributes['sub'] ?? ''
-  }
-
-  getName(): string {
-    return this.userAttributes['given_name'] ?? ''
-  }
-
-  getSurname(): string {
-    return this.userAttributes['family_name'] ?? ''
+  logOut(): void {
+    console.log("User logged out, clearing cached attributes and groups")
+    this.user.clear()
+    this.loggedIn = false
   }
 
   isLoggedIn(): boolean {
-    return this.logged
-  }
-
-  isAdmin(): boolean {
-    return this.userGroups.includes('Admin')
-  }
-
-  isEditor(): boolean {
-    return this.userGroups.some(group => group === 'Admin' || group === 'Editor')
+    return this.loggedIn
   }
 
 }

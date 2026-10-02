@@ -69,11 +69,12 @@ export class MainComponent {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.isAdminVisible = this.userProfile.isAdmin();
-    this.ownerId = this.userProfile.getId();
-    this.eventForm.controls.owner.setValue(this.ownerId);
-    this.givenName = this.userProfile.getName() ?? '';
-    this.familyName = this.userProfile.getSurname() ?? '';
+    const user = await this.userProfile.logIn()
+    this.isAdminVisible = user.isAdmin()
+    this.ownerId = user.getId()
+    this.eventForm.controls.owner.setValue(this.ownerId)
+    this.givenName = user.getName() ?? ''
+    this.familyName = user.getSurname() ?? ''
   }
 
   get loggedIn(): string {

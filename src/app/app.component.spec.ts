@@ -1,11 +1,10 @@
 /// <reference types="jasmine" />
 
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
-import { UserProfileService } from './user-profile.service';
-import { Router } from '@angular/router';
+import { UserData, UserProfileService } from './user-profile.service';
 import { Hub } from 'aws-amplify/utils';
 
 describe('AppComponent', () => {
@@ -18,9 +17,9 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     userService = jasmine.createSpyObj<UserProfileService>(
       'UserProfileService',
-      ['loggedIn', 'loggedOut', 'isAdmin'],
+      ['logIn', 'logOut'],
     );
-    userService.loggedIn.and.returnValue(Promise.resolve({}));
+    userService.logIn.and.returnValue(Promise.resolve(new UserData()));
     router = {
       url: '/',
       navigateByUrl: jasmine.createSpy('navigateByUrl').and.resolveTo(true),
@@ -61,42 +60,42 @@ describe('AppComponent', () => {
   });
 
   it('loads the signed-in user and redirects non-admins away from the admin area', async () => {
+    const user = new UserData();
+    user.groups = ['Editor'];
     router.url = '/admin';
-    userService.isAdmin.and.returnValue(false);
+    userService.logIn.and.returnValue(Promise.resolve(user));
 
     await emitAuthEvent('signedIn');
 
-    expect(userService.loggedIn).toHaveBeenCalled();
-    expect(userService.isAdmin).toHaveBeenCalled();
+    expect(userService.logIn).toHaveBeenCalled();
     expect(router.navigateByUrl).toHaveBeenCalledWith('/');
   });
 
   it('does not redirect admins away from the admin area', async () => {
+    const user = new UserData();
+    user.groups = ['Admin'];
     router.url = '/admin';
-    userService.isAdmin.and.returnValue(true);
+    userService.logIn.and.returnValue(Promise.resolve(user));
 
     await emitAuthEvent('signedIn');
 
-    expect(userService.loggedIn).toHaveBeenCalled();
-    expect(userService.isAdmin).toHaveBeenCalled();
+    expect(userService.logIn).toHaveBeenCalled();
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it('does not check admin access when signing in outside the admin area', async () => {
     router.url = '/';
-    userService.isAdmin.and.returnValue(false);
 
     await emitAuthEvent('signedIn');
 
-    expect(userService.loggedIn).toHaveBeenCalled();
-    expect(userService.isAdmin).not.toHaveBeenCalled();
+    expect(userService.logIn).toHaveBeenCalled();
     expect(router.navigateByUrl).not.toHaveBeenCalled();
   });
 
   it('clears cached user state after sign-out', async () => {
     await emitAuthEvent('signedOut');
 
-    expect(userService.loggedOut).toHaveBeenCalled();
-    expect(userService.loggedIn).not.toHaveBeenCalled();
+    expect(userService.logIn).not.toHaveBeenCalled();
+    expect(userService.logOut).toHaveBeenCalled();
   });
 });

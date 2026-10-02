@@ -6,9 +6,8 @@ import { UserProfileService } from './user-profile.service'
 const adminAccessGuard = async () => {
 	const userService = inject(UserProfileService)
 	const router = inject(Router)
-	const attr = await userService.loggedIn()
-	console.log('Checking admin access for user:', userService.getId(), userService.userGroups)
-	return userService.isAdmin() || router.parseUrl('/')
+	const user = await userService.logIn()
+	return user.isAdmin() || router.parseUrl('/')
 };
 
 export const routes: Routes = [

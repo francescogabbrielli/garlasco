@@ -79,12 +79,12 @@ export class AppComponent {
 
   private readonly authHubListener = Hub.listen('auth', async ({ payload }) => {
     if (payload.event === 'signedIn') {
-      await this.userService.loggedIn()
-      if (this.router.url.startsWith('/admin') && !this.userService.isAdmin()) {
+      const user = await this.userService.logIn()
+      if (this.router.url.startsWith('/admin') && !user.isAdmin()) {
         await this.router.navigateByUrl('/')
       }
     } else if (payload.event === 'signedOut') {
-      this.userService.loggedOut()
+      this.userService.logOut()
     }
   })
 
