@@ -1,21 +1,21 @@
-import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { Amplify } from 'aws-amplify';
-import outputs from '../../amplify_outputs.json';
+import { Component, inject } from '@angular/core'
+import { Router, RouterOutlet } from '@angular/router'
+import { Amplify } from 'aws-amplify'
+import outputs from '../../amplify_outputs.json'
 
 import {
   AmplifyAuthenticatorModule,
   AuthenticatorService,
   translations,
-} from '@aws-amplify/ui-angular';
+} from '@aws-amplify/ui-angular'
 
-import { Hub, I18n } from 'aws-amplify/utils';
+import { Hub, I18n } from 'aws-amplify/utils'
 
-import { UserProfileService } from './user-profile.service';
+import { UserProfileService } from './user-profile.service'
 
-Amplify.configure(outputs);
-I18n.putVocabularies(translations);
-I18n.setLanguage('it');
+Amplify.configure(outputs)
+I18n.putVocabularies(translations)
+I18n.setLanguage('it')
 
 @Component({
     selector: 'app-root',
@@ -25,15 +25,17 @@ I18n.setLanguage('it');
 })
 export class AppComponent {
 
-  userService: UserProfileService = inject(UserProfileService);
+  userService: UserProfileService = inject(UserProfileService)
 
-  title = 'Garlasco Home';
+  router: Router = inject(Router)
+
+  title = 'Garlasco Home'
 
   signUpAttributes: ('email' | 'given_name' | 'family_name')[] = [
     'email',
     'given_name',
     'family_name',
-  ];
+  ]
 
   formFields = {
     signIn: {
@@ -73,13 +75,18 @@ export class AppComponent {
         order: 4,
       },
     },
-  };
+  }
 
-  private readonly authHubListener = Hub.listen('auth', ({ payload }) => {
-    if (payload.event === 'signedOut') {
-      this.userService.loggedOut();
+  private readonly authHubListener = Hub.listen('auth', async ({ payload }) => {
+    if (payload.event === 'signedIn') {
+      await this.userService.loggedIn()
+      if (this.router.url.startsWith('/admin') && !this.userService.isAdmin()) {
+        await this.router.navigateByUrl('/')
+      }
+    } else if (payload.event === 'signedOut') {
+      this.userService.loggedOut()
     }
-  });
+  })
 
   constructor(public authenticator: AuthenticatorService) {
     Amplify.configure(outputs)

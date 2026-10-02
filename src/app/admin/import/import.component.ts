@@ -17,7 +17,6 @@ const client = generateClient<Schema>()
 export class ImportComponent {
 
   userProfile = inject(UserProfileService)
-  ownerId = this.userProfile.loggedIn().then(() => this.userProfile.getId())
 
   jsonInput = signal<string>('');
   isLoading = signal<boolean>(false);
@@ -57,7 +56,7 @@ export class ImportComponent {
 
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
         await client.models['Event'].create({
-          owner: this.ownerId(),
+          owner: this.userProfile.getId(),
           name: event.name,
           description: event.description || '',
           start_date: event.start_date,

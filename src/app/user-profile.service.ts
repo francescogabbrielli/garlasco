@@ -28,10 +28,10 @@ export class UserProfileService {
         fetchAuthSession()
       ]);
 
-    this.logged = true
-
     const groups = authSession.tokens?.idToken?.payload['cognito:groups']
     this.userGroups = Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []
+
+    this.logged = true
 
     return this.userAttributes;
   }
@@ -44,6 +44,14 @@ export class UserProfileService {
 
   getId(): string {
     return this.userAttributes['sub'] ?? ''
+  }
+
+  getName(): string {
+    return this.userAttributes['given_name'] ?? ''
+  }
+
+  getSurname(): string {
+    return this.userAttributes['family_name'] ?? ''
   }
 
   isLoggedIn(): boolean {
