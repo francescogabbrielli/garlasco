@@ -8,7 +8,10 @@ import { UserProfileService } from '../../user-profile.service'
 
 const client = generateClient<Schema>()
 
-type EventActorImport = [personId: string, role: string];
+interface EventActorImport {
+  personId: string;
+  role: string;
+}
 
 type EventImportRecord = Omit<Schema['Event']['type'], 'actors'> & {
   actors?: unknown;
@@ -27,12 +30,14 @@ type PersonCreateInput = Parameters<typeof client.models.Person.create>[0];
 
 export function isValidEventActors(actors: unknown): actors is EventActorImport[] {
   return Array.isArray(actors) && actors.every((actor) =>
-    Array.isArray(actor)
-    && actor.length === 2
-    && typeof actor[0] === 'string'
-    && actor[0].trim().length > 0
-    && typeof actor[1] === 'string'
-    && actor[1].trim().length > 0,
+    typeof actor === 'object'
+    && actor !== null
+    && 'personId' in actor
+    && typeof actor.personId === 'string'
+    && actor.personId.trim().length > 0
+    && 'role' in actor
+    && typeof actor.role === 'string'
+    && actor.role.trim().length > 0,
   );
 }
 
@@ -94,12 +99,12 @@ export class ImportComponent {
         }
 
         if (event.actors !== undefined && !isValidEventActors(event.actors)) {
-          console.warn('Evento ignorato: actors deve essere una lista di coppie [personId, role].', event);
+          console.warn('Evento ignorato: actors deve essere una lista di oggetti { personId, role }.', event);
           continue;
         }
 
         const actors = event.actors ?? [];
-        const actorPeople = await Promise.all(actors.map(async ([personId]) => {
+        const actorPeople = await Promise.all(actors.map(async ({ personId }) => {
           const { data, errors } = await client.models.Person.get({ id: personId });
           if (errors?.length) {
             throw new Error(`Impossibile verificare la persona ${personId}: ${errors.map((error) => error.message).join(', ')}`);
@@ -138,7 +143,7 @@ export class ImportComponent {
           continue;
         }
 
-        for (const [personId, role] of actors) {
+        for (const { personId, role } of actors) {
           const { errors } = await client.models.EventPerson.create({
             eventId: createdEvent.id,
             personId,

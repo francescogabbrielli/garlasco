@@ -1,5 +1,5 @@
 :host { display: block; }
-.seed-container { width: min(100%, 72rem); margin: 0 auto; color: #233734; }
+/*.seed-container { width: min(100%, 72rem); margin: 0 auto; color: #233734; }*/
 .seed-title { margin: 0; color: #1d3332; font: 500 1.8rem/1.2 Georgia, 'Times New Roman', serif; }
 .seed-text { margin: .5rem 0 1.4rem; color: #62706d; font-size: .9rem; }
 .import-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }

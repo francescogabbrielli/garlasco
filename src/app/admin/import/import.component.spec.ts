@@ -63,15 +63,18 @@ describe('ImportComponent', () => {
     });
   });
 
-  it('accepts actors as person ID and role pairs', () => {
-    expect(isValidEventActors([['person-123', 'testimone'], ['person-456', 'indagato']])).toBeTrue();
+  it('accepts actors as person ID and role objects', () => {
+    expect(isValidEventActors([
+      { personId: 'person-123', role: 'testimone' },
+      { personId: 'person-456', role: 'indagato' },
+    ])).toBeTrue();
   });
 
-  it('rejects actors that are not non-empty person ID and role pairs', () => {
-    expect(isValidEventActors({ personId: 'person-123', role: 'testimone' })).toBeFalse();
-    expect(isValidEventActors([['person-123']])).toBeFalse();
-    expect(isValidEventActors([['', 'testimone']])).toBeFalse();
-    expect(isValidEventActors([['person-123', '']])).toBeFalse();
-    expect(isValidEventActors([['person-123', 1]])).toBeFalse();
+  it('rejects actors without non-empty person IDs and roles', () => {
+    expect(isValidEventActors([['person-123', 'testimone']])).toBeFalse();
+    expect(isValidEventActors([{ personId: 'person-123' }])).toBeFalse();
+    expect(isValidEventActors([{ personId: '', role: 'testimone' }])).toBeFalse();
+    expect(isValidEventActors([{ personId: 'person-123', role: '' }])).toBeFalse();
+    expect(isValidEventActors([{ personId: 'person-123', role: 1 }])).toBeFalse();
   });
 });
