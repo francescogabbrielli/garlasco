@@ -1,0 +1,140 @@
+<div class="dialog-backdrop" (click)="closeDialog()">
+  <section
+    class="dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="submit-dialog-title"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="dialog-heading">
+      <div>
+        <p class="eyebrow">Nuovo evento</p>
+        <h2 id="submit-dialog-title">Invia un nuovo evento</h2>
+      </div>
+      <div class="dialog-controls">
+        <button class="dialog-close" type="button" aria-label="Chiudi finestra" title="Chiudi finestra" (click)="closeDialog()">
+          ×
+        </button>
+      </div>
+    </div>
+
+    @if (submitError()) {
+      <p class="form-alert" role="alert">{{ submitError() }}</p>
+    }
+
+    <div class="dialog-scrollable">
+      <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" novalidate>
+        <div class="form-field">
+        <label for="event-name">Nome evento</label>
+        <input class="search-control" id="event-name" type="text" formControlName="name" required />
+        @if (eventForm.controls.name.invalid && (eventForm.controls.name.touched || eventForm.controls.name.dirty)) {
+          <span class="field-error">Inserisci il nome dell'evento.</span>
+        }
+      </div>
+
+      <div class="form-field form-field-wide">
+        <label for="event-description">Descrizione</label>
+        <textarea class="search-control" id="event-description" rows="4" formControlName="description" required></textarea>
+        @if (eventForm.controls.description.invalid && (eventForm.controls.description.touched || eventForm.controls.description.dirty)) {
+          <span class="field-error">Inserisci una descrizione.</span>
+        }
+      </div>
+
+      <fieldset class="position-section" formGroupName="start_position">
+        <legend>Inizio</legend>
+
+        <div class="form-field">
+          <label class="field-group-label" for="event-start-date">Data</label>
+          <input class="search-control" id="event-start-date" type="datetime-local" formControlName="start_date" required />
+          @if (eventForm.controls.start_position.controls.start_date.invalid && (eventForm.controls.start_position.controls.start_date.touched || eventForm.controls.start_position.controls.start_date.dirty)) {
+            <span class="field-error">Indica data e ora dell'evento.</span>
+          }
+        </div>
+
+        <button class="map-picker-button" type="button" (click)="requestPosition('start')">
+          <span aria-hidden="true">⌖</span>
+          Seleziona posizione sulla mappa
+        </button>
+
+        <div class="coordinate-fields" aria-label="Coordinate di inizio">
+          <div class="form-field form-field-small">
+            <label for="start-latitude">Latitudine</label>
+            <input class="search-control" id="start-latitude" type="text" inputmode="decimal" formControlName="latitude" readonly />
+          </div>
+          <div class="form-field form-field-small">
+            <label for="start-longitude">Longitudine</label>
+            <input class="search-control" id="start-longitude" type="text" inputmode="decimal" formControlName="longitude" readonly />
+          </div>
+          <div class="form-field form-field-small">
+            <label for="start-radius">Raggio <span>(m)</span></label>
+            <input class="search-control" id="start-radius" type="text" inputmode="decimal" formControlName="radius" readonly />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset class="position-section" formGroupName="end_position">
+        <legend>Fine</legend>
+
+        <div class="form-field">
+          <label class="field-group-label" for="event-end-date">Data <span>(opzionale)</span></label>
+          <input class="search-control" id="event-end-date" type="datetime-local" formControlName="end_date" />
+        </div>
+
+        <button class="map-picker-button" type="button" (click)="requestPosition('end')">
+          <span aria-hidden="true">⌖</span>
+          Seleziona posizione sulla mappa
+        </button>
+
+        <div class="coordinate-fields" aria-label="Coordinate di fine">
+          <div class="form-field form-field-small">
+            <label for="end-latitude">Latitudine</label>
+            <input class="search-control" id="end-latitude" type="text" inputmode="decimal" formControlName="latitude" readonly />
+          </div>
+          <div class="form-field form-field-small">
+            <label for="end-longitude">Longitudine</label>
+            <input class="search-control" id="end-longitude" type="text" inputmode="decimal" formControlName="longitude" readonly />
+          </div>
+          <div class="form-field form-field-small">
+            <label for="end-radius">Raggio <span>(m)</span></label>
+            <input class="search-control" id="end-radius" type="text" inputmode="decimal" formControlName="radius" readonly />
+          </div>
+        </div>
+      </fieldset>
+
+      @if (isAdmin) {
+        <div class="event-admin-fields">
+          <div class="form-field">
+            <label for="event-reliability">Attendibilità</label>
+            <select class="search-control" id="event-reliability" formControlName="reliability">
+              @for (option of reliabilityOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="event-relevance">Rilevanza</label>
+            <select class="search-control" id="event-relevance" formControlName="relevance">
+              @for (option of relevanceOptions; track option.value) {
+                <option [ngValue]="option.value">{{ option.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      }
+
+        <div class="event-form-actions">
+          <button class="submit-event-action" type="submit" [disabled]="isSaving()">
+            @if (isSaving()) {
+              <span aria-hidden="true">⏳</span>
+              Salvataggio...
+            } @else {
+              <span aria-hidden="true">➤</span>
+              Invia evento
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>

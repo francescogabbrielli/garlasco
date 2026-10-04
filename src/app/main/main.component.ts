@@ -1,10 +1,11 @@
-import { Component, ElementRef, inject, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
 import { UserProfileService } from '../user-profile.service';
+import { EventPositionSelection, EventSubmitDialogComponent } from './event-submit-dialog.component';
 
 declare global {
   interface Window {
@@ -23,6 +24,7 @@ declare global {
     RouterLinkActive,
     RouterOutlet,
     ReactiveFormsModule,
+    EventSubmitDialogComponent,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',
@@ -31,15 +33,17 @@ export class MainComponent {
   isSubmitDialogOpen = false;
   isUserMenuOpen = false;
   isAdminVisible = false;
+  isAdmin = false;
   isMapPickerOpen = false;
   isMapReady = false;
   mapError = '';
   mapSelection: google.maps.LatLngLiteral | null = null;
+  positionSelection: EventPositionSelection | null = null;
   private hasPreciseMapSelection = false;
   isHelpDialogOpen = false;
   mapPickerTarget: 'start' | 'end' | null = null;
   eventFormSubmitted = false;
-  @Output() ownerId = '';
+  ownerId = '';
   private givenName = '';
   private familyName = '';
   private map?: google.maps.Map;
@@ -69,12 +73,13 @@ export class MainComponent {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    const user = await this.userProfile.logIn()
-    this.isAdminVisible = user.isAdmin()
-    this.ownerId = user.getId()
-    this.eventForm.controls.owner.setValue(this.ownerId)
-    this.givenName = user.getName() ?? ''
-    this.familyName = user.getSurname() ?? ''
+    const user = await this.userProfile.logIn();
+    this.isAdminVisible = user.isAdmin();
+    this.isAdmin = user.isAdmin();
+    this.ownerId = user.getId();
+    this.eventForm.controls.owner.setValue(this.ownerId);
+    this.givenName = user.getName() ?? '';
+    this.familyName = user.getSurname() ?? '';
   }
 
   get loggedIn(): string {
@@ -96,6 +101,7 @@ export class MainComponent {
     this.isUserMenuOpen = false;
     this.eventForm.reset();
     this.eventForm.controls.owner.setValue(this.ownerId);
+    this.positionSelection = null;
     this.eventFormSubmitted = false;
     this.isSubmitDialogOpen = true;
   }
@@ -195,11 +201,18 @@ export class MainComponent {
     const positionGroup = this.mapPickerTarget === 'start'
       ? this.eventForm.controls.start_position
       : this.eventForm.controls.end_position;
+    const radius = this.hasPreciseMapSelection ? 0 : this.getMapRadiusMeters();
     positionGroup.patchValue({
       latitude: latitude.toFixed(4),
       longitude: longitude.toFixed(4),
-      radius: String(this.hasPreciseMapSelection ? 0 : this.getMapRadiusMeters()),
+      radius: String(radius),
     });
+    this.positionSelection = {
+      target: this.mapPickerTarget,
+      latitude,
+      longitude,
+      radius,
+    };
     this.closeMapPicker();
   }
 

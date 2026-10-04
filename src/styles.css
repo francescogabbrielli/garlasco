@@ -39,6 +39,10 @@ body {
   button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
   }
+
+  label {
+    text-wrap: nowrap;
+  }
   
   ul {
     padding-inline-start: 0;
@@ -208,12 +212,19 @@ body {
 
   .dialog {
       width: min(100%, 38rem);
-      min-height: 16rem;
+      max-height: min(80vh, 42rem);
+      display: flex;
+      flex-direction: column;
       padding: 1.75rem;
       border: 1px solid rgba(34, 31, 43, 0.14);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.98);
       box-shadow: 0 1.5rem 4rem rgba(34, 31, 43, 0.24);
+    }
+
+  .dialog-scrollable {
+      overflow-y: auto;
+      padding-right: 0.25rem;
     }
 
   .dialog-heading {
@@ -354,25 +365,38 @@ body {
       font-weight: 400;
     }
 
-  .form-field input,
-  .form-field textarea {
+  .search-control {
       width: 100%;
-      padding: 0.7rem 0.75rem;
-      border: 1px solid rgba(34, 31, 43, 0.2);
-      border-radius: 6px;
+      min-width: 0;
+      min-height: 2.55rem;
+      box-sizing: border-box;
+      padding: 0.5rem 0.6rem;
+      border: 1px solid #cbd5d2;
+      border-radius: 4px;
       background: #fff;
-      color: #221f2b;
+      color: #263a38;
       font: inherit;
+      font-size: 0.8rem;
     }
 
-  .form-field textarea {
+  .search-control:focus-visible {
+      outline: 2px solid #167c72;
+      outline-offset: 1px;
+    }
+
+  textarea.search-control {
+      min-height: 7.5rem;
       resize: vertical;
     }
 
-  .form-field input:focus,
-  .form-field textarea:focus {
-      border-color: #7551c2;
-      outline: 2px solid rgba(117, 81, 194, 0.2);
+  .event-admin-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      grid-column: 1 / -1;
+      margin-top: 0.25rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(34, 31, 43, 0.08);
     }
 
   .position-section legend {
@@ -411,6 +435,11 @@ body {
   .coordinate-fields input[readonly] {
       background: rgba(34, 31, 43, 0.05);
       color: rgba(34, 31, 43, 0.78);
+    }
+
+  .coordinate-fields .search-control {
+      padding-right: 0.25rem;
+      padding-left: 0.25rem;
     }
 
   .coordinate-fields input {
