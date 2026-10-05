@@ -25,7 +25,6 @@ const eventTypes: readonly EventType[] = EVENT_TYPES
 type PersonType = Schema['Person']['type']['type']
 const personTypes: readonly PersonType[] = PERSON_TYPES
 
-type Event = Schema['Event']['type']
 type Coordinates = Schema['Coordinates']['type']
 
 interface PersonImportRecord {
