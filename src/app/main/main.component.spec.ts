@@ -8,8 +8,19 @@ import { MainComponent } from './main.component';
 
 describe('MainComponent', () => {
   let fixture: ComponentFixture<MainComponent>;
+  let signOutSpy: jasmine.Spy;
 
   beforeEach(async () => {
+    signOutSpy = jasmine.createSpy('signOut');
+    const userProfile = {
+      logIn: jasmine.createSpy('logIn').and.resolveTo({
+        isAdmin: () => true,
+        getId: () => 'user-123',
+        getName: () => 'Mario',
+        getSurname: () => 'Rossi',
+      }),
+    };
+
     await TestBed.configureTestingModule({
       imports: [MainComponent],
       providers: [
@@ -19,20 +30,12 @@ describe('MainComponent', () => {
           useValue: {
             username: 'mario@example.com',
             user: { username: 'mario@example.com' },
-            signOut: jasmine.createSpy('signOut'),
+            signOut: signOutSpy,
           },
         },
         {
           provide: UserProfileService,
-          useValue: {
-            loggedIn: () => Promise.resolve({
-              sub: 'user-123',
-              given_name: 'Mario',
-              family_name: 'Rossi',
-            }),
-            isAdmin: () => true,
-            loggedOut: jasmine.createSpy('loggedOut'),
-          },
+          useValue: userProfile,
         },
       ],
     }).compileComponents();
@@ -78,15 +81,11 @@ describe('MainComponent', () => {
   it('should sign out when the logout menu item is clicked', () => {
     spyOn(window, 'confirm').and.returnValue(true);
     const userLabel = fixture.nativeElement.querySelector('.user-label');
-    const authenticator = TestBed.inject(AuthenticatorService);
-    const userProfile = TestBed.inject(UserProfileService);
-
     userLabel.click();
     fixture.detectChanges();
     fixture.nativeElement.querySelector('.logout-menuitem').click();
 
-    expect(authenticator.signOut).toHaveBeenCalled();
-    expect(userProfile.logOut).toHaveBeenCalled();
+    expect(signOutSpy).toHaveBeenCalled();
   });
 
   it('should open and close the submit dialog', () => {

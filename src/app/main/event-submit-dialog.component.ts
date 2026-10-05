@@ -63,6 +63,8 @@ export class EventSubmitDialogComponent implements OnChanges {
   private map?: google.maps.Map;
   @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>;
 
+  isHelpDialogOpen = false;
+
   readonly reliabilityOptions = [
     { value: 1, label: '1 - Voci / rumors' },
     { value: 2, label: '2 - Alcune fonti' },
@@ -89,17 +91,17 @@ export class EventSubmitDialogComponent implements OnChanges {
       nonNullable: true,
       validators: [Validators.min(1), Validators.max(4)],
     }),
-    start_position: new FormGroup({
-      start_date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      latitude: new FormControl(0, { nonNullable: false }),
-      longitude: new FormControl(0, { nonNullable: false }),
-      radius: new FormControl(0, { nonNullable: false }),
+    start: new FormGroup({
+      date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      latitude: new FormControl<number | null>(null, { nonNullable: true, validators: [Validators.required] }),
+      longitude: new FormControl<number | null>(null, { nonNullable: true }),
+      radius: new FormControl<number | null>(null, { nonNullable: true }),
     }),
-    end_position: new FormGroup({
-      end_date: new FormControl('', { nonNullable: true }),
-      latitude: new FormControl(0, { nonNullable: false }),
-      longitude: new FormControl(0, { nonNullable: false }),
-      radius: new FormControl(0, { nonNullable: false }),
+    end: new FormGroup({
+      date: new FormControl('', { nonNullable: true }),
+      latitude: new FormControl<number | null>(null, { nonNullable: false }),
+      longitude: new FormControl<number | null>(null, { nonNullable: false }),
+      radius: new FormControl<number | null>(null, { nonNullable: false }),
     }),
   });
 
@@ -111,14 +113,6 @@ export class EventSubmitDialogComponent implements OnChanges {
     if (this.ownerId) {
       this.eventForm.controls.owner.setValue(this.ownerId, { emitEvent: false });
     }
-  }
-
-  isDateInputInvalid(fieldName: 'start_date' | 'end_date'): boolean {
-    const target = this.eventForm.controls.start_position.controls.start_date;
-    if (fieldName === 'end_date') {
-      return false;
-    }
-    return target.invalid && (target.touched || target.dirty);
   }
 
   async submitEvent(): Promise<void> {
@@ -137,8 +131,8 @@ export class EventSubmitDialogComponent implements OnChanges {
       return;
     }
 
-    const startPosition = this.eventForm.controls.start_position.getRawValue();
-    const endPosition = this.eventForm.controls.end_position.getRawValue();
+    const start = this.eventForm.controls.start.getRawValue();
+    const end = this.eventForm.controls.end.getRawValue();
     const type = this.eventForm.controls.type.value;
 
     if (!type) {
@@ -151,20 +145,18 @@ export class EventSubmitDialogComponent implements OnChanges {
       type,
       name: this.eventForm.controls.name.value.trim(),
       description: this.eventForm.controls.description.value.trim(),
-      start_date: startPosition.start_date,
-      end_date: endPosition.end_date || null,
+      start_date: start.date,
+      end_date: end.date || null,
       start_position: {
-        latitude: Number(startPosition.latitude),
-        longitude: Number(startPosition.longitude),
-        radius: Number(startPosition.radius ?? 0),
+        latitude: Number(start.latitude),
+        longitude: Number(start.longitude),
+        radius: Number(start.radius),
       },
-      end_position: endPosition.end_date
-        ? {
-            latitude: Number(endPosition.latitude ?? startPosition.latitude),
-            longitude: Number(endPosition.longitude ?? startPosition.longitude),
-            radius: Number(endPosition.radius ?? 0),
-          }
-        : null,
+      end_position: {
+        latitude: Number(end.latitude),
+        longitude: Number(end.longitude),
+        radius: Number(end.radius),
+      },
       reliability: this.isAdmin ? this.eventForm.controls.reliability.value : 0,
       relevance: this.isAdmin ? this.eventForm.controls.relevance.value : 0,
     };
@@ -242,8 +234,8 @@ export class EventSubmitDialogComponent implements OnChanges {
     const latitude = typeof center.lat === 'function' ? center.lat() : center.lat;
     const longitude = typeof center.lng === 'function' ? center.lng() : center.lng;
     const positionGroup = this.mapPickerTarget === 'start'
-      ? this.eventForm.controls.start_position
-      : this.eventForm.controls.end_position;
+      ? this.eventForm.controls.start
+      : this.eventForm.controls.end;
     const radius = this.hasPreciseMapSelection ? 0 : this.getMapRadiusMeters();
     positionGroup.patchValue({ latitude, longitude, radius });
     this.closeMapPicker();
@@ -343,5 +335,13 @@ export class EventSubmitDialogComponent implements OnChanges {
 
   private buildGeoHash(latitude: number, longitude: number): string {
     return encode(latitude, longitude, 6);
+  }
+
+  openHelpDialog(): void {
+    this.isHelpDialogOpen = true;
+  }
+
+  closeHelpDialog(): void {
+    this.isHelpDialogOpen = false;
   }
 }

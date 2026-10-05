@@ -37,14 +37,14 @@ describe('EventSubmitDialogComponent', () => {
       relevance: 3,
       ...overrides,
     });
-    form.controls.start_position.patchValue({
-      start_date: '2024-01-15T10:00',
+    form.controls.start.patchValue({
+      date: '2024-01-15T10:00',
       latitude: 45.1974,
       longitude: 8.9247,
       radius: 50,
     });
-    form.controls.end_position.patchValue({
-      end_date: '2024-01-15T11:00',
+    form.controls.end.patchValue({
+      date: '2024-01-15T11:00',
       latitude: 45.1975,
       longitude: 8.9248,
       radius: 50,
@@ -127,7 +127,7 @@ describe('EventSubmitDialogComponent', () => {
 
     component.confirmMapSelection();
 
-    const endPosition = component.eventForm.controls.end_position.getRawValue();
+    const endPosition = component.eventForm.controls.end.getRawValue();
     expect(endPosition.latitude).toBe(45.1974);
     expect(endPosition.longitude).toBe(8.9247);
     expect(endPosition.radius).toBeGreaterThan(0);

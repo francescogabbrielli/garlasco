@@ -8,7 +8,7 @@ export const EVENT_TYPES = [
 
 export const PERSON_TYPES = [
   'Personaggio', 
-  'Autorità', 
+  'Autorita', 
   'Testimone',
   'Cronista',
 ] as const;

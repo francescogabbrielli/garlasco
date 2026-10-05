@@ -23,7 +23,6 @@ export class MainComponent {
   isUserMenuOpen = false;
   isAdminVisible = false;
   isAdmin = false;
-  isHelpDialogOpen = false;
   ownerId = '';
   private givenName = '';
   private familyName = '';
@@ -64,15 +63,7 @@ export class MainComponent {
 
   closeSubmitDialog(): void {
     this.isSubmitDialogOpen = false;
-    this.closeHelpDialog();
-  }
-
-  openHelpDialog(): void {
-    this.isHelpDialogOpen = true;
-  }
-
-  closeHelpDialog(): void {
-    this.isHelpDialogOpen = false;
+    //this.closeHelpDialog();
   }
 
 }

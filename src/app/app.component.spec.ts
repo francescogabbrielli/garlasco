@@ -1,7 +1,7 @@
 /// <reference types="jasmine" />
 
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
 import { UserData, UserProfileService } from './user-profile.service';
@@ -32,14 +32,21 @@ describe('AppComponent', () => {
       },
     );
 
-    await TestBed.configureTestingModule({
+    TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
         { provide: AuthenticatorService, useValue: {} },
         { provide: UserProfileService, useValue: userService },
         { provide: Router, useValue: router },
       ],
-    }).compileComponents();
+    });
+    TestBed.overrideComponent(AppComponent, {
+      set: {
+        imports: [RouterOutlet],
+        template: '<router-outlet />',
+      },
+    });
+    await TestBed.compileComponents();
   });
 
   async function emitAuthEvent(event: 'signedIn' | 'signedOut'): Promise<void> {

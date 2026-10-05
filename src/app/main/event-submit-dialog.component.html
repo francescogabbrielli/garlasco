@@ -13,9 +13,23 @@
       </div>
 
       <div class="dialog-controls">
-        <button class="dialog-close" type="button" aria-label="Chiudi finestra" title="Chiudi finestra" (click)="closeDialog()">
-          ×
-        </button>
+          <button
+            class="dialog-help"
+            type="button"
+            aria-label="Apri aiuto"
+            title="Apri aiuto"
+            (click)="openHelpDialog()"
+          >
+            ?
+          </button>        
+          <button 
+            class="dialog-close" 
+            type="button" 
+            aria-label="Chiudi finestra" 
+            title="Chiudi finestra" 
+            (click)="closeDialog()">
+            ×
+          </button>
       </div>
     </div>
 
@@ -28,7 +42,7 @@
         <div class="form-field">
           <label for="event-type">Tipologia</label>
           <select class="search-control" id="event-type" formControlName="type" required>
-            <option [ngValue]="null">Seleziona una tipologia</option>
+            <option [ngValue]="null"></option>
             @for (type of typeOptions; track type) {
               <option [ngValue]="type">{{ type }}</option>
             }
@@ -54,21 +68,28 @@
         }
       </div>
 
-      <fieldset class="position-section" formGroupName="start_position">
+      <fieldset class="position-section" formGroupName="start">
+
         <legend>Inizio</legend>
 
         <div class="form-field">
           <label class="field-group-label" for="event-start-date">Data</label>
-          <input class="search-control" id="event-start-date" type="datetime-local" formControlName="start_date" required />
-          @if (eventForm.controls.start_position.controls.start_date.invalid && (eventForm.controls.start_position.controls.start_date.touched || eventForm.controls.start_position.controls.start_date.dirty)) {
+          <input class="search-control" id="event-start-date" type="datetime-local" formControlName="date" required />
+          @if (eventForm.controls.start.controls.date.invalid && (eventForm.controls.start.controls.date.touched || eventForm.controls.start.controls.date.dirty)) {
             <span class="field-error">Indica data e ora dell'evento.</span>
           }
         </div>
 
-        <button class="map-picker-button" type="button" (click)="requestPosition('start')">
-          <span aria-hidden="true">⌖</span>
-          Seleziona
-        </button>
+        <div class="form-field">
+          <label class="field-group-label" for="start-position-button">Posizione</label>
+          <button class="map-picker-button" id="start-position-button" type="button" (click)="requestPosition('start')">
+            <span aria-hidden="true">⌖</span>
+            Seleziona
+          </button>
+          @if (eventForm.controls.start.controls.latitude.invalid && (eventForm.controls.start.controls.latitude.touched || eventForm.controls.start.controls.latitude.dirty)) {
+            <span class="field-error">Indica la posizione dell'evento.</span>
+          }
+        </div>
 
         <div class="coordinate-fields" aria-label="Coordinate di inizio">
           <div class="form-field form-field-small">
@@ -86,18 +107,22 @@
         </div>
       </fieldset>
 
-      <fieldset class="position-section" formGroupName="end_position">
+      <fieldset class="position-section" formGroupName="end">
+      
         <legend>Fine</legend>
 
         <div class="form-field">
           <label class="field-group-label" for="event-end-date">Data <span>(opzionale)</span></label>
-          <input class="search-control" id="event-end-date" type="datetime-local" formControlName="end_date" />
+          <input class="search-control" id="event-end-date" type="datetime-local" formControlName="date" />
         </div>
 
-        <button class="map-picker-button" type="button" (click)="requestPosition('end')">
-          <span aria-hidden="true">⌖</span>
-          Seleziona
-        </button>
+        <div class="form-field">
+          <label class="field-group-label" for="end-position-button">Posizione <span>(opzionale)</span></label>
+          <button class="map-picker-button" id="end-position-button" type="button" (click)="requestPosition('end')">
+            <span aria-hidden="true">⌖</span>
+            Seleziona
+          </button>
+        </div>
 
         <div class="coordinate-fields" aria-label="Coordinate di fine">
           <div class="form-field form-field-small">
@@ -193,6 +218,48 @@
           <span aria-hidden="true">✓</span>
           Usa questa posizione
         </button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (isHelpDialogOpen) {
+  <div class="help-dialog-backdrop" (click)="closeHelpDialog()">
+    <section
+      class="help-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="event-help-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Guida rapida</p>
+          <h1 id="event-help-title">Come compilare l'evento</h1>
+        </div>
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Chiudi aiuto"
+          title="Chiudi aiuto"
+          (click)="closeHelpDialog()"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="dialog-scrollable">
+        <p class="help-text">
+          Contribuisci ad arricchire il database degli eventi di Garlasco! Ogni evento verrà effettivamente inserito dopo accurata verifica da parte del team di moderazione. Per favore, compila i campi con attenzione e precisione, assicurandoti che non sia già presente un evento simile.
+        </p>
+        <h2>Informazioni necessarie</h2>
+        <p class="help-text">
+          Viene richiesto titolo, descrizione (sintetica ma il più possible completa) e almeno una data e una posizione. Se si tratta di un evento che si protrae nel tempo indicare gli estremi di inizio e fine per data o luogo o entrambi.
+        </p>
+        <h2>Scelta della posizione</h2>
+        <p class="help-text">
+          Le posizioni devono essere specificate tramite la mappa interattiva. Cliccando un punto preciso sulla mappa si seleziona la precisione esatta, se conosciuta. Se invece la posizione è approssimativa, centrare e zoomare la mappa al livello desiderato e cliccare direttamente su "Usa questa posizione".
+        </p>
       </div>
     </section>
   </div>
