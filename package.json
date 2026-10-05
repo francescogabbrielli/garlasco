@@ -1,6 +1,6 @@
 {
   "name": "garlasco",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve",
