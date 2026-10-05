@@ -88,7 +88,7 @@ describe('ImportComponent', () => {
 
   it('accepts only supported event types', () => {
     expect(isValidEventType('Indagine')).toBeTrue();
-    expect(isValidEventType('Messaggio')).toBeTrue();
+    expect(isValidEventType('Comunicazione')).toBeTrue();
     expect(isValidEventType('Fatto')).toBeTrue();
     expect(isValidEventType('Intercettazione')).toBeTrue();
     expect(isValidEventType('Sentenza')).toBeTrue();
@@ -98,8 +98,8 @@ describe('ImportComponent', () => {
 
   it('accepts only supported person types', () => {
     expect(isValidPersonType('Cronista')).toBeTrue();
-    expect(isValidPersonType('Autorità')).toBeTrue();
-    expect(isValidPersonType('Personaggio')).toBeTrue();
+    expect(isValidPersonType('Autorita')).toBeTrue();
+    expect(isValidPersonType('Protagonista')).toBeTrue();
     expect(isValidPersonType('Testimone')).toBeTrue();
     expect(isValidPersonType('Altro')).toBeFalse();
     expect(isValidPersonType(undefined)).toBeFalse();

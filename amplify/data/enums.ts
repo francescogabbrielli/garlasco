@@ -1,13 +1,13 @@
 export const EVENT_TYPES = [
   'Fatto',
   'Indagine',
-  'Messaggio',
+  'Comunicazione',
   'Intercettazione',
   'Sentenza',
 ] as const;
 
 export const PERSON_TYPES = [
-  'Personaggio', 
+  'Protagonista', 
   'Autorita', 
   'Testimone',
   'Cronista',
