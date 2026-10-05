@@ -1,6 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ImportComponent, isValidEventActors, toPersonCreateInput } from './import.component';
+import {
+  ImportComponent,
+  isValidEventActors,
+  isValidEventType,
+  isValidPersonType,
+  toPersonCreateInput,
+} from './import.component';
 
 describe('ImportComponent', () => {
   let component: ImportComponent;
@@ -49,6 +55,7 @@ describe('ImportComponent', () => {
       id: 'person-123',
       name: 'Mario',
       surname: 'Rossi',
+      type: 'Cronista' as const,
       initials: 'MR',
       profession: 'Studente',
       events: ['event-person-link-123'],
@@ -58,6 +65,7 @@ describe('ImportComponent', () => {
       id: 'person-123',
       name: 'Mario',
       surname: 'Rossi',
+      type: 'Cronista',
       initials: 'MR',
       profession: 'Studente',
     });
@@ -76,5 +84,24 @@ describe('ImportComponent', () => {
     expect(isValidEventActors([{ personId: '', role: 'testimone' }])).toBeFalse();
     expect(isValidEventActors([{ personId: 'person-123', role: '' }])).toBeFalse();
     expect(isValidEventActors([{ personId: 'person-123', role: 1 }])).toBeFalse();
+  });
+
+  it('accepts only supported event types', () => {
+    expect(isValidEventType('Indagine')).toBeTrue();
+    expect(isValidEventType('Messaggio')).toBeTrue();
+    expect(isValidEventType('Fatto')).toBeTrue();
+    expect(isValidEventType('Intercettazione')).toBeTrue();
+    expect(isValidEventType('Sentenza')).toBeTrue();
+    expect(isValidEventType('Altro')).toBeFalse();
+    expect(isValidEventType(undefined)).toBeFalse();
+  });
+
+  it('accepts only supported person types', () => {
+    expect(isValidPersonType('Cronista')).toBeTrue();
+    expect(isValidPersonType('Autorità')).toBeTrue();
+    expect(isValidPersonType('Personaggio')).toBeTrue();
+    expect(isValidPersonType('Testimone')).toBeTrue();
+    expect(isValidPersonType('Altro')).toBeFalse();
+    expect(isValidPersonType(undefined)).toBeFalse();
   });
 });

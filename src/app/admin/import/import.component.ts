@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { generateClient } from 'aws-amplify/data'
 
+import { EVENT_TYPES, PERSON_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
 import { UserProfileService } from '../../user-profile.service'
 
@@ -17,10 +18,16 @@ type EventImportRecord = Omit<Schema['Event']['type'], 'actors'> & {
   actors?: unknown;
 };
 
+type EventType = Schema['Event']['type']['type'];
+const eventTypes: readonly EventType[] = EVENT_TYPES;
+type PersonType = Schema['Person']['type']['type'];
+const personTypes: readonly PersonType[] = PERSON_TYPES;
+
 interface PersonImportRecord {
   id?: string;
   name?: string;
   surname?: string;
+  type?: PersonType;
   profession?: string | null;
   initials?: string;
   events?: unknown;
@@ -41,11 +48,22 @@ export function isValidEventActors(actors: unknown): actors is EventActorImport[
   );
 }
 
-export function toPersonCreateInput(person: PersonImportRecord): PersonCreateInput {
+export function isValidEventType(type: unknown): type is EventType {
+  return typeof type === 'string' && eventTypes.some((eventType) => eventType === type);
+}
+
+export function isValidPersonType(type: unknown): type is PersonType {
+  return typeof type === 'string' && personTypes.some((personType) => personType === type);
+}
+
+export function toPersonCreateInput(
+  person: PersonImportRecord & { type: PersonType },
+): PersonCreateInput {
   return {
     ...(person.id ? { id: person.id } : {}),
     name: person.name!,
     surname: person.surname!,
+    type: person.type,
     initials: person.initials!,
     ...(person.profession ? { profession: person.profession } : {}),
   };
@@ -93,7 +111,7 @@ export class ImportComponent {
     try {
       for (const event of dataset) {
         // Valida la presenza dei campi minimi prima dell'invio
-        if (!event.name || !event.start_date || !event.start_position) {
+        if (!event.name || !event.start_date || !event.start_position || !isValidEventType(event.type)) {
           console.warn("Elemento saltato per mancanza di campi obbligatori:", event);
           continue;
         }
@@ -120,6 +138,7 @@ export class ImportComponent {
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
         const { data: createdEvent, errors: eventErrors } = await client.models.Event.create({
           owner: (await this.userProfile.logIn()).getId(),
+          type: event.type,
           name: event.name,
           description: event.description || '',
           start_date: event.start_date,
@@ -195,12 +214,13 @@ export class ImportComponent {
 
     try {
       for (const person of dataset) {
-        if (!person.name || !person.surname || !person.initials) {
-          console.warn('Persona ignorata: nome, cognome e iniziali sono obbligatori.', person);
+        const type = person.type;
+        if (!person.name || !person.surname || !person.initials || !isValidPersonType(type)) {
+          console.warn('Persona ignorata: nome, cognome, iniziali e tipologia valida sono obbligatori.', person);
           continue;
         }
 
-        const { errors } = await client.models.Person.create(toPersonCreateInput(person));
+        const { errors } = await client.models.Person.create(toPersonCreateInput({ ...person, type }));
 
         if (errors?.length) {
           console.error('Errore durante la creazione della persona:', person, errors);

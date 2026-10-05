@@ -53,8 +53,6 @@
   <app-event-submit-dialog
     [ownerId]="ownerId"
     [isAdmin]="isAdmin"
-    [positionSelection]="positionSelection"
-    (positionRequested)="openMapPicker($event)"
     (closed)="closeSubmitDialog()"
   ></app-event-submit-dialog>
 }
@@ -94,51 +92,6 @@
       <p class="help-intro">
         Le posizioni devono essere specificate tramite la mappa interattiva. Cliccando un punto preciso sulla mappa si seleziona la precisione esatta, se conosciuta. Se invece la posizione è approssimativa, centrare e zoomare la mappa al livello desiderato e cliccare direttamente su "Usa questa posizione".
       </p>
-    </section>
-  </div>
-}
-
-@if (isMapPickerOpen) {
-  <div class="map-picker-backdrop" (click)="closeMapPicker()">
-    <section
-      class="map-picker-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="map-picker-title"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="dialog-heading">
-        <div>
-          <p class="eyebrow">Posizione evento</p>
-          <h2 id="map-picker-title">
-            {{ mapPickerTarget === 'start' ? 'Posizione di inizio' : 'Posizione di fine' }}
-          </h2>
-        </div>
-        <button
-          class="dialog-close"
-          type="button"
-          aria-label="Chiudi mappa"
-          title="Chiudi mappa"
-          (click)="closeMapPicker()"
-        >
-          ×
-        </button>
-      </div>
-      @if (mapError) {
-        <p class="map-error" role="alert">{{ mapError }}</p>
-      }
-      <div #mapCanvas class="google-map" aria-label="Mappa per selezionare la posizione"></div>
-      <div class="map-picker-actions">
-        <button
-          class="map-confirm-button"
-          type="button"
-          [disabled]="!isMapReady"
-          (click)="confirmMapSelection()"
-        >
-          <span aria-hidden="true">✓</span>
-          Usa questa posizione
-        </button>
-      </div>
     </section>
   </div>
 }

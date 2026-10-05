@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { EVENT_TYPES, PERSON_TYPES } from './enums';
 
 const Coordinates = a.customType({
   latitude: a.float().required(),
@@ -6,16 +7,27 @@ const Coordinates = a.customType({
   radius: a.float().required(),
 });
 
+const EventType = a.enum(EVENT_TYPES);
+
+const PersonType = a.enum(PERSON_TYPES);
+
 const Person = a.model({
   name: a.string().required(),
   surname: a.string().required(),
+  type: a.ref('PersonType').required(),
   profession: a.string(),
   initials: a.string().required(),
   events: a.hasMany('EventPerson', 'personId'),
-}).authorization((allow) => [allow.publicApiKey()]);
+})
+  .secondaryIndexes((index) => [
+    index('type').name('type-index'),
+  ])
+  .authorization((allow) => [allow.publicApiKey()]);
+
 
 const Event = a.model({
   owner: a.id().required(),
+  type: a.ref('EventType').required(),
   name: a.string().required(),
   description: a.string().required(),
   start_date: a.datetime().required(),
@@ -29,6 +41,7 @@ const Event = a.model({
   relevance: a.integer().required().default(0),
 })
   .secondaryIndexes((index) => [
+    index('type').name('type-index'),
     index('geoHash').sortKeys(['start_date']).name('geoHash-startDate-index'),
   ])
   .authorization((allow) => [allow.publicApiKey()]);
@@ -49,6 +62,8 @@ const EventPerson = a.model({
 
 const schema = a.schema({
   Coordinates,
+  EventType,
+  PersonType,
   Person,
   Event,
   EventPerson,

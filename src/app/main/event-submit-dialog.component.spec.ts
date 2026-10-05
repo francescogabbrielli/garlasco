@@ -30,6 +30,7 @@ describe('EventSubmitDialogComponent', () => {
     const form = fixture.componentInstance.eventForm;
     form.patchValue({
       owner: 'user-123',
+      type: 'Indagine',
       name: 'Evento di prova',
       description: 'Descrizione di prova',
       reliability: 4,
@@ -58,6 +59,7 @@ describe('EventSubmitDialogComponent', () => {
     expect(mockCreate).toHaveBeenCalledTimes(1);
     expect(mockCreate.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
       owner: 'user-123',
+      type: 'Indagine',
       name: 'Evento di prova',
       description: 'Descrizione di prova',
       start_date: '2024-01-15T10:00',
@@ -96,37 +98,40 @@ describe('EventSubmitDialogComponent', () => {
     expect(relevanceSelect).not.toBeNull();
   });
 
-  it('should request map selection for the requested position', () => {
-    const positionRequested = jasmine.createSpy('positionRequested');
-    fixture.componentInstance.positionRequested.subscribe(positionRequested);
-
+  it('should open the map picker for the requested position', () => {
     fixture.componentInstance.requestPosition('start');
+    fixture.detectChanges();
 
-    expect(positionRequested).toHaveBeenCalledOnceWith('start');
+    expect(fixture.nativeElement.querySelector('#map-picker-title').textContent).toContain('Posizione di inizio');
+    expect(fixture.nativeElement.querySelector('.google-map')).not.toBeNull();
+
+    fixture.nativeElement.querySelector('[aria-label="Chiudi mappa"]').click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.map-picker-dialog')).toBeNull();
   });
 
-  it('should apply the selected map position to its matching position fields', () => {
-    fixture.componentInstance.positionSelection = {
-      target: 'end',
-      latitude: 45.1975,
-      longitude: 8.9248,
-      radius: 50,
-    };
-    fixture.componentInstance.ngOnChanges({
-      positionSelection: {
-        currentValue: fixture.componentInstance.positionSelection,
-        previousValue: null,
-        firstChange: true,
-        isFirstChange: () => true,
-      },
-    });
+  it('should apply the confirmed map center and radius to the requested position', () => {
+    const component = fixture.componentInstance;
+    component.requestPosition('end');
+    fixture.detectChanges();
 
-    expect(fixture.componentInstance.eventForm.controls.end_position.getRawValue()).toEqual({
-      end_date: '',
-      latitude: 45.1975,
-      longitude: 8.9248,
-      radius: 50,
-    });
+    const map = {
+      getCenter: () => ({ lat: () => 45.1974, lng: () => 8.9247 }),
+      getBounds: () => ({
+        getNorthEast: () => ({ lat: () => 45.2074, lng: () => 8.9347 }),
+        getSouthWest: () => ({ lat: () => 45.1874, lng: () => 8.9147 }),
+      }),
+    } as unknown as google.maps.Map;
+    (component as unknown as { map: google.maps.Map }).map = map;
+
+    component.confirmMapSelection();
+
+    const endPosition = component.eventForm.controls.end_position.getRawValue();
+    expect(endPosition.latitude).toBe(45.1974);
+    expect(endPosition.longitude).toBe(8.9247);
+    expect(endPosition.radius).toBeGreaterThan(0);
+    expect(component.isMapPickerOpen).toBeFalse();
   });
 
   it('should surface an error when the insert fails', async () => {

@@ -442,8 +442,10 @@ body {
       padding-left: 0.25rem;
     }
 
-  .coordinate-fields input {
+  .coordinate-fields input, .coordinate-fields label {
       width: 100%;
+      font-size: 0.6rem;
+      line-height: 0.5rem;
     }
 
   .field-error {
@@ -461,65 +463,6 @@ body {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-    }
-
-  .map-picker-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 20;
-      display: grid;
-      place-items: center;
-      padding: 1.5rem;
-      background: rgba(34, 31, 43, 0.56);
-    }
-
-  .map-picker-dialog {
-      width: min(100%, 42rem);
-      min-height: 24rem;
-      padding: 1.75rem;
-      border: 1px solid rgba(34, 31, 43, 0.14);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.98);
-      box-shadow: 0 1.5rem 4rem rgba(34, 31, 43, 0.28);
-    }
-
-  .google-map {
-      width: 100%;
-      min-height: 17rem;
-      overflow: hidden;
-      border-radius: 6px;
-      background: #ececf5;
-    }
-
-  .map-error {
-      margin: 1rem 0;
-      color: #a32929;
-      font-size: 0.85rem;
-    }
-
-  .map-picker-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 1rem;
-    }
-
-  .map-confirm-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      border: 0;
-      border-radius: 6px;
-      background: #7551c2;
-      color: #fff;
-    }
-
-  .map-confirm-button:hover:not(:disabled) {
-      background: #5d3fa4;
-    }
-
-  .map-confirm-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
     }
 
   .help-dialog-backdrop {

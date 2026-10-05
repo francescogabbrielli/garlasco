@@ -63,9 +63,11 @@ for nome_file in file_sorgenti:
         print(f"Nota: Il file {nome_file} non è stato trovato nella cartella corrente, salto...")
 
 # Scrittura del file unificato finale pronto per la console AWS
-file_output = 'pronto_per_aws_console.json'
-with open(file_output, 'w', encoding='utf-8') as f:
-    json.dump(record_finali, f, indent=2, ensure_ascii=False)
+#file_output = 'pronto_per_aws_console.json'
+#with open(file_output, 'w', encoding='utf-8') as f:
+#    json.dump(record_finali, f, indent=2, ensure_ascii=False)
+
+print(f"{calcola_geohash(46.811354, 11.884124)}")
 
 print(f"\nElaborazione completata con successo!")
-print(f"File generato: '{file_output}' contenente {len(record_finali)} record pronti.")
+#print(f"File generato: '{file_output}' contenente {len(record_finali)} record pronti.")

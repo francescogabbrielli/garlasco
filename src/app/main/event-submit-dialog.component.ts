@@ -1,13 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { generateClient } from 'aws-amplify/data';
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import { encode } from 'ngeohash';
 
+import { EVENT_TYPES } from '../../../amplify/data/enums';
 import type { Schema } from '../../../amplify/data/resource';
+
+type EventType = Schema['Event']['type']['type'];
 
 export type EventSubmitPayload = {
   owner: string;
+  type: EventType;
   name: string;
   description: string;
   start_date: string;
@@ -26,28 +31,38 @@ export type EventSubmitPayload = {
   relevance?: number;
 };
 
-export type EventPositionSelection = {
-  target: 'start' | 'end';
-  latitude: number;
-  longitude: number;
-  radius: number;
-};
+declare global {
+  interface Window {
+    __appConfig?: {
+      googleMapsApiKey?: string;
+    };
+  }
+}
 
 @Component({
   selector: 'app-event-submit-dialog',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './event-submit-dialog.component.html',
+  styleUrls: ['./event-submit-dialog.component.css']
 })
 export class EventSubmitDialogComponent implements OnChanges {
   @Input() ownerId = '';
   @Input() isAdmin = false;
-  @Input() positionSelection: EventPositionSelection | null = null;
   @Output() closed = new EventEmitter<void>();
-  @Output() positionRequested = new EventEmitter<'start' | 'end'>();
 
   readonly isSaving = signal(false);
   readonly submitError = signal('');
+  readonly typeOptions: readonly EventType[] = EVENT_TYPES;
+  isMapPickerOpen = false;
+  isMapReady = false;
+  mapError = '';
+  mapPickerTarget: 'start' | 'end' | null = null;
+  private mapSelection: google.maps.LatLngLiteral | null = null;
+  private hasPreciseMapSelection = false;
+  private map?: google.maps.Map;
+  @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>;
+
   readonly reliabilityOptions = [
     { value: 1, label: '1 - Voci / rumors' },
     { value: 2, label: '2 - Alcune fonti' },
@@ -63,6 +78,7 @@ export class EventSubmitDialogComponent implements OnChanges {
 
   readonly eventForm = new FormGroup({
     owner: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    type: new FormControl<EventType | null>(null, Validators.required),
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     reliability: new FormControl(1, {
@@ -75,15 +91,15 @@ export class EventSubmitDialogComponent implements OnChanges {
     }),
     start_position: new FormGroup({
       start_date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      latitude: new FormControl(0, { nonNullable: true, validators: [Validators.required] }),
-      longitude: new FormControl(0, { nonNullable: true, validators: [Validators.required] }),
-      radius: new FormControl(0, { nonNullable: true, validators: [Validators.required] }),
+      latitude: new FormControl(0, { nonNullable: false }),
+      longitude: new FormControl(0, { nonNullable: false }),
+      radius: new FormControl(0, { nonNullable: false }),
     }),
     end_position: new FormGroup({
       end_date: new FormControl('', { nonNullable: true }),
-      latitude: new FormControl(0, { nonNullable: true }),
-      longitude: new FormControl(0, { nonNullable: true }),
-      radius: new FormControl(0, { nonNullable: true }),
+      latitude: new FormControl(0, { nonNullable: false }),
+      longitude: new FormControl(0, { nonNullable: false }),
+      radius: new FormControl(0, { nonNullable: false }),
     }),
   });
 
@@ -91,21 +107,9 @@ export class EventSubmitDialogComponent implements OnChanges {
     return generateClient<Schema>();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  ngOnChanges(_changes: SimpleChanges): void {
     if (this.ownerId) {
       this.eventForm.controls.owner.setValue(this.ownerId, { emitEvent: false });
-    }
-
-    const selection = changes['positionSelection']?.currentValue as EventPositionSelection | null;
-    if (selection) {
-      const position = selection.target === 'start'
-        ? this.eventForm.controls.start_position
-        : this.eventForm.controls.end_position;
-      position.patchValue({
-        latitude: selection.latitude,
-        longitude: selection.longitude,
-        radius: selection.radius,
-      });
     }
   }
 
@@ -135,9 +139,16 @@ export class EventSubmitDialogComponent implements OnChanges {
 
     const startPosition = this.eventForm.controls.start_position.getRawValue();
     const endPosition = this.eventForm.controls.end_position.getRawValue();
+    const type = this.eventForm.controls.type.value;
+
+    if (!type) {
+      this.submitError.set('Seleziona la tipologia dell’evento.');
+      return;
+    }
 
     const payload: EventSubmitPayload = {
       owner: this.eventForm.controls.owner.value,
+      type,
       name: this.eventForm.controls.name.value.trim(),
       description: this.eventForm.controls.description.value.trim(),
       start_date: startPosition.start_date,
@@ -166,6 +177,7 @@ export class EventSubmitDialogComponent implements OnChanges {
       const client = this.createClient();
       const { data, errors } = await client.models.Event.create({
         owner: payload.owner,
+        type: payload.type,
         name: payload.name,
         description: payload.description,
         start_date: payload.start_date,
@@ -194,11 +206,139 @@ export class EventSubmitDialogComponent implements OnChanges {
   }
 
   closeDialog(): void {
+    this.closeMapPicker();
     this.closed.emit();
   }
 
   requestPosition(target: 'start' | 'end'): void {
-    this.positionRequested.emit(target);
+    this.mapPickerTarget = target;
+    this.mapError = '';
+    this.mapSelection = null;
+    this.hasPreciseMapSelection = false;
+    this.isMapReady = false;
+    this.isMapPickerOpen = true;
+    setTimeout(() => void this.initializeMap(), 0);
+  }
+
+  closeMapPicker(): void {
+    this.isMapPickerOpen = false;
+    this.isMapReady = false;
+    this.mapPickerTarget = null;
+    this.map = undefined;
+    this.mapSelection = null;
+    this.hasPreciseMapSelection = false;
+  }
+
+  confirmMapSelection(): void {
+    if (!this.mapPickerTarget || !this.map) {
+      return;
+    }
+
+    const center = this.mapSelection ?? this.map.getCenter();
+    if (!center) {
+      return;
+    }
+
+    const latitude = typeof center.lat === 'function' ? center.lat() : center.lat;
+    const longitude = typeof center.lng === 'function' ? center.lng() : center.lng;
+    const positionGroup = this.mapPickerTarget === 'start'
+      ? this.eventForm.controls.start_position
+      : this.eventForm.controls.end_position;
+    const radius = this.hasPreciseMapSelection ? 0 : this.getMapRadiusMeters();
+    positionGroup.patchValue({ latitude, longitude, radius });
+    this.closeMapPicker();
+  }
+
+  private async initializeMap(): Promise<void> {
+    const apiKey = window.__appConfig?.googleMapsApiKey;
+
+    if (!apiKey || !this.mapCanvas) {
+      this.mapError = 'Configura GOOGLE_MAPS_API_KEY per visualizzare la mappa.';
+      return;
+    }
+
+    try {
+      setOptions({ key: apiKey, v: 'weekly' });
+      const { Map } = await importLibrary('maps');
+
+      if (!this.mapCanvas || !this.isMapPickerOpen) {
+        return;
+      }
+
+      const garlasco = { lat: 45.1974, lng: 8.9247 };
+      this.map = new Map(this.mapCanvas.nativeElement, {
+        center: garlasco,
+        zoom: 13,
+        gestureHandling: 'greedy',
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
+      this.isMapReady = true;
+      this.map.addListener('click', (event: google.maps.MapMouseEvent) => {
+        if (event.latLng) {
+          this.selectMapPosition(event.latLng.lat(), event.latLng.lng());
+        }
+      });
+    } catch {
+      this.mapError = 'Impossibile caricare Google Maps.';
+    }
+  }
+
+  private selectMapPosition(latitude: number, longitude: number): void {
+    this.mapSelection = { lat: latitude, lng: longitude };
+    this.hasPreciseMapSelection = true;
+    this.map?.panTo(this.mapSelection);
+  }
+
+  private getMapRadiusMeters(): number {
+    if (!this.map) {
+      return 0;
+    }
+
+    const center = this.map.getCenter();
+    const bounds = this.map.getBounds();
+
+    if (center && bounds) {
+      const northEast = bounds.getNorthEast();
+      const southWest = bounds.getSouthWest();
+      const verticalRadius = Math.min(
+        this.distanceInMeters(center.lat(), center.lng(), northEast.lat(), center.lng()),
+        this.distanceInMeters(center.lat(), center.lng(), southWest.lat(), center.lng()),
+      );
+      const horizontalRadius = Math.min(
+        this.distanceInMeters(center.lat(), center.lng(), center.lat(), northEast.lng()),
+        this.distanceInMeters(center.lat(), center.lng(), center.lat(), southWest.lng()),
+      );
+
+      return Math.round(Math.min(verticalRadius, horizontalRadius));
+    }
+
+    const zoom = this.map.getZoom() ?? 13;
+    const latitude = center?.lat() ?? 45.1974;
+    const metersPerPixel = 156543.03392 * Math.cos(latitude * Math.PI / 180) / 2 ** zoom;
+    const mapElement = this.map.getDiv();
+    return Math.round(Math.min(mapElement.clientWidth, mapElement.clientHeight) * metersPerPixel / 2);
+  }
+
+  private distanceInMeters(
+    firstLatitude: number,
+    firstLongitude: number,
+    secondLatitude: number,
+    secondLongitude: number,
+  ): number {
+    const earthRadius = 6371000;
+    const latitudeDelta = (secondLatitude - firstLatitude) * Math.PI / 180;
+    const longitudeDelta = (secondLongitude - firstLongitude) * Math.PI / 180;
+    const latitudeFactor = Math.sin(latitudeDelta / 2) ** 2;
+    const longitudeFactor = Math.cos(firstLatitude * Math.PI / 180)
+      * Math.cos(secondLatitude * Math.PI / 180)
+      * Math.sin(longitudeDelta / 2) ** 2;
+
+    return earthRadius * 2 * Math.atan2(
+      Math.sqrt(latitudeFactor + longitudeFactor),
+      Math.sqrt(1 - latitudeFactor - longitudeFactor),
+    );
   }
 
   private buildGeoHash(latitude: number, longitude: number): string {
