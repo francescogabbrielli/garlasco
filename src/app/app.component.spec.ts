@@ -1,6 +1,6 @@
-/// <reference types="jasmine" />
-
 import { TestBed } from '@angular/core/testing';
+import { vi, Mock, Mocked } from 'vitest';
+
 import { Router, RouterOutlet } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
@@ -8,24 +8,21 @@ import { UserData, UserProfileService } from './user-profile.service';
 import { Hub } from 'aws-amplify/utils';
 
 describe('AppComponent', () => {
-  let userService: jasmine.SpyObj<UserProfileService>;
-  let router: { url: string; navigateByUrl: jasmine.Spy };
+  let userService: Mocked<UserProfileService>;
+  let router: { url: string; navigateByUrl: Mock };
   let authListener:
     | ((event: { payload: { event: string } }) => Promise<void>)
     | undefined;
 
   beforeEach(async () => {
-    userService = jasmine.createSpyObj<UserProfileService>(
-      'UserProfileService',
-      ['logIn', 'logOut'],
-    );
-    userService.logIn.and.returnValue(Promise.resolve(new UserData()));
+    userService = { logIn: vi.fn(), logOut: vi.fn() } as unknown as Mocked<UserProfileService>
+    userService.logIn.mockReturnValue(Promise.resolve(new UserData()));
     router = {
       url: '/',
-      navigateByUrl: jasmine.createSpy('navigateByUrl').and.resolveTo(true),
+      navigateByUrl: vi.fn().mockName('navigateByUrl').mockResolvedValue(true),
     };
 
-    spyOn(Hub, 'listen').and.callFake(
+    vi.spyOn(Hub, 'listen').mockImplementation(
       (_channel: string, listener: (...args: any[]) => any) => {
         authListener = listener as unknown as NonNullable<typeof authListener>;
         return () => {};
@@ -70,7 +67,7 @@ describe('AppComponent', () => {
     const user = new UserData();
     user.groups = ['Editor'];
     router.url = '/admin';
-    userService.logIn.and.returnValue(Promise.resolve(user));
+    userService.logIn.mockReturnValue(Promise.resolve(user));
 
     await emitAuthEvent('signedIn');
 
@@ -82,7 +79,7 @@ describe('AppComponent', () => {
     const user = new UserData();
     user.groups = ['Admin'];
     router.url = '/admin';
-    userService.logIn.and.returnValue(Promise.resolve(user));
+    userService.logIn.mockReturnValue(Promise.resolve(user));
 
     await emitAuthEvent('signedIn');
 

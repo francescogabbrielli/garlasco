@@ -75,33 +75,33 @@ describe('ImportComponent', () => {
     expect(isValidEventActors([
       { personId: 'person-123', role: 'testimone' },
       { personId: 'person-456', role: 'indagato' },
-    ])).toBeTrue();
+    ])).toBe(true);
   });
 
   it('rejects actors without non-empty person IDs and roles', () => {
-    expect(isValidEventActors([['person-123', 'testimone']])).toBeFalse();
-    expect(isValidEventActors([{ personId: 'person-123' }])).toBeFalse();
-    expect(isValidEventActors([{ personId: '', role: 'testimone' }])).toBeFalse();
-    expect(isValidEventActors([{ personId: 'person-123', role: '' }])).toBeFalse();
-    expect(isValidEventActors([{ personId: 'person-123', role: 1 }])).toBeFalse();
+    expect(isValidEventActors([['person-123', 'testimone']])).toBe(false);
+    expect(isValidEventActors([{ personId: 'person-123' }])).toBe(false);
+    expect(isValidEventActors([{ personId: '', role: 'testimone' }])).toBe(false);
+    expect(isValidEventActors([{ personId: 'person-123', role: '' }])).toBe(false);
+    expect(isValidEventActors([{ personId: 'person-123', role: 1 }])).toBe(false);
   });
 
   it('accepts only supported event types', () => {
-    expect(isValidEventType('Indagine')).toBeTrue();
-    expect(isValidEventType('Comunicazione')).toBeTrue();
-    expect(isValidEventType('Fatto')).toBeTrue();
-    expect(isValidEventType('Intercettazione')).toBeTrue();
-    expect(isValidEventType('Sentenza')).toBeTrue();
-    expect(isValidEventType('Altro')).toBeFalse();
-    expect(isValidEventType(undefined)).toBeFalse();
+    expect(isValidEventType('Indagine')).toBe(true);
+    expect(isValidEventType('Comunicazione')).toBe(true);
+    expect(isValidEventType('Fatto')).toBe(true);
+    expect(isValidEventType('Intercettazione')).toBe(true);
+    expect(isValidEventType('Sentenza')).toBe(true);
+    expect(isValidEventType('Altro')).toBe(false);
+    expect(isValidEventType(undefined)).toBe(false);
   });
 
   it('accepts only supported person types', () => {
-    expect(isValidPersonType('Cronista')).toBeTrue();
-    expect(isValidPersonType('Autorita')).toBeTrue();
-    expect(isValidPersonType('Protagonista')).toBeTrue();
-    expect(isValidPersonType('Testimone')).toBeTrue();
-    expect(isValidPersonType('Altro')).toBeFalse();
-    expect(isValidPersonType(undefined)).toBeFalse();
+    expect(isValidPersonType('Cronista')).toBe(true);
+    expect(isValidPersonType('Autorita')).toBe(true);
+    expect(isValidPersonType('Protagonista')).toBe(true);
+    expect(isValidPersonType('Testimone')).toBe(true);
+    expect(isValidPersonType('Altro')).toBe(false);
+    expect(isValidPersonType(undefined)).toBe(false);
   });
 });

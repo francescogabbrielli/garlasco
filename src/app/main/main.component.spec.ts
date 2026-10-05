@@ -2,18 +2,20 @@
 
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { vi, Mock } from 'vitest'
+
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
 import { UserProfileService } from '../user-profile.service';
 import { MainComponent } from './main.component';
 
 describe('MainComponent', () => {
   let fixture: ComponentFixture<MainComponent>;
-  let signOutSpy: jasmine.Spy;
+  let signOutSpy: Mock;
 
   beforeEach(async () => {
-    signOutSpy = jasmine.createSpy('signOut');
+    signOutSpy = vi.fn().mockName('signOut')
     const userProfile = {
-      logIn: jasmine.createSpy('logIn').and.resolveTo({
+      logIn: vi.fn().mockName('logIn').mockResolvedValue({
         isAdmin: () => true,
         getId: () => 'user-123',
         getName: () => 'Mario',
@@ -79,7 +81,7 @@ describe('MainComponent', () => {
   });
 
   it('should sign out when the logout menu item is clicked', () => {
-    spyOn(window, 'confirm').and.returnValue(true);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
     const userLabel = fixture.nativeElement.querySelector('.user-label');
     userLabel.click();
     fixture.detectChanges();

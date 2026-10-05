@@ -1,4 +1,3 @@
-/// <reference types="jasmine" />
 
 import { TestBed } from '@angular/core/testing';
 import { UserProfileService } from './user-profile.service';
@@ -21,14 +20,14 @@ describe('UserProfileService', () => {
     service.user.groups = ['Admin', 'Editor'];
     service.loggedIn = true;
 
-    await expectAsync(service.logIn()).toBeResolvedTo(service.user);
+    await expect(service.logIn()).resolves.toBe(service.user);
 
     expect(service.user.getId()).toBe('user-123');
     expect(service.user.getName()).toBe('Mario');
     expect(service.user.getSurname()).toBe('Rossi');
-    expect(service.isLoggedIn()).toBeTrue();
-    expect(service.user.isAdmin()).toBeTrue();
-    expect(service.user.isEditor()).toBeTrue();
+    expect(service.isLoggedIn()).toBe(true);
+    expect(service.user.isAdmin()).toBe(true);
+    expect(service.user.isEditor()).toBe(true);
   });
 
   it('should clear cached user data on logout', () => {
@@ -39,8 +38,8 @@ describe('UserProfileService', () => {
     service.logOut();
 
     expect(service.user.getId()).toBe('');
-    expect(service.isLoggedIn()).toBeFalse();
-    expect(service.user.isAdmin()).toBeFalse();
-    expect(service.user.isEditor()).toBeFalse();
+    expect(service.isLoggedIn()).toBe(false);
+    expect(service.user.isAdmin()).toBe(false);
+    expect(service.user.isEditor()).toBe(false);
   });
 });

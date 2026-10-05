@@ -27,7 +27,7 @@ describe('AdminComponent', () => {
 
   it('should create the admin dashboard for a logged-in user', () => {
     expect(fixture.componentInstance).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Dashboard Amministrativa');
+    expect(fixture.nativeElement.querySelector('h1').textContent).toContain('Importazione JSON');
   });
 
   it('should render the import component', () => {

@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { vi, Mock, Mocked } from 'vitest';
+
 import { EventSubmitDialogComponent } from './event-submit-dialog.component';
 
 describe('EventSubmitDialogComponent', () => {
   let fixture: ComponentFixture<EventSubmitDialogComponent>;
-  let mockCreate: jasmine.Spy;
+  let mockCreate: Mock;
 
   beforeEach(async () => {
-    mockCreate = jasmine.createSpy('create').and.resolveTo({
+    mockCreate = vi.fn().mockName('create').mockResolvedValue({
       data: { id: 'event-123' },
       errors: [],
     });
@@ -16,7 +18,7 @@ describe('EventSubmitDialogComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(EventSubmitDialogComponent);
-    spyOn(fixture.componentInstance, 'createClient').and.returnValue({
+    vi.spyOn(fixture.componentInstance, 'createClient').mockReturnValue({
       models: {
         Event: { create: mockCreate },
       },
@@ -57,7 +59,7 @@ describe('EventSubmitDialogComponent', () => {
     await fixture.componentInstance.submitEvent();
 
     expect(mockCreate).toHaveBeenCalledTimes(1);
-    expect(mockCreate.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
+    expect(vi.mocked(mockCreate).mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining({
       owner: 'user-123',
       type: 'Indagine',
       name: 'Evento di prova',
@@ -75,7 +77,7 @@ describe('EventSubmitDialogComponent', () => {
 
     await fixture.componentInstance.submitEvent();
 
-    expect(mockCreate.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({
+    expect(vi.mocked(mockCreate).mock.calls.at(-1)?.[0]).toEqual(expect.objectContaining({
       reliability: 0,
       relevance: 0,
     }));
@@ -131,11 +133,11 @@ describe('EventSubmitDialogComponent', () => {
     expect(endPosition.latitude).toBe(45.1974);
     expect(endPosition.longitude).toBe(8.9247);
     expect(endPosition.radius).toBeGreaterThan(0);
-    expect(component.isMapPickerOpen).toBeFalse();
+    expect(component.isMapPickerOpen).toBeFalsy();
   });
 
   it('should surface an error when the insert fails', async () => {
-    mockCreate.and.rejectWith(new Error('DB timeout'));
+    mockCreate.mockRejectedValue(new Error('DB timeout'));
     setValidFormValues();
 
     await fixture.componentInstance.submitEvent();

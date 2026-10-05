@@ -22,6 +22,9 @@
       "ES2022",
       "dom"
     ],
+    "types": [
+      "vitest/globals"
+    ],
     "resolveJsonModule": true
   },
   "angularCompilerOptions": {
