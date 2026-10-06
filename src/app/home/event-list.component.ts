@@ -1,8 +1,11 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '../../../amplify/data/resource';
-import { EventSearchFilters } from './search.models';
+import { Component, inject, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import { DatePipe, DecimalPipe } from '@angular/common'
+import { generateClient } from 'aws-amplify/data'
+import type { Schema } from '../../../amplify/data/resource'
+import { EventSearchFilters } from './search.models'
+import { MapsService } from '../maps.service'
+
+import { TickbarComponent } from '../ui/tickbar/tickbar.component'
 
 const client = generateClient<Schema>();
 type EventRecord = Schema['Event']['type'];
@@ -11,7 +14,7 @@ type PersonRecord = Schema['Person']['type'];
 @Component({
   selector: 'app-event-list',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, TickbarComponent],
   template: `
     <section class="results" aria-labelledby="results-title" aria-live="polite">
       <div class="results-heading">
@@ -47,9 +50,9 @@ type PersonRecord = Schema['Person']['type'];
               <article class="event-content">
                 <div class="event-title-line">
                   <h3>{{ event.name }}</h3>
-                  @if (event.reliability !== null && event.reliability !== undefined) {
-                    <span class="reliability">Attendibilità {{ event.reliability }}%</span>
-                  }
+                  <span class="reliability">Rilevanza
+                    <app-tickbar [level]="event.relevance"></app-tickbar>
+                  </span>
                 </div>
                 <p>{{ event.description }}</p>
                 @if (actorNames(event.id).length) {
@@ -105,6 +108,9 @@ type PersonRecord = Schema['Person']['type'];
   `],
 })
 export class EventListComponent implements OnInit, OnChanges {
+
+  mapsService = inject(MapsService) // TODO: replace direct map calculations
+
   @Input() filters: EventSearchFilters = { actorIds: [], from: '', to: '', area: null };
 
   events: EventRecord[] = [];

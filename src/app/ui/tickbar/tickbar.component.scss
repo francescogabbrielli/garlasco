@@ -1,0 +1,41 @@
+:host {
+  display: inline-block; /* Occupa solo lo spazio necessario nel flusso del testo */
+}
+
+// Contenitore principale
+.tick-bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Allinea il contenuto rigidamente a sinistra */
+  height: 1em;                 /* Altezza fissa di 5px condivisa da barre e X */
+  
+  // Variabili di colore statiche
+  &[data-status="empty"]    { --status-color: #ff3b30; }
+  &[data-status="critical"] { --status-color: #ff3b30; }
+  &[data-status="low"]      { --status-color: #ffcc00; }
+  &[data-status="healthy"]  { --status-color: #34c759; }
+}
+
+// Wrapper delle barre (quando livello > 0)
+.ticks-wrapper {
+  display: flex;
+  gap: 2px; /* Spazio di separazione tra le barre */
+}
+
+// La singola barra verticale
+.tick {
+  width: 2px;  /* Larghezza di ogni barra */
+  height: 0.75em; /* Altezza di ogni barra */
+  background-color: #bcbcdf; // Grigio scuro per le tacche spente
+  border-radius: 0px;
+
+  &.active {
+    background-color: var(--status-color);
+  }
+}
+
+// Disegno della X Rossa (Quadrato perfetto 5px x 5px, allineata a sinistra)
+.error-x {
+  height: 1em;
+  color: #ff3b30
+}
