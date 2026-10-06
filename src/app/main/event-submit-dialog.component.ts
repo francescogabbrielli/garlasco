@@ -1,41 +1,43 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { generateClient } from 'aws-amplify/data';
-import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
-import { encode } from 'ngeohash';
+import { CommonModule } from '@angular/common'
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, inject, signal } from '@angular/core'
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { generateClient } from 'aws-amplify/data'
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 
-import { EVENT_TYPES } from '../../../amplify/data/enums';
-import type { Schema } from '../../../amplify/data/resource';
+import { EVENT_TYPES } from '../../../amplify/data/enums'
+import type { Schema } from '../../../amplify/data/resource'
+import { MapsService } from '../maps.service'
 
-type EventType = Schema['Event']['type']['type'];
+import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../app.constants'
+
+type EventType = Schema['Event']['type']['type']
 
 export type EventSubmitPayload = {
-  owner: string;
-  type: EventType;
-  name: string;
-  description: string;
-  start_date: string;
-  end_date?: string | null;
+  owner: string
+  type: EventType
+  name: string
+  description: string
+  start_date: string
+  end_date?: string | null
   start_position: {
-    latitude: number;
-    longitude: number;
-    radius: number;
-  };
+    latitude: number
+    longitude: number
+    radius: number
+  }
   end_position?: {
-    latitude: number;
-    longitude: number;
-    radius: number;
-  } | null;
-  reliability?: number;
-  relevance?: number;
-};
+    latitude: number
+    longitude: number
+    radius: number
+  } | null
+  reliability?: number
+  relevance?: number
+}
 
 declare global {
   interface Window {
     __appConfig?: {
-      googleMapsApiKey?: string;
-    };
+      googleMapsApiKey?: string
+    }
   }
 }
 
@@ -47,36 +49,28 @@ declare global {
   styleUrls: ['./event-submit-dialog.component.css']
 })
 export class EventSubmitDialogComponent implements OnChanges {
-  @Input() ownerId = '';
-  @Input() isAdmin = false;
-  @Output() closed = new EventEmitter<void>();
+  @Input() ownerId = ''
+  @Input() isAdmin = false
+  @Output() closed = new EventEmitter<void>()
 
-  readonly isSaving = signal(false);
-  readonly submitError = signal('');
-  readonly typeOptions: readonly EventType[] = EVENT_TYPES;
-  isMapPickerOpen = false;
-  isMapReady = false;
-  mapError = '';
-  mapPickerTarget: 'start' | 'end' | null = null;
-  private mapSelection: google.maps.LatLngLiteral | null = null;
-  private hasPreciseMapSelection = false;
-  private map?: google.maps.Map;
-  @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>;
+  mapsService = inject(MapsService)
 
-  isHelpDialogOpen = false;
+  readonly relevanceOptions = RELEVANCE_LABELS.slice(1).map(LABEL_MAP)
+  readonly reliabilityOptions = RELIABILITY_LABELS.slice(1).map(LABEL_MAP)
 
-  readonly reliabilityOptions = [
-    { value: 1, label: '1 - Voci / rumors' },
-    { value: 2, label: '2 - Alcune fonti' },
-    { value: 3, label: '3 - Contestato da alcune fonti' },
-    { value: 4, label: '4 - Affidabile' },
-  ];
-  readonly relevanceOptions = [
-    { value: 1, label: '1 - Marginale' },
-    { value: 2, label: '2 - Vagamente collegato' },
-    { value: 3, label: '3 - Fortemente collegato' },
-    { value: 4, label: '4 - Rilevante' },
-  ];
+  readonly isSaving = signal(false)
+  readonly submitError = signal('')
+  readonly typeOptions: readonly EventType[] = EVENT_TYPES
+  isMapPickerOpen = false
+  isMapReady = false
+  mapError = ''
+  mapPickerTarget: 'start' | 'end' | null = null
+  private mapSelection: google.maps.LatLngLiteral | null = null
+  private hasPreciseMapSelection = false
+  private map?: google.maps.Map
+  @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>
+
+  isHelpDialogOpen = false
 
   readonly eventForm = new FormGroup({
     owner: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -103,21 +97,21 @@ export class EventSubmitDialogComponent implements OnChanges {
       longitude: new FormControl<number | null>(null, { nonNullable: false }),
       radius: new FormControl<number | null>(null, { nonNullable: false }),
     }),
-  });
+  })
 
   public createClient(): ReturnType<typeof generateClient<Schema>> {
-    return generateClient<Schema>();
+    return generateClient<Schema>()
   }
 
   ngOnChanges(_changes: SimpleChanges): void {
     if (this.ownerId) {
-      this.eventForm.controls.owner.setValue(this.ownerId, { emitEvent: false });
+      this.eventForm.controls.owner.setValue(this.ownerId, { emitEvent: false })
     }
   }
 
   async submitEvent(): Promise<void> {
-    this.eventForm.markAllAsTouched();
-    this.submitError.set('');
+    this.eventForm.markAllAsTouched()
+    this.submitError.set('')
 
     if (this.eventForm.invalid) {
       this.submitError.set(
@@ -127,17 +121,17 @@ export class EventSubmitDialogComponent implements OnChanges {
         )
           ? 'Per attendibilità e rilevanza scegli un valore da 1 a 4.'
           : 'Completa tutti i campi obbligatori prima di salvare l’evento.',
-      );
-      return;
+      )
+      return
     }
 
-    const start = this.eventForm.controls.start.getRawValue();
-    const end = this.eventForm.controls.end.getRawValue();
-    const type = this.eventForm.controls.type.value;
+    const start = this.eventForm.controls.start.getRawValue()
+    const end = this.eventForm.controls.end.getRawValue()
+    const type = this.eventForm.controls.type.value
 
     if (!type) {
-      this.submitError.set('Seleziona la tipologia dell’evento.');
-      return;
+      this.submitError.set('Seleziona la tipologia dell’evento.')
+      return
     }
 
     const payload: EventSubmitPayload = {
@@ -159,36 +153,37 @@ export class EventSubmitDialogComponent implements OnChanges {
       },
       reliability: this.isAdmin ? this.eventForm.controls.reliability.value : 0,
       relevance: this.isAdmin ? this.eventForm.controls.relevance.value : 0,
-    };
+    }
 
-    const normalizedRelevance = payload.relevance ?? 0;
-
-    this.isSaving.set(true);
+    this.isSaving.set(true)
 
     try {
-      const client = this.createClient();
+
+      const client = this.createClient()
+
       const { data, errors } = await client.models.Event.create({
         owner: payload.owner,
         type: payload.type,
         name: payload.name,
         description: payload.description,
         start_date: payload.start_date,
-        end_date: payload.end_date ?? undefined,
+        end_date: payload.end_date ?? null,
         start_position: payload.start_position,
-        end_position: payload.end_position ?? undefined,
-        center_position: payload.start_position,
-        geoHash: this.buildGeoHash(payload.start_position.latitude, payload.start_position.longitude),
+        end_position: payload.end_position ?? null,
+        center_position: this.mapsService.computeCenterPosition(payload.start_position, payload.end_position),
+        geoHash: this.mapsService.computeGeoHash(payload.start_position),
         reliability: payload.reliability ?? 0,
-        relevance: normalizedRelevance,
-      });
+        relevance: payload.relevance ?? 0,
+      })
 
       if (errors?.length || !data?.id) {
-        const message = errors?.[0]?.message ?? 'Errore durante il salvataggio dell’evento.';
-        this.submitError.set(message);
-        return;
+        const message = errors?.[0]?.message ?? 'Errore durante il salvataggio dell’evento.'
+        this.submitError.set(message)
+        return
       }
 
-      this.closeDialog();
+      this.closeDialog()
+
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
       this.submitError.set(message);
@@ -284,64 +279,52 @@ export class EventSubmitDialogComponent implements OnChanges {
   }
 
   private getMapRadiusMeters(): number {
-    if (!this.map) {
-      return 0;
-    }
+    if (!this.map)
+      return 0
 
     const center = this.map.getCenter();
     const bounds = this.map.getBounds();
 
-    if (center && bounds) {
-      const northEast = bounds.getNorthEast();
-      const southWest = bounds.getSouthWest();
-      const verticalRadius = Math.min(
-        this.distanceInMeters(center.lat(), center.lng(), northEast.lat(), center.lng()),
-        this.distanceInMeters(center.lat(), center.lng(), southWest.lat(), center.lng()),
-      );
-      const horizontalRadius = Math.min(
-        this.distanceInMeters(center.lat(), center.lng(), center.lat(), northEast.lng()),
-        this.distanceInMeters(center.lat(), center.lng(), center.lat(), southWest.lng()),
-      );
+    if (!center)
+      return 0
 
-      return Math.round(Math.min(verticalRadius, horizontalRadius));
+    const xy2coords = (x: number, y: number) => {
+      return { latitude: x, longitude: y, radius: 0 }
+    }
+    
+    const centerCoord = xy2coords(center.lat(), center.lng())
+
+    if (center && bounds) {
+      const northEast = bounds.getNorthEast()
+      const southWest = bounds.getSouthWest()
+  
+      const verticalRadius = Math.min(
+        this.mapsService.computeDistance(
+          centerCoord, xy2coords(northEast.lat(), center.lng())),
+        this.mapsService.computeDistance(
+          centerCoord, xy2coords(southWest.lat(), center.lng())))
+  
+      const horizontalRadius = Math.min(
+        this.mapsService.computeDistance(
+          centerCoord, xy2coords(center.lat(), northEast.lng())),
+        this.mapsService.computeDistance(
+          centerCoord, xy2coords(center.lat(), southWest.lng())))
+
+      return Math.round(Math.min(verticalRadius, horizontalRadius))
     }
 
-    const zoom = this.map.getZoom() ?? 13;
-    const latitude = center?.lat() ?? 45.1974;
-    const metersPerPixel = 156543.03392 * Math.cos(latitude * Math.PI / 180) / 2 ** zoom;
-    const mapElement = this.map.getDiv();
-    return Math.round(Math.min(mapElement.clientWidth, mapElement.clientHeight) * metersPerPixel / 2);
-  }
-
-  private distanceInMeters(
-    firstLatitude: number,
-    firstLongitude: number,
-    secondLatitude: number,
-    secondLongitude: number,
-  ): number {
-    const earthRadius = 6371000;
-    const latitudeDelta = (secondLatitude - firstLatitude) * Math.PI / 180;
-    const longitudeDelta = (secondLongitude - firstLongitude) * Math.PI / 180;
-    const latitudeFactor = Math.sin(latitudeDelta / 2) ** 2;
-    const longitudeFactor = Math.cos(firstLatitude * Math.PI / 180)
-      * Math.cos(secondLatitude * Math.PI / 180)
-      * Math.sin(longitudeDelta / 2) ** 2;
-
-    return earthRadius * 2 * Math.atan2(
-      Math.sqrt(latitudeFactor + longitudeFactor),
-      Math.sqrt(1 - latitudeFactor - longitudeFactor),
-    );
-  }
-
-  private buildGeoHash(latitude: number, longitude: number): string {
-    return encode(latitude, longitude, 6);
+    const zoom = this.map.getZoom() ?? 13
+    const latitude = center?.lat() ?? 45.1974
+    const metersPerPixel = 156543.03392 * Math.cos(latitude * Math.PI / 180) / 2 ** zoom
+    const mapElement = this.map.getDiv()
+    return Math.round(Math.min(mapElement.clientWidth, mapElement.clientHeight) * metersPerPixel / 2)
   }
 
   openHelpDialog(): void {
-    this.isHelpDialogOpen = true;
+    this.isHelpDialogOpen = true
   }
 
   closeHelpDialog(): void {
-    this.isHelpDialogOpen = false;
+    this.isHelpDialogOpen = false
   }
 }

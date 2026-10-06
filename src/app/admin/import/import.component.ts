@@ -5,27 +5,25 @@ import { generateClient } from 'aws-amplify/data'
 
 import { EVENT_TYPES, PERSON_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
-import { UserProfileService } from '../../user-profile.service'
 
-import geohash from 'ngeohash';
+import { UserProfileService } from '../../user-profile.service'
+import { MapsService } from '../../maps.service'
 
 const client = generateClient<Schema>()
 
 interface EventActorImport {
-  personId: string;
-  role: string;
+  personId: string
+  role: string
 }
 
 type EventImportRecord = Omit<Schema['Event']['type'], 'actors'> & {
-  actors?: unknown;
+  actors?: unknown
 };
 
 type EventType = Schema['Event']['type']['type']
 const eventTypes: readonly EventType[] = EVENT_TYPES
 type PersonType = Schema['Person']['type']['type']
 const personTypes: readonly PersonType[] = PERSON_TYPES
-
-type Coordinates = Schema['Coordinates']['type']
 
 interface PersonImportRecord {
   id?: string;
@@ -82,6 +80,7 @@ export function toPersonCreateInput(
 export class ImportComponent {
 
   userProfile = inject(UserProfileService)
+  mapsService = inject(MapsService)
 
   jsonInput = signal<string>('');
   peopleJsonInput = signal<string>('');
@@ -149,9 +148,9 @@ export class ImportComponent {
           description: event.description,
           start_date: event.start_date,
           start_position: event.start_position,
-          center_position: this.computeCenterPosition(event.start_position, event.end_position),
+          center_position: this.mapsService.computeCenterPosition(event.start_position, event.end_position),
           end_position: event.end_position,
-          geoHash: this.computeGeoHash(event.start_position),
+          geoHash: this.mapsService.computeGeoHash(event.start_position),
           relevance: event.relevance || 0,
           reliability: event.reliability || 0
         });
@@ -245,43 +244,4 @@ export class ImportComponent {
     this.peopleJsonInput.set('');
   }
 
-  computeDistance(start: Coordinates, end: Coordinates) {
-    const EARTH_RADIUS_METERS = 6371000; // Raggio medio della Terra in metri
-
-    // Conversione dei gradi in radianti
-    const dLat = (end.latitude - start.latitude) * Math.PI / 180;
-    const dLng = (end.longitude - start.longitude) * Math.PI / 180;
-
-    const rLat1 = start.latitude * Math.PI / 180;
-    const rLat2 = end.latitude * Math.PI / 180;
-
-    // Formula dell'emisenoverso
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(rLat1) * Math.cos(rLat2) * 
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    // Distanza finale in metri
-    return EARTH_RADIUS_METERS * c;
-  }
-
-  computeCenterPosition(start:Coordinates, end:Coordinates | null | undefined): Coordinates {
-    return {
-      latitude: end 
-        ? (start.latitude + end.latitude) / 2 
-        : start.latitude,
-      longitude: end 
-        ? (start.longitude + end.longitude) / 2 
-        : start.longitude,
-      radius: end 
-        ? this.computeDistance(start, end) + (start.radius+end.radius)/2 
-        : start.radius
-    }
-  }
-
-  computeGeoHash(coords:Coordinates): string {
-    return geohash.encode(coords.latitude, coords.longitude)
-  }
 }

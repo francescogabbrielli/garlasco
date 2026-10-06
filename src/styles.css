@@ -433,7 +433,7 @@ body {
       padding-left: 0.25rem;
     }
 
-  .field-error {
+  .field-error, .form-alert {
       color: #a32929;
       font-size: 0.75rem;
     }
