@@ -140,7 +140,7 @@
         </div>
       </fieldset>
 
-      @if (isAdmin) {
+      @if (isAdmin()) {
         <div class="event-admin-fields">
           <div class="form-field">
             <label for="event-reliability">Attendibilità</label>
@@ -178,49 +178,53 @@
   </section>
 </div>
 
-@if (isMapPickerOpen) {
-  <div class="map-picker-backdrop" (click)="closeMapPicker()">
-    <section
-      class="map-picker-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="map-picker-title"
-      (click)="$event.stopPropagation()"
-    >
-      <div class="dialog-heading">
-        <div>
-          <p class="eyebrow">Posizione evento</p>
-          <h2 id="map-picker-title">
-            {{ mapPickerTarget === 'start' ? 'Posizione di inizio' : 'Posizione di fine' }}
-          </h2>
+@defer (on viewport) {
+  @if (isMapPickerOpen) {
+    <div class="map-picker-backdrop" (click)="closeMapPicker()">
+      <section
+        class="map-picker-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="map-picker-title"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Posizione evento</p>
+            <h2 id="map-picker-title">
+              {{ mapPickerTarget === 'start' ? 'Posizione di inizio' : 'Posizione di fine' }}
+            </h2>
+          </div>
+          <button
+            class="dialog-close"
+            type="button"
+            aria-label="Chiudi mappa"
+            title="Chiudi mappa"
+            (click)="closeMapPicker()"
+          >
+            ×
+          </button>
         </div>
-        <button
-          class="dialog-close"
-          type="button"
-          aria-label="Chiudi mappa"
-          title="Chiudi mappa"
-          (click)="closeMapPicker()"
-        >
-          ×
-        </button>
-      </div>
-      @if (mapError) {
-        <p class="map-error" role="alert">{{ mapError }}</p>
-      }
-      <div #mapCanvas class="google-map" aria-label="Mappa per selezionare la posizione"></div>
-      <div class="map-picker-actions">
-        <button
-          class="map-confirm-button"
-          type="button"
-          [disabled]="!isMapReady"
-          (click)="confirmMapSelection()"
-        >
-          <span aria-hidden="true">✓</span>
-          Usa questa posizione
-        </button>
-      </div>
-    </section>
-  </div>
+        @if (mapError) {
+          <p class="map-error" role="alert">{{ mapError }}</p>
+        }
+        <div #mapCanvas class="google-map" aria-label="Mappa per selezionare la posizione"></div>
+        <div class="map-picker-actions">
+          <button
+            class="map-confirm-button"
+            type="button"
+            [disabled]="!isMapReady"
+            (click)="confirmMapSelection()"
+          >
+            <span aria-hidden="true">✓</span>
+            Usa questa posizione
+          </button>
+        </div>
+      </section>
+    </div>
+  }
+} @placeholder {
+  <div>Caricamento mappa...</div>
 }
 
 @if (isHelpDialogOpen) {

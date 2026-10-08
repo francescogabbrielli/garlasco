@@ -7,7 +7,7 @@ import { EVENT_TYPES, PERSON_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
 
 import { UserProfileService } from '../../user-profile.service'
-import { MapsService } from '../../maps.service'
+import { GeoService } from '../../geo.service'
 
 const client = generateClient<Schema>()
 
@@ -80,7 +80,7 @@ export function toPersonCreateInput(
 export class ImportComponent {
 
   userProfile = inject(UserProfileService)
-  mapsService = inject(MapsService)
+  mapsService = inject(GeoService)
 
   jsonInput = signal<string>('');
   peopleJsonInput = signal<string>('');

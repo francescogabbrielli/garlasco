@@ -1,0 +1,23 @@
+<div class="amplify-field amplify-sliderfield">
+ 
+  <div class="time-display-container">
+    <span class="current-time-range">{{ getFormattedInterval() }}</span>
+  </div>
+  
+  <div class="slider-wrapper" (wheel)="onWheel($event)">
+    <mat-slider [min]="currentAbsoluteMin" [max]="currentAbsoluteMax" [step]="currentStep" [showTickMarks]="true">
+      <input matSliderStartThumb [(ngModel)]="minTimestamp" (valueChange)="onSliderChange()">
+      <input matSliderEndThumb [(ngModel)]="maxTimestamp" (valueChange)="onSliderChange()">
+    </mat-slider>
+
+    <!-- ASSE DEL TEMPO DINAMICO -->
+    <div class="timeline-axis">
+      @for (tick of timelineTicks; track tick.positionPercent) {
+        <div class="timeline-tick" [style.left.%]="tick.positionPercent">
+          <div class="tick-line" [class.january-line]="tick.type==='year'"></div>
+          <span class="tick-label-{{tick.type}}">{{ tick.label }}</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

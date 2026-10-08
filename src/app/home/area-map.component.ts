@@ -1,10 +1,13 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { importLibrary, setOptions } from '@googlemaps/js-api-loader';
 import type { SearchArea } from './search.models';
+import { GoogleMapsLoaderService } from '../google-maps-loader.service';
 
 declare global {
   interface Window {
-    __appConfig?: { googleMapsApiKey?: string };
+    __appConfig?: {
+      googleMapsApiKey?: string;
+      googleMapsMapId?: string;
+    };
   }
 }
 
@@ -63,6 +66,8 @@ declare global {
   `],
 })
 export class AreaMapComponent implements AfterViewInit {
+  constructor(private mapsLoader: GoogleMapsLoaderService) {}
+
   @Input() area: SearchArea | null = null;
   @Output() areaChange = new EventEmitter<SearchArea | null>();
   @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>;
@@ -80,12 +85,11 @@ export class AreaMapComponent implements AfterViewInit {
     }
 
     try {
-      setOptions({ key: apiKey, v: 'weekly' });
-      const { Map } = await importLibrary('maps');
+      await this.mapsLoader.load();
       if (!this.mapCanvas) return;
 
       const center = { lat: this.area?.latitude ?? 45.1974, lng: this.area?.longitude ?? 8.9247 };
-      this.map = new Map(this.mapCanvas.nativeElement, {
+      this.map = new google.maps.Map(this.mapCanvas.nativeElement, {
         center,
         zoom: 12,
         mapTypeControl: false,

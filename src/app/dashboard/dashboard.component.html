@@ -1,0 +1,56 @@
+<main class="main-view" aria-label="Ricerca eventi">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Archivio Garlasco</p>
+      <h1>Esplora gli eventi</h1>
+    </div>
+    <p class="heading-note">Persone, tempi e luoghi in un'unica cronologia.</p>
+  </header>
+
+  <section class="mask" aria-labelledby="search-title">
+    <div class="mask-heading">
+      <div>
+        <p class="eyebrow">Filtri</p>
+      </div>
+      <button class="reset-button" type="button" (click)="resetFilters()">Reimposta</button>
+    </div>
+    <div class="filter-layout">
+      <div class="filter-shoulder">
+      </div>
+      <div class="filter-stack">
+        @defer (on idle) {
+          <app-range-filter 
+            [initialFrom]="defaultFilters.from"
+            [initialTo]="defaultFilters.to"
+            [minimum]="MIN_DATE"
+            [maximum]="MAX_DATE"
+            (rangeChange)="handleTimeFilter($event)">
+          </app-range-filter>
+        } @placeholder {
+          <div>Loading Timeline Slider...</div>
+        }
+
+        @defer (on idle) {
+          @if (showMap) {
+            <app-map-filter 
+              [initialBounds]="defaultFilters.bounds"
+              [markers]="actionEvents()"
+              (mapChange)="handleMapFilter($event)">
+            </app-map-filter>
+          }
+        } @placeholder {
+          <div>Caricamento della mappa in corso...</div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="event-list-section" aria-labelledby="event-list-title">
+    <h2 id="event-list-title" class="visually-hidden">Elenco eventi</h2>
+    <app-event-list 
+      [items]="events()"
+      (scrolledToBottom)="onScrollBottom()">
+    </app-event-list>
+  </section>  
+
+</main>

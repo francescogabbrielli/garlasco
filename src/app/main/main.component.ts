@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
@@ -19,30 +19,28 @@ import { EventSubmitDialogComponent } from './event-submit-dialog.component';
   styleUrl: './main.component.css',
 })
 export class MainComponent {
+
+  authenticator = inject(AuthenticatorService)
+  userProfile = inject(UserProfileService)
+
   isSubmitDialogOpen = false;
   isUserMenuOpen = false;
   isAdminVisible = false;
-  isAdmin = false;
-  ownerId = '';
-  private givenName = '';
-  private familyName = '';
-
-  constructor(
-    public readonly authenticator: AuthenticatorService,
-    private readonly userProfile: UserProfileService,
-  ) {}
+  isAdmin = signal(false)
+  ownerId = signal('')
+  givenName = signal('')
+  familyName = signal('')
 
   async ngOnInit(): Promise<void> {
     const user = await this.userProfile.logIn();
-    this.isAdminVisible = user.isAdmin();
-    this.isAdmin = user.isAdmin();
-    this.ownerId = user.getId();
-    this.givenName = user.getName() ?? '';
-    this.familyName = user.getSurname() ?? '';
+    this.isAdmin.set(user.isAdmin())
+    this.ownerId.set(user.getId())
+    this.givenName.set(user.getName())
+    this.familyName.set(user.getSurname())
   }
 
   get loggedIn(): string {
-    return `${this.givenName} ${this.familyName}`.trim() || 'Utente';
+    return `${this.givenName()} ${this.familyName()}`.trim() || 'Utente';
   }
 
   toggleUserMenu(): void {

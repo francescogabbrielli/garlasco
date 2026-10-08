@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, inject, signal } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, inject, input, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { generateClient } from 'aws-amplify/data'
-import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 
 import { EVENT_TYPES } from '../../../amplify/data/enums'
 import type { Schema } from '../../../amplify/data/resource'
-import { MapsService } from '../maps.service'
 
+import { GeoService } from '../geo.service'
 import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../app.constants'
+import { GoogleMapsLoaderService } from '../google-maps-loader.service'
 
 type EventType = Schema['Event']['type']['type']
 
@@ -36,7 +36,8 @@ export type EventSubmitPayload = {
 declare global {
   interface Window {
     __appConfig?: {
-      googleMapsApiKey?: string
+      googleMapsApiKey?: string;
+      googleMapsMapId?: string;
     }
   }
 }
@@ -49,11 +50,12 @@ declare global {
   styleUrls: ['./event-submit-dialog.component.css']
 })
 export class EventSubmitDialogComponent implements OnChanges {
-  @Input() ownerId = ''
-  @Input() isAdmin = false
-  @Output() closed = new EventEmitter<void>()
+  ownerId = input('')
+  isAdmin = input(false)
+  closed = output<void>()
 
-  mapsService = inject(MapsService)
+  mapsService = inject(GeoService)
+  private mapsLoader = inject(GoogleMapsLoaderService)
 
   readonly relevanceOptions = RELEVANCE_LABELS.slice(1).map(LABEL_MAP)
   readonly reliabilityOptions = RELIABILITY_LABELS.slice(1).map(LABEL_MAP)
@@ -104,8 +106,8 @@ export class EventSubmitDialogComponent implements OnChanges {
   }
 
   ngOnChanges(_changes: SimpleChanges): void {
-    if (this.ownerId) {
-      this.eventForm.controls.owner.setValue(this.ownerId, { emitEvent: false })
+    if (this.ownerId()) {
+      this.eventForm.controls.owner.setValue(this.ownerId(), { emitEvent: false })
     }
   }
 
@@ -115,7 +117,7 @@ export class EventSubmitDialogComponent implements OnChanges {
 
     if (this.eventForm.invalid) {
       this.submitError.set(
-        this.isAdmin && (
+        this.isAdmin() && (
           this.eventForm.controls.reliability.invalid
           || this.eventForm.controls.relevance.invalid
         )
@@ -151,8 +153,8 @@ export class EventSubmitDialogComponent implements OnChanges {
         longitude: Number(end.longitude),
         radius: Number(end.radius),
       },
-      reliability: this.isAdmin ? this.eventForm.controls.reliability.value : 0,
-      relevance: this.isAdmin ? this.eventForm.controls.relevance.value : 0,
+      reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
+      relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
     }
 
     this.isSaving.set(true)
@@ -245,15 +247,14 @@ export class EventSubmitDialogComponent implements OnChanges {
     }
 
     try {
-      setOptions({ key: apiKey, v: 'weekly' });
-      const { Map } = await importLibrary('maps');
+      await this.mapsLoader.load();
 
       if (!this.mapCanvas || !this.isMapPickerOpen) {
         return;
       }
 
       const garlasco = { lat: 45.1974, lng: 8.9247 };
-      this.map = new Map(this.mapCanvas.nativeElement, {
+      this.map = new google.maps.Map(this.mapCanvas.nativeElement, {
         center: garlasco,
         zoom: 13,
         gestureHandling: 'greedy',

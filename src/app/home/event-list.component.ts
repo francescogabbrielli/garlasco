@@ -3,7 +3,7 @@ import { DatePipe, DecimalPipe } from '@angular/common'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from '../../../amplify/data/resource'
 import { EventSearchFilters } from './search.models'
-import { MapsService } from '../maps.service'
+import { GeoService } from '../geo.service'
 
 import { TickbarComponent } from '../ui/tickbar/tickbar.component'
 
@@ -109,7 +109,7 @@ type PersonRecord = Schema['Person']['type'];
 })
 export class EventListComponent implements OnInit, OnChanges {
 
-  mapsService = inject(MapsService) // TODO: replace direct map calculations
+  mapsService = inject(GeoService) // TODO: replace direct map calculations
 
   @Input() filters: EventSearchFilters = { actorIds: [], from: '', to: '', area: null };
 

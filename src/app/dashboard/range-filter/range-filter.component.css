@@ -1,0 +1,67 @@
+/* range-filter.component.css */
+.slider-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 2.5rem; /* Spazio inferiore per ospitare la timeline */
+}
+
+mat-slider {
+  width: stretch;
+}
+
+.timeline-axis {
+  border-top: 1px dotted var(--amplify-colors-border-primary, #ccc);
+  user-select: none; /* Impedisce la selezione del testo durante l'interazione con lo slider */
+  position: relative;
+  width: 100%;
+  height: 20px;
+  margin-top: -12px; /* Avvicina l'asse al binario dello slider */
+}
+
+.timeline-tick {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%); /* Centra l'elemento esattamente sul punto percentuale */
+  white-space: nowrap;
+  font-family: var(--amplify-fonts-default, sans-serif);
+}
+
+.tick-line {
+  width: 1px;
+  height: 6px;
+  background-color: var(--amplify-colors-border-primary, #ccc);
+  margin-bottom: 4px;
+}
+
+/* La tacca di Gennaio (Cambio anno) viene evidenziata */
+.january-line {
+  width: 2px;
+  height: 10px;
+  background-color: var(--amplify-colors-brand-primary-80, #047d95);
+}
+
+.tick-label-day {
+  color: var(--amplify-colors-font-secondary-40, #AAA);
+  font-size: 0.6rem;
+}
+
+.tick-label-month {
+  color: var(--amplify-colors-font-secondary, #666);
+  text-transform: capitalize;
+  font-size: 0.9rem;
+}
+
+.tick-label-year {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--amplify-colors-brand-primary-80, #047d95);
+  margin-top: 1px;
+}
+
+.time-display-container {
+  text-align: center;
+  padding: 0;
+  margin: 0;
+}

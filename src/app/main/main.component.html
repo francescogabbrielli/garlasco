@@ -2,7 +2,16 @@
   <a class="brand" routerLink="/" aria-label="Torna alla home">Garlasco</a>
 
   <nav class="menu" aria-label="Menu principale">
-    @if (isAdminVisible) {
+      <a
+        class="admin-link"
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        aria-label="Dashboard"
+        title="Dashboard"
+      >
+        ▦
+      </a>
+    @if (isAdmin()) {
       <a
         class="admin-link"
         routerLink="/admin"
@@ -21,7 +30,7 @@
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ loggedIn }}
+        {{ givenName()}} {{ familyName() }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
@@ -51,8 +60,8 @@
 
 @if (isSubmitDialogOpen) {
   <app-event-submit-dialog
-    [ownerId]="ownerId"
-    [isAdmin]="isAdmin"
+    [ownerId]="ownerId()"
+    [isAdmin]="isAdmin()"
     (closed)="closeSubmitDialog()"
   ></app-event-submit-dialog>
 }

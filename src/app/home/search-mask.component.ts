@@ -30,7 +30,11 @@ import { TimeIntervalComponent } from './time-interval.component';
             (toChange)="draft.to = $event"
           />
         </div>
-        <app-area-map [area]="draft.area" (areaChange)="setArea($event)" />
+        @defer (on idle) {
+          <app-area-map [area]="draft.area" (areaChange)="setArea($event)" />
+        } @placeholder {
+          <div>Caricamento mappa...</div>
+        }
       </div>
       <div class="search-actions">
         <span>{{ summary }}</span>

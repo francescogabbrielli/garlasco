@@ -26,6 +26,13 @@ export const routes: Routes = [
 					),
 			},
 			{
+				path: 'dashboard',
+				loadComponent: () =>
+					import('./dashboard/dashboard.component').then(
+						({ DashboardComponent }) => DashboardComponent
+					)
+			},
+			{
 				path: 'admin',
 				canActivate: [adminAccessGuard],
 				loadComponent: () =>

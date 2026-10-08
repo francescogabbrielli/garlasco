@@ -1,0 +1,19 @@
+@if (mapError) {
+  <div role="status">{{ mapError }}</div>
+} @else if (mapReady) {
+  <google-map
+      height="500px"
+      width="100%"
+      [mapId]="mapId"
+      [options]="mapOptions"
+      (mapInitialized)="onMapReady($event)"
+      (boundsChanged)="onBoundsChanged()">
+
+    @for (point of markers(); track point.id) {
+      <map-advanced-marker
+          [position]="{ lat: point.start_position.latitude, lng: point.start_position.longitude }"
+          [title]="point.name">
+      </map-advanced-marker>
+    }
+  </google-map>
+}

@@ -1,0 +1,38 @@
+:host {
+    display: flex; 
+    flex-direction: column; 
+    gap: 1.5rem;
+}
+
+.dashboard-layout {
+    gap: 1.5rem;
+}
+
+.filter-layout { 
+    display: grid; 
+    grid-template-columns: 1fr 3fr; 
+    gap: 1.5rem; 
+}
+
+/* Very large screens: mask on the left, event list on the right */
+@media (min-width: 2500px) {
+    .main-view {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        grid-template-areas:
+            "heading heading"
+            "mask list";
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .page-heading { grid-area: heading; }
+    .mask { grid-area: mask; min-width: 0; }
+    .event-list-section {
+        grid-area: list;
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+    }
+}
