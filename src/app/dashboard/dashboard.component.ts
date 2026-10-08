@@ -60,18 +60,18 @@ export class DashboardComponent implements OnInit {
   }
 
   private triggerReload() {
-    this.dataService.setFilters(this.currentDateFrom, this.currentDateTo, this.currentBounds);
+    this.dataService.setFilters(["1622d102-6df4-4f93-bc32-9e1850827194"], this.currentDateFrom, this.currentDateTo, this.currentBounds)
   }
 
   ngOnInit(): void {
     // Recupera lo stato iniziale dalla cache locale
-    const savedTimeFrom = localStorage.getItem(this.STORAGE_TIME_FROM_KEY);
-    const savedTimeTo = localStorage.getItem(this.STORAGE_TIME_TO_KEY);
-    this.currentDateFrom = savedTimeFrom ? JSON.parse(savedTimeFrom) : this.defaultFilters.from;
-    this.currentDateTo = savedTimeTo ? JSON.parse(savedTimeTo) : this.defaultFilters.to;
+    const savedTimeFrom = localStorage.getItem(this.STORAGE_TIME_FROM_KEY)
+    const savedTimeTo = localStorage.getItem(this.STORAGE_TIME_TO_KEY)
+    this.currentDateFrom = savedTimeFrom ? JSON.parse(savedTimeFrom) : this.defaultFilters.from
+    this.currentDateTo = savedTimeTo ? JSON.parse(savedTimeTo) : this.defaultFilters.to
 
-    const savedMap = localStorage.getItem(this.STORAGE_MAP_KEY);
-    this.currentBounds = savedMap ? JSON.parse(savedMap) : this.defaultFilters.bounds;
+    const savedMap = localStorage.getItem(this.STORAGE_MAP_KEY)
+    this.currentBounds = savedMap ? JSON.parse(savedMap) : this.defaultFilters.bounds
 
     // Invia i dati di partenza al servizio per innescare la prima chiamata al DB
     this.triggerReload()
@@ -99,10 +99,7 @@ export class DashboardComponent implements OnInit {
    * Richiamata quando l'utente arriva in fondo alla lista di dettaglio
    */
   onScrollBottom(): void {
-    this.dataService.loadNextEvents((newItems) => {
-      // Unisce i nuovi 100 record proiettati di Amplify nell'array cumulativo locale
-      this.events.update(current => [...current, ...newItems]);
-    });
+    this.dataService.loadMore()
   }
 
   resetFilters(): void {

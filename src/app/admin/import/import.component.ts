@@ -148,7 +148,7 @@ export class ImportComponent {
           description: event.description,
           start_date: event.start_date,
           start_position: event.start_position,
-          center_position: this.mapsService.computeCenterPosition(event.start_position, event.end_position),
+          //center_position: this.mapsService.computeCenterPosition(event.start_position, event.end_position),
           end_position: event.end_position,
           geoHash: this.mapsService.computeGeoHash(event.start_position),
           relevance: event.relevance || 0,
@@ -163,6 +163,9 @@ export class ImportComponent {
         for (const { personId, role } of actors) {
           const { errors } = await client.models.EventPerson.create({
             eventId: createdEvent.id,
+            eventName: createdEvent.name,
+            eventStartDate: createdEvent.start_date,
+            eventGeoHash: createdEvent.geoHash,
             personId,
             role,
           });

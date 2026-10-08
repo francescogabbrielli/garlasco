@@ -57,8 +57,8 @@ export class EventSubmitDialogComponent implements OnChanges {
   mapsService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
 
-  readonly relevanceOptions = RELEVANCE_LABELS.slice(1).map(LABEL_MAP)
-  readonly reliabilityOptions = RELIABILITY_LABELS.slice(1).map(LABEL_MAP)
+  readonly relevanceOptions = RELEVANCE_LABELS.map(LABEL_MAP).slice(1)
+  readonly reliabilityOptions = RELIABILITY_LABELS.map(LABEL_MAP).slice(1)
 
   readonly isSaving = signal(false)
   readonly submitError = signal('')
@@ -172,7 +172,7 @@ export class EventSubmitDialogComponent implements OnChanges {
         end_date: payload.end_date ?? null,
         start_position: payload.start_position,
         end_position: payload.end_position ?? null,
-        center_position: this.mapsService.computeCenterPosition(payload.start_position, payload.end_position),
+        //center_position: this.mapsService.computeCenterPosition(payload.start_position, payload.end_position),
         geoHash: this.mapsService.computeGeoHash(payload.start_position),
         reliability: payload.reliability ?? 0,
         relevance: payload.relevance ?? 0,

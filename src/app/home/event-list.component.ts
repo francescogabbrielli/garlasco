@@ -62,10 +62,10 @@ type PersonRecord = Schema['Person']['type'];
                     }
                   </div>
                 }
-                @if (event.center_position) {
+                @if (event.start_position) {
                   <p class="event-location">
                     <span aria-hidden="true">⌖</span>
-                    {{ event.center_position.latitude | number:'1.3-3':'it' }}, {{ event.center_position.longitude | number:'1.3-3':'it' }}
+                    {{ event.start_position.latitude | number:'1.3-3':'it' }}, {{ event.start_position.longitude | number:'1.3-3':'it' }}
                   </p>
                 }
               </article>
@@ -174,7 +174,7 @@ export class EventListComponent implements OnInit, OnChanges {
           if (![...actorIds].some((actorId) => linkedActors.has(actorId))) return false;
         }
         if (this.filters.area) {
-          const position = event.center_position ?? event.start_position;
+          const position = event.start_position;
           if (!position) return false;
           const distance = this.distanceInMeters(
             this.filters.area.latitude,

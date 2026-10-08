@@ -27,10 +27,10 @@
                     </span>
                 </div>
                 <p>{{ event.description }}</p>
-                @if (event.center_position) {
+                @if (event.start_position) {
                     <p class="event-location">
                     <span aria-hidden="true">⌖</span>
-                    {{ event.center_position.latitude | number:'1.3-3':'it' }}, {{ event.center_position.longitude | number:'1.3-3':'it' }}
+                    {{ event.start_position.latitude | number:'1.3-3':'it' }}, {{ event.start_position.longitude | number:'1.3-3':'it' }}
                     </p>
                 }
             </article>

@@ -19,9 +19,6 @@ const Person = a.model({
   initials: a.string().required(),
   events: a.hasMany('EventPerson', 'personId'),
 })
-  .secondaryIndexes((index) => [
-    index('type').name('type-index'),
-  ])
   .authorization((allow) => [allow.publicApiKey()]);
 
 
@@ -34,29 +31,28 @@ const Event = a.model({
   end_date: a.datetime(),
   start_position: a.ref('Coordinates').required(),
   end_position: a.ref('Coordinates'),
-  center_position: a.ref('Coordinates').required(),
   geoHash: a.string().required(),
   actors: a.hasMany('EventPerson', 'eventId'),
   reliability: a.integer(),
   relevance: a.integer().required().default(0),
 })
-  .secondaryIndexes((index) => [
-    index('type').name('type-index'),
-    index('geoHash').sortKeys(['start_date']).name('geoHash-startDate-index'),
-  ])
   .authorization((allow) => [allow.publicApiKey()]);
 
 const EventPerson = a.model({
   eventId: a.id().required(),
   personId: a.id().required(),
-  name: a.string(),
   role: a.string().required(), //transform to enum? (e.g. 'actor', 'director', 'producer', etc.)
-  //role: a.string().required().enum(['actor', 'director', 'producer', 'writer', 'editor', 'cinematographer', 'composer', 'costume designer', 'production designer', 'sound designer', 'visual effects supervisor']),
+  
   event: a.belongsTo('Event', 'eventId'),
   person: a.belongsTo('Person', 'personId'),
+
+  eventName: a.string(),
+  eventStartDate: a.datetime(),
+  eventGeoHash: a.string()
+
 })
   .secondaryIndexes((index) => [
-    index('personId').name('personId-index'),
+    index('personId').sortKeys(['eventStartDate']).name('personIdStartDate-index')
   ])
   .authorization((allow) => [allow.publicApiKey()]);
 
