@@ -150,7 +150,9 @@ export class ImportComponent {
           start_position: event.start_position,
           //center_position: this.mapsService.computeCenterPosition(event.start_position, event.end_position),
           end_position: event.end_position,
-          geoHash: this.mapsService.computeGeoHash(event.start_position),
+          geoHash: this.mapsService.computeGeoHash(
+            this.mapsService.computeCenterPosition(
+              event.start_position, event.end_position)),
           relevance: event.relevance || 0,
           reliability: event.reliability || 0
         });

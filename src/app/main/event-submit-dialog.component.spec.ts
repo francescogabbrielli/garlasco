@@ -6,10 +6,15 @@ import { EventSubmitDialogComponent } from './event-submit-dialog.component';
 describe('EventSubmitDialogComponent', () => {
   let fixture: ComponentFixture<EventSubmitDialogComponent>;
   let mockCreate: Mock;
+  let mockCreateEventPerson: Mock;
 
   beforeEach(async () => {
     mockCreate = vi.fn().mockName('create').mockResolvedValue({
       data: { id: 'event-123' },
+      errors: [],
+    });
+    mockCreateEventPerson = vi.fn().mockName('createEventPerson').mockResolvedValue({
+      data: { id: 'event-person-123' },
       errors: [],
     });
 
@@ -21,10 +26,19 @@ describe('EventSubmitDialogComponent', () => {
     vi.spyOn(fixture.componentInstance, 'createClient').mockReturnValue({
       models: {
         Event: { create: mockCreate },
+        Person: {
+          list: vi.fn().mockResolvedValue({
+            data: [{ id: 'person-123', name: 'Mario', surname: 'Rossi', initials: 'MR' }],
+            errors: [],
+          }),
+        },
+        EventPerson: { create: mockCreateEventPerson },
       },
     } as any);
-    fixture.componentInstance.ownerId = 'user-123';
-    fixture.componentInstance.isAdmin = true;
+    fixture.componentRef.setInput('ownerId', 'user-123');
+    fixture.componentRef.setInput('isAdmin', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
     fixture.detectChanges();
   });
 
@@ -53,8 +67,13 @@ describe('EventSubmitDialogComponent', () => {
     });
   }
 
+  function selectActor(role = 'testimone'): void {
+    fixture.componentInstance.selectedActors = [{ personId: 'person-123', role }];
+  }
+
   it('should insert a record when the form is valid', async () => {
     setValidFormValues();
+    selectActor();
 
     await fixture.componentInstance.submitEvent();
 
@@ -72,8 +91,9 @@ describe('EventSubmitDialogComponent', () => {
   });
 
   it('should store zero ratings for non-admin submissions', async () => {
-    fixture.componentInstance.isAdmin = false;
+    fixture.componentRef.setInput('isAdmin', false);
     setValidFormValues({ reliability: 4, relevance: 3 });
+    selectActor();
 
     await fixture.componentInstance.submitEvent();
 
@@ -83,8 +103,50 @@ describe('EventSubmitDialogComponent', () => {
     }));
   });
 
+  it('should associate a selected person with their role', async () => {
+    const personChoice = fixture.nativeElement.querySelector('[aria-label="Mario Rossi"]') as HTMLButtonElement;
+    personChoice.click();
+    fixture.detectChanges();
+
+    const roleInput = fixture.nativeElement.querySelector('#event-person-role-person-123') as HTMLInputElement;
+    roleInput.value = 'testimone';
+    roleInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    setValidFormValues();
+
+    await fixture.componentInstance.submitEvent();
+
+    expect(mockCreateEventPerson).toHaveBeenCalledWith(expect.objectContaining({
+      eventId: 'event-123',
+      personId: 'person-123',
+      role: 'testimone',
+    }));
+  });
+
+  it('should require a role for each selected person', async () => {
+    const personChoice = fixture.nativeElement.querySelector('[aria-label="Mario Rossi"]') as HTMLButtonElement;
+    personChoice.click();
+    setValidFormValues();
+
+    await fixture.componentInstance.submitEvent();
+
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.submitError()).toContain('ruolo');
+  });
+
+  it('should require at least one selected person', async () => {
+    setValidFormValues();
+
+    await fixture.componentInstance.submitEvent();
+
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.submitError()).toContain('almeno una persona');
+    expect(fixture.nativeElement.textContent).toContain('Seleziona almeno una persona coinvolta.');
+  });
+
   it('should reject zero ratings for administrators', async () => {
     setValidFormValues({ reliability: 0, relevance: 0 });
+    selectActor();
 
     await fixture.componentInstance.submitEvent();
 
@@ -139,6 +201,7 @@ describe('EventSubmitDialogComponent', () => {
   it('should surface an error when the insert fails', async () => {
     mockCreate.mockRejectedValue(new Error('DB timeout'));
     setValidFormValues();
+    selectActor();
 
     await fixture.componentInstance.submitEvent();
 

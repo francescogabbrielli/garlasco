@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, inject, input, output, signal } from '@angular/core'
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, inject, input, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { generateClient } from 'aws-amplify/data'
 
@@ -11,6 +11,8 @@ import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../app.constant
 import { GoogleMapsLoaderService } from '../google-maps-loader.service'
 
 type EventType = Schema['Event']['type']['type']
+type PersonRecord = Schema['Person']['type']
+type SelectedActor = { personId: string; role: string }
 
 export type EventSubmitPayload = {
   owner: string
@@ -49,7 +51,7 @@ declare global {
   templateUrl: './event-submit-dialog.component.html',
   styleUrls: ['./event-submit-dialog.component.css']
 })
-export class EventSubmitDialogComponent implements OnChanges {
+export class EventSubmitDialogComponent implements OnChanges, OnInit {
   ownerId = input('')
   isAdmin = input(false)
   closed = output<void>()
@@ -73,6 +75,12 @@ export class EventSubmitDialogComponent implements OnChanges {
   @ViewChild('mapCanvas') private mapCanvas?: ElementRef<HTMLDivElement>
 
   isHelpDialogOpen = false
+  people: PersonRecord[] = []
+  peopleLoading = true
+  peopleLoadError = ''
+  selectedActors: SelectedActor[] = []
+  actorSelectionError = false
+  actorRoleError = false
 
   readonly eventForm = new FormGroup({
     owner: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -111,9 +119,63 @@ export class EventSubmitDialogComponent implements OnChanges {
     }
   }
 
+  async ngOnInit(): Promise<void> {
+    try {
+      const { data, errors } = await this.createClient().models.Person.list()
+      if (errors?.length) {
+        throw new Error(errors[0].message)
+      }
+      this.people = data.sort((a, b) => a.surname.localeCompare(b.surname)) ?? []
+    } catch (error) {
+      this.peopleLoadError = error instanceof Error
+        ? `Impossibile caricare le persone: ${error.message}`
+        : 'Impossibile caricare le persone.'
+    } finally {
+      this.peopleLoading = false
+    }
+  }
+
+  isActorSelected(personId: string): boolean {
+    return this.selectedActors.some((actor) => actor.personId === personId)
+  }
+
+  toggleActor(personId: string): void {
+    this.selectedActors = this.isActorSelected(personId)
+      ? this.selectedActors.filter((actor) => actor.personId !== personId)
+      : [...this.selectedActors, { personId, role: '' }]
+    this.actorSelectionError = false
+    this.actorRoleError = false
+  }
+
+  removeActor(personId: string): void {
+    this.toggleActor(personId)
+  }
+
+  clearActors(): void {
+    this.selectedActors = []
+    this.actorSelectionError = false
+    this.actorRoleError = false
+  }
+
+  personName(personId: string): string {
+    const person = this.people.find((item) => item.id === personId)
+    return person ? `${person.name} ${person.surname}` : ''
+  }
+
+  updateActorRole(personId: string, event: Event): void {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.personId === personId ? { ...actor, role: target.value } : actor,
+    )
+    this.actorRoleError = false
+  }
+
   async submitEvent(): Promise<void> {
     this.eventForm.markAllAsTouched()
     this.submitError.set('')
+    this.actorSelectionError = this.selectedActors.length === 0
 
     if (this.eventForm.invalid) {
       this.submitError.set(
@@ -124,6 +186,17 @@ export class EventSubmitDialogComponent implements OnChanges {
           ? 'Per attendibilità e rilevanza scegli un valore da 1 a 4.'
           : 'Completa tutti i campi obbligatori prima di salvare l’evento.',
       )
+      return
+    }
+
+    if (this.actorSelectionError) {
+      this.submitError.set('Seleziona almeno una persona coinvolta.')
+      return
+    }
+
+    this.actorRoleError = this.selectedActors.some((actor) => !actor.role.trim())
+    if (this.actorRoleError) {
+      this.submitError.set('Indica il ruolo per ogni persona selezionata.')
       return
     }
 
@@ -172,8 +245,10 @@ export class EventSubmitDialogComponent implements OnChanges {
         end_date: payload.end_date ?? null,
         start_position: payload.start_position,
         end_position: payload.end_position ?? null,
-        //center_position: this.mapsService.computeCenterPosition(payload.start_position, payload.end_position),
-        geoHash: this.mapsService.computeGeoHash(payload.start_position),
+        geoHash: this.mapsService.computeGeoHash(
+          this.mapsService.computeCenterPosition(
+            payload.start_position, payload.end_position)
+        ),
         reliability: payload.reliability ?? 0,
         relevance: payload.relevance ?? 0,
       })
@@ -182,6 +257,21 @@ export class EventSubmitDialogComponent implements OnChanges {
         const message = errors?.[0]?.message ?? 'Errore durante il salvataggio dell’evento.'
         this.submitError.set(message)
         return
+      }
+
+      for (const actor of this.selectedActors) {
+        const { errors: actorErrors } = await client.models.EventPerson.create({
+          eventId: data.id,
+          eventName: data.name,
+          eventStartDate: data.start_date,
+          eventGeoHash: data.geoHash,
+          personId: actor.personId,
+          role: actor.role.trim(),
+        })
+        if (actorErrors?.length) {
+          this.submitError.set(`L’evento è stato creato, ma non è stato possibile associare ${this.personName(actor.personId)}: ${actorErrors[0].message}`)
+          return
+        }
       }
 
       this.closeDialog()
