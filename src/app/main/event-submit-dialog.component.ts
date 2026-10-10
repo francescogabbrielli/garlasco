@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common'
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, inject, input, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
 
 import { EVENT_TYPES } from '../../../amplify/data/enums'
@@ -12,28 +13,8 @@ import { GoogleMapsLoaderService } from '../google-maps-loader.service'
 
 type EventType = Schema['Event']['type']['type']
 type PersonRecord = Schema['Person']['type']
-type SelectedActor = { personId: string; role: string }
-
-export type EventSubmitPayload = {
-  owner: string
-  type: EventType
-  name: string
-  description: string
-  start_date: string
-  end_date?: string | null
-  start_position: {
-    latitude: number
-    longitude: number
-    radius: number
-  }
-  end_position?: {
-    latitude: number
-    longitude: number
-    radius: number
-  } | null
-  reliability?: number
-  relevance?: number
-}
+type Coordinates = Schema['Coordinates']['type']
+type SelectedActor = { rowId: number; personId: string; personQuery: string; role: string }
 
 declare global {
   interface Window {
@@ -47,7 +28,7 @@ declare global {
 @Component({
   selector: 'app-event-submit-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, MatAutocompleteModule, ReactiveFormsModule],
   templateUrl: './event-submit-dialog.component.html',
   styleUrls: ['./event-submit-dialog.component.css']
 })
@@ -56,11 +37,11 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
   isAdmin = input(false)
   closed = output<void>()
 
-  mapsService = inject(GeoService)
+  geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
 
-  readonly relevanceOptions = RELEVANCE_LABELS.map(LABEL_MAP).slice(1)
-  readonly reliabilityOptions = RELIABILITY_LABELS.map(LABEL_MAP).slice(1)
+  readonly relevanceOptions = RELEVANCE_LABELS.map(LABEL_MAP).slice(1).reverse()
+  readonly reliabilityOptions = RELIABILITY_LABELS.map(LABEL_MAP).slice(1).reverse()
 
   readonly isSaving = signal(false)
   readonly submitError = signal('')
@@ -78,20 +59,26 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
   people: PersonRecord[] = []
   peopleLoading = true
   peopleLoadError = ''
-  selectedActors: SelectedActor[] = []
+  selectedActors: SelectedActor[] = [{ rowId: 0, personId: '', personQuery: '', role: '' }]
   actorSelectionError = false
   actorRoleError = false
+  private nextActorRowId = 1
+
+  readonly displayPerson = (person: PersonRecord | string | null): string => {
+    if (typeof person === 'string') return person
+    return person ? `${person.name} ${person.surname}` : ''
+  }
 
   readonly eventForm = new FormGroup({
     owner: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     type: new FormControl<EventType | null>(null, Validators.required),
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    reliability: new FormControl(1, {
+    reliability: new FormControl(this.reliabilityOptions.length, {
       nonNullable: true,
       validators: [Validators.min(1), Validators.max(4)],
     }),
-    relevance: new FormControl(1, {
+    relevance: new FormControl(this.relevanceOptions.length, {
       nonNullable: true,
       validators: [Validators.min(1), Validators.max(4)],
     }),
@@ -102,7 +89,7 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
       radius: new FormControl<number | null>(null, { nonNullable: true }),
     }),
     end: new FormGroup({
-      date: new FormControl('', { nonNullable: true }),
+      date: new FormControl('', { nonNullable: false }),
       latitude: new FormControl<number | null>(null, { nonNullable: false }),
       longitude: new FormControl<number | null>(null, { nonNullable: false }),
       radius: new FormControl<number | null>(null, { nonNullable: false }),
@@ -125,7 +112,9 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
       if (errors?.length) {
         throw new Error(errors[0].message)
       }
-      this.people = data.sort((a, b) => a.surname.localeCompare(b.surname)) ?? []
+      this.people = data.sort((a, b) =>
+        a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name),
+      ) ?? []
     } catch (error) {
       this.peopleLoadError = error instanceof Error
         ? `Impossibile caricare le persone: ${error.message}`
@@ -135,24 +124,60 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
     }
   }
 
-  isActorSelected(personId: string): boolean {
-    return this.selectedActors.some((actor) => actor.personId === personId)
+  filteredPeople(actor: SelectedActor): PersonRecord[] {
+    const query = actor.personQuery.trim().toLocaleLowerCase()
+    return this.people.filter((person) => {
+      const alreadySelected = this.selectedActors.some(
+        (selectedActor) => selectedActor.rowId !== actor.rowId && selectedActor.personId === person.id,
+      )
+      const name = `${person.name} ${person.surname}`.toLocaleLowerCase()
+      return !alreadySelected && name.includes(query)
+    })
   }
 
-  toggleActor(personId: string): void {
-    this.selectedActors = this.isActorSelected(personId)
-      ? this.selectedActors.filter((actor) => actor.personId !== personId)
-      : [...this.selectedActors, { personId, role: '' }]
+  isActorPersonValid(actor: SelectedActor): boolean {
+    const person = this.people.find((item) => item.id === actor.personId)
+    return !!person
+      && actor.personQuery.trim().toLocaleLowerCase()
+        === `${person.name} ${person.surname}`.trim().toLocaleLowerCase()
+  }
+
+  addActor(): void {
+    this.selectedActors = [
+      ...this.selectedActors,
+      { rowId: this.nextActorRowId++, personId: '', personQuery: '', role: '' },
+    ]
     this.actorSelectionError = false
     this.actorRoleError = false
   }
 
-  removeActor(personId: string): void {
-    this.toggleActor(personId)
+  updateActorPersonQuery(rowId: number, event: Event): void {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId
+        ? { ...actor, personId: '', personQuery: target.value }
+        : actor,
+    )
+    this.actorSelectionError = false
   }
 
-  clearActors(): void {
-    this.selectedActors = []
+  selectActorPerson(rowId: number, person: PersonRecord): void {
+    if (!this.people.some((currentPerson) => currentPerson.id === person.id)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId
+        ? { ...actor, personId: person.id, personQuery: this.personName(person.id) }
+        : actor,
+    )
+    this.actorSelectionError = false
+  }
+
+  removeActor(rowId: number): void {
+    if (this.selectedActors.length <= 1) return
+
+    this.selectedActors = this.selectedActors.filter((actor) => actor.rowId !== rowId)
     this.actorSelectionError = false
     this.actorRoleError = false
   }
@@ -162,20 +187,22 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
     return person ? `${person.name} ${person.surname}` : ''
   }
 
-  updateActorRole(personId: string, event: Event): void {
+  updateActorRole(rowId: number, event: Event): void {
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
 
     this.selectedActors = this.selectedActors.map((actor) =>
-      actor.personId === personId ? { ...actor, role: target.value } : actor,
+      actor.rowId === rowId ? { ...actor, role: target.value } : actor,
     )
     this.actorRoleError = false
   }
 
   async submitEvent(): Promise<void> {
+
     this.eventForm.markAllAsTouched()
     this.submitError.set('')
     this.actorSelectionError = this.selectedActors.length === 0
+      || this.selectedActors.some((actor) => !this.isActorPersonValid(actor))
 
     if (this.eventForm.invalid) {
       this.submitError.set(
@@ -190,7 +217,13 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
     }
 
     if (this.actorSelectionError) {
-      this.submitError.set('Seleziona almeno una persona coinvolta.')
+      this.submitError.set(
+        this.selectedActors.length === 0
+          ? 'Seleziona almeno una persona coinvolta.'
+          : this.selectedActors.some((actor) => this.isActorPersonValid(actor))
+            ? 'Seleziona una persona in ogni riga.'
+            : 'Seleziona una persona valida dall’elenco in ogni riga.',
+      )
       return
     }
 
@@ -209,53 +242,44 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
       return
     }
 
-    const payload: EventSubmitPayload = {
-      owner: this.eventForm.controls.owner.value,
-      type,
-      name: this.eventForm.controls.name.value.trim(),
-      description: this.eventForm.controls.description.value.trim(),
-      start_date: start.date,
-      end_date: end.date || null,
-      start_position: {
-        latitude: Number(start.latitude),
-        longitude: Number(start.longitude),
-        radius: Number(start.radius),
-      },
-      end_position: {
-        latitude: Number(end.latitude),
-        longitude: Number(end.longitude),
-        radius: Number(end.radius),
-      },
-      reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
-      relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
-    }
-
     this.isSaving.set(true)
 
     try {
 
       const client = this.createClient()
 
-      const { data, errors } = await client.models.Event.create({
-        owner: payload.owner,
-        type: payload.type,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date ?? null,
-        start_position: payload.start_position,
-        end_position: payload.end_position ?? null,
-        geoHash: this.mapsService.computeGeoHash(
-          this.mapsService.computeCenterPosition(
-            payload.start_position, payload.end_position)
-        ),
-        reliability: payload.reliability ?? 0,
-        relevance: payload.relevance ?? 0,
-      })
+      const startPosition:Coordinates = {
+        latitude: Number(start.latitude),
+        longitude: Number(start.longitude),
+        radius: Number(start.radius),
+      }
+
+      const endPosition:Coordinates | null = end.latitude ? {
+        latitude: Number(end.latitude),
+        longitude: Number(end.longitude),
+        radius: Number(end.radius),
+      } : null
+
+            const payload = {
+        owner: this.eventForm.controls.owner.value,
+        type,
+        name: this.eventForm.controls.name.value.trim(),
+        description: this.eventForm.controls.description.value.trim(),
+        start_date: new Date(start.date).toISOString(),
+        end_date: end.date ? new Date(end.date).toISOString() : null,
+        start_position: startPosition,
+        end_position: endPosition,
+        geoHash: this.geoService.computeGeoHash(
+          this.geoService.computeCenterPosition(startPosition, endPosition)),
+        reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
+        relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
+      }
+
+      const { data, errors } = await client.models.Event.create(payload)
 
       if (errors?.length || !data?.id) {
-        const message = errors?.[0]?.message ?? 'Errore durante il salvataggio dell’evento.'
-        this.submitError.set(message)
+        console.error('Error creating Event', payload, errors)
+        this.submitError.set('Errore durante il salvataggio dell’evento! Contattare l’amministratore.')
         return
       }
 
@@ -346,7 +370,7 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
       const garlasco = { lat: 45.1974, lng: 8.9247 };
       this.map = new google.maps.Map(this.mapCanvas.nativeElement, {
         center: garlasco,
-        zoom: 13,
+        zoom: 14,
         gestureHandling: 'greedy',
         mapTypeControl: false,
         streetViewControl: false,
@@ -358,7 +382,8 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
           this.selectMapPosition(event.latLng.lat(), event.latLng.lng());
         }
       });
-    } catch {
+    } catch (err) {
+      console.error('Error loading Google Maps:', err);
       this.mapError = 'Impossibile caricare Google Maps.';
     }
   }
@@ -390,15 +415,15 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
       const southWest = bounds.getSouthWest()
   
       const verticalRadius = Math.min(
-        this.mapsService.computeDistance(
+        this.geoService.computeDistance(
           centerCoord, xy2coords(northEast.lat(), center.lng())),
-        this.mapsService.computeDistance(
+        this.geoService.computeDistance(
           centerCoord, xy2coords(southWest.lat(), center.lng())))
   
       const horizontalRadius = Math.min(
-        this.mapsService.computeDistance(
+        this.geoService.computeDistance(
           centerCoord, xy2coords(center.lat(), northEast.lng())),
-        this.mapsService.computeDistance(
+        this.geoService.computeDistance(
           centerCoord, xy2coords(center.lat(), southWest.lng())))
 
       return Math.round(Math.min(verticalRadius, horizontalRadius))

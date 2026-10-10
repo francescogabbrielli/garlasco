@@ -15,7 +15,8 @@ export class GoogleMapsLoaderService {
       setOptions({ key: apiKey, v: 'weekly' });
       this.loadPromise = Promise.all([
         importLibrary('maps'),
-        importLibrary('marker')
+        importLibrary('marker'),
+        importLibrary('places'),
       ]).then(() => undefined);
     }
 

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 export interface TimelineTick {
   positionPercent: number
   label: string
-  type: "day" | "month" | "year"
+  type: "day" | "sunday" | "month" | "year"
 }
 
 @Component({
@@ -134,7 +134,7 @@ export class RangeFilterComponent implements OnInit {
       const isFirstMonth = currentScan.getMonth() === 0 || totalDuration > this.ONE_DAY * 2000
       const isFirstOfMonth = currentScan.getDate() === 1 || totalDuration > this.ONE_DAY * 120
 
-      let type: "day" | "month" | "year" = "day"
+      let type: "day" | "sunday" | "month" | "year" = "day"
       let label = currentScan.getDate().toString().padStart(2, '0')
 
       if (isFirstMonth && isFirstOfMonth) {
@@ -143,9 +143,12 @@ export class RangeFilterComponent implements OnInit {
       } else if (isFirstOfMonth) {
         type = "month"
         label = currentScan.toLocaleString('it-IT', { month: 'short' })
+      } 
+      if (currentScan.getDay() === 0) {
+        type = "sunday"
       }
 
-      if (type === "year" || type === "month" && (isMonthVisible || isSixthMonthVisible) || type === "day" && (isDayVisible || isFiveDayVisible)) {
+      if (type === "year" || type === "month" && (isMonthVisible || isSixthMonthVisible) || type.endsWith("day") && (isDayVisible || isFiveDayVisible)) {
         ticks.push({
           positionPercent,
           label: label,

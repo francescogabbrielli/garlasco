@@ -71,69 +71,81 @@
       <fieldset class="position-section event-person-section form-field-wide">
         <legend>Persone coinvolte</legend>
         <div class="actor-selection-heading">
-          <p>Seleziona una o più persone e indica il ruolo di ciascuna.</p>
-          @if (selectedActors.length) {
-            <button class="actor-clear-control" type="button" (click)="clearActors()">Azzera</button>
-          }
+          <p>Seleziona una persona e indica il ruolo; aggiungi una riga per ogni persona coinvolta.</p>
+          <button class="actor-add-control" type="button" (click)="addActor()" [disabled]="peopleLoading || !!peopleLoadError || !people.length">
+            Aggiungi persona
+          </button>
         </div>
         @if (peopleLoading) {
           <p class="actor-control-message" aria-live="polite">Caricamento persone…</p>
         } @else if (peopleLoadError) {
           <p class="actor-control-message field-error" role="alert">{{ peopleLoadError }}</p>
-        } @else if (people.length) {
-          <div class="actor-list" role="group" aria-label="Seleziona persone coinvolte">
-            @for (person of people; track person.id) {
-              <button
-                class="actor-option"
-                [class.selected]="isActorSelected(person.id)"
-                type="button"
-                [attr.aria-pressed]="isActorSelected(person.id)"
-                [attr.aria-label]="person.name + ' ' + person.surname"
-                [attr.title]="person.name + ' ' + person.surname"
-                (click)="toggleActor(person.id)"
-              >
-                <span class="initials" aria-hidden="true">{{ person.initials }}</span>
-              </button>
-            }
-          </div>
-        } @else {
+        } @else if (!people.length) {
           <p class="actor-control-message">Nessuna persona disponibile.</p>
         }
-        @if (actorSelectionError) {
-          <span class="field-error">Seleziona almeno una persona coinvolta.</span>
-        }
 
-        @if (selectedActors.length) {
-          <div class="selected-actors">
-            @for (actor of selectedActors; track actor.personId) {
-              <div class="form-field">
-                <label [for]="'event-person-role-' + actor.personId">{{ personName(actor.personId) }} - Ruolo</label>
-                <div class="actor-role-field">
+        <div class="selected-actors">
+          @for (actor of selectedActors; track actor.rowId) {
+            <div class="actor-person-role-row">
+              <div class="actor-person-role-fields">
+                <div class="form-field">
+                  <label [for]="'event-person-' + actor.rowId">Persona</label>
                   <input
                     class="search-control"
-                    [id]="'event-person-role-' + actor.personId"
+                    [id]="'event-person-' + actor.rowId"
+                    type="text"
+                    [matAutocomplete]="personAutocomplete"
+                    [value]="actor.personQuery"
+                    [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
+                    (input)="updateActorPersonQuery(actor.rowId, $event)"
+                    required
+                    [disabled]="peopleLoading || !!peopleLoadError || !people.length"
+                  />
+                  <mat-autocomplete
+                    #personAutocomplete="matAutocomplete"
+                    panelClass="person-autocomplete-panel"
+                    [displayWith]="displayPerson"
+                    (optionSelected)="selectActorPerson(actor.rowId, $event.option.value)"
+                  >
+                    @for (person of filteredPeople(actor); track person.id) {
+                      <mat-option [value]="person">{{ person.name }} {{ person.surname }}</mat-option>
+                    }
+                  </mat-autocomplete>
+                  @if (actorSelectionError && !isActorPersonValid(actor)) {
+                    <span class="field-error">Seleziona una persona dall'elenco.</span>
+                  }
+                </div>
+
+                <div class="form-field">
+                  <label [for]="'event-person-role-' + actor.rowId">Ruolo</label>
+                  <input
+                    class="search-control"
+                    [id]="'event-person-role-' + actor.rowId"
                     type="text"
                     [value]="actor.role"
                     [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
-                    (input)="updateActorRole(actor.personId, $event)"
+                    (input)="updateActorRole(actor.rowId, $event)"
                     required
                   />
-                  <button
-                    class="actor-remove-control"
-                    type="button"
-                    [attr.aria-label]="'Rimuovi ' + personName(actor.personId)"
-                    (click)="removeActor(actor.personId)"
-                  >
-                    Rimuovi
-                  </button>
+                  @if (actorRoleError && !actor.role.trim()) {
+                    <span class="field-error">Indica il ruolo della persona.</span>
+                  }
                 </div>
-                @if (actorRoleError && !actor.role.trim()) {
-                  <span class="field-error">Indica il ruolo della persona.</span>
-                }
               </div>
-            }
-          </div>
-        }
+
+              @if (selectedActors.length > 1) {
+                <button
+                  class="actor-remove-control"
+                  type="button"
+                  [attr.aria-label]="'Rimuovi riga persona ' + (actor.rowId + 1)"
+                  (click)="removeActor(actor.rowId)"
+                >
+                  Rimuovi
+                </button>
+              }
+            </div>
+          }
+        </div>
       </fieldset>
 
       <fieldset class="position-section" formGroupName="start">

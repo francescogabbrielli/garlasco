@@ -76,7 +76,6 @@ export class DataService {
       dateTo: to.toISOString(), 
       geoHash: this.geoService.computeGeoHash(viewportDisc)
     }
-    console.log('New filter set:', newFilter);
     this.filterSubject.next(newFilter)
   }
 
@@ -103,19 +102,17 @@ export class DataService {
    */
   private fetchPage(filter: Filter | null, isLoadMore: boolean) {
     if (!filter || !filter.personIds || filter.personIds.length === 0) {
-      return of([]);
+      return of([])
     }
-
-    console.log('Loading more with current filter:', filter);
 
     // Prepariamo le chiamate per ogni persona
     const queryPromises = filter.personIds.map((id: string) => {
       // Se stiamo caricando le pagine successive, prendiamo il rispettivo token recuperato prima
-      const tokenForPerson = isLoadMore ? this.personTokens[id] : undefined;
+      const tokenForPerson = isLoadMore ? this.personTokens[id] : undefined
 
       // Se in un giro precedente questa persona aveva finito i dati (token === null), la saltiamo
       if (tokenForPerson === null) {
-        return Promise.resolve({ data: [], nextToken: null, personId: id });
+        return Promise.resolve({ data: [], nextToken: null, personId: id })
       }
 
       return (client.models.EventPerson as any).listEventPersonByPersonIdAndEventStartDate(

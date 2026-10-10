@@ -5,10 +5,6 @@
   </div>
   
   <div class="slider-wrapper" (wheel)="onWheel($event)">
-    <mat-slider [min]="currentAbsoluteMin" [max]="currentAbsoluteMax" [step]="currentStep" [showTickMarks]="true">
-      <input matSliderStartThumb [(ngModel)]="minTimestamp" (valueChange)="onSliderChange()">
-      <input matSliderEndThumb [(ngModel)]="maxTimestamp" (valueChange)="onSliderChange()">
-    </mat-slider>
 
     <!-- ASSE DEL TEMPO DINAMICO -->
     <div class="timeline-axis">
@@ -19,5 +15,11 @@
         </div>
       }
     </div>
+
+    <mat-slider class="range-slider" [min]="currentAbsoluteMin" [max]="currentAbsoluteMax" [step]="currentStep" [showTickMarks]="true">
+      <input matSliderStartThumb [(ngModel)]="minTimestamp" (valueChange)="onSliderChange()">
+      <input matSliderEndThumb [(ngModel)]="maxTimestamp" (valueChange)="onSliderChange()">
+    </mat-slider>
+
   </div>
 </div>

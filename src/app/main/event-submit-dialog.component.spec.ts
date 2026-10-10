@@ -68,7 +68,12 @@ describe('EventSubmitDialogComponent', () => {
   }
 
   function selectActor(role = 'testimone'): void {
-    fixture.componentInstance.selectedActors = [{ personId: 'person-123', role }];
+    fixture.componentInstance.selectedActors = [{
+      rowId: 0,
+      personId: 'person-123',
+      personQuery: 'Mario Rossi',
+      role,
+    }];
   }
 
   it('should insert a record when the form is valid', async () => {
@@ -104,11 +109,20 @@ describe('EventSubmitDialogComponent', () => {
   });
 
   it('should associate a selected person with their role', async () => {
-    const personChoice = fixture.nativeElement.querySelector('[aria-label="Mario Rossi"]') as HTMLButtonElement;
-    personChoice.click();
+    const component = fixture.componentInstance;
+    const rowId = component.selectedActors[0].rowId;
+    const personInput = fixture.nativeElement.querySelector('#event-person-0') as HTMLInputElement;
+    personInput.value = 'Mario';
+    personInput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(component.filteredPeople(component.selectedActors[0]).map((person) => person.id)).toContain('person-123');
+
+    const person = component.people.find((item) => item.id === 'person-123');
+    if (!person) throw new Error('Expected test person to be loaded');
+    component.selectActorPerson(rowId, person);
     fixture.detectChanges();
 
-    const roleInput = fixture.nativeElement.querySelector('#event-person-role-person-123') as HTMLInputElement;
+    const roleInput = fixture.nativeElement.querySelector('#event-person-role-0') as HTMLInputElement;
     roleInput.value = 'testimone';
     roleInput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -124,9 +138,12 @@ describe('EventSubmitDialogComponent', () => {
   });
 
   it('should require a role for each selected person', async () => {
-    const personChoice = fixture.nativeElement.querySelector('[aria-label="Mario Rossi"]') as HTMLButtonElement;
-    personChoice.click();
+    const component = fixture.componentInstance;
+    const person = component.people.find((item) => item.id === 'person-123');
+    if (!person) throw new Error('Expected test person to be loaded');
+    component.selectActorPerson(component.selectedActors[0].rowId, person);
     setValidFormValues();
+    fixture.detectChanges();
 
     await fixture.componentInstance.submitEvent();
 
@@ -134,7 +151,39 @@ describe('EventSubmitDialogComponent', () => {
     expect(fixture.componentInstance.submitError()).toContain('ruolo');
   });
 
+  it('should add another autocomplete person and require an exact person selection', async () => {
+    const addButton = fixture.nativeElement.querySelector('.actor-add-control') as HTMLButtonElement;
+    addButton.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelectorAll('.actor-person-role-row')).toHaveLength(2);
+
+    const personInput = fixture.nativeElement.querySelector('#event-person-0') as HTMLInputElement;
+    personInput.value = 'Unknown person';
+    personInput.dispatchEvent(new Event('input'));
+    setValidFormValues();
+    fixture.detectChanges();
+
+    await fixture.componentInstance.submitEvent();
+
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.submitError()).toContain('persona');
+  });
+
+  it('should reject a person that is no longer in the current people list', async () => {
+    setValidFormValues();
+    selectActor();
+    fixture.componentInstance.people = [];
+
+    await fixture.componentInstance.submitEvent();
+
+    expect(mockCreate).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.submitError()).toContain('persona valida');
+    expect(fixture.componentInstance.actorSelectionError).toBe(true);
+  });
+
   it('should require at least one selected person', async () => {
+    fixture.componentInstance.selectedActors = [];
     setValidFormValues();
 
     await fixture.componentInstance.submitEvent();

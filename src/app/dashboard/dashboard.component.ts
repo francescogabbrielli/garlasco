@@ -7,6 +7,8 @@ import { EventListComponent } from './detail-list/detail-list.component';
 import { MapFilterComponent } from './map-filter/map-filter.component';
 import { RangeFilterComponent } from './range-filter/range-filter.component';
 
+import { DEFAULT_COORDINATES } from '../app.constants';
+
 type Event = Schema['Event']['type']
 type Coordinates = Schema['Coordinates']['type']
 
@@ -37,7 +39,7 @@ export class DashboardComponent implements OnInit {
   readonly defaultFilters = {
     from: new Date("2007-07-15T00:00"),
     to: new Date("2007-08-14T23:59"),
-    bounds: { latitude: 45.1974, longitude: 8.9247, radius: 1000 }
+    bounds: DEFAULT_COORDINATES
   }
 
   currentFilters!: {

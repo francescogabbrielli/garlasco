@@ -5,8 +5,9 @@
   padding-bottom: 2.5rem; /* Spazio inferiore per ospitare la timeline */
 }
 
-mat-slider {
-  width: stretch;
+mat-slider.range-slider {
+  width: 100%;
+  margin-top: -64px /* Avvicina l'asse al binario dello slider */
 }
 
 .timeline-axis {
@@ -15,7 +16,6 @@ mat-slider {
   position: relative;
   width: 100%;
   height: 20px;
-  margin-top: -12px; /* Avvicina l'asse al binario dello slider */
 }
 
 .timeline-tick {
@@ -42,9 +42,13 @@ mat-slider {
   background-color: var(--amplify-colors-brand-primary-80, #047d95);
 }
 
-.tick-label-day {
+.tick-label-day, .tick-label-sunday {
   color: var(--amplify-colors-font-secondary-40, #AAA);
   font-size: 0.6rem;
+}
+
+.tick-label-sunday {
+  color: var(--amplify-colors-font-secondary-40, red);
 }
 
 .tick-label-month {

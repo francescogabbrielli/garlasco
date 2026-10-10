@@ -1,3 +1,5 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
 body {
     margin: 0;
     background-color: #f3f6f3;
@@ -7,7 +9,7 @@ body {
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   width: 100%;
   }
-  
+
   main {
     display: flex;
     flex-direction: column;

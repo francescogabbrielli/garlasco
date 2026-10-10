@@ -15,3 +15,9 @@ export const RELEVANCE_LABELS:string[] = [
     'Fortemente collegato',
     'Rilevante'
 ]
+
+export const DEFAULT_COORDINATES = {
+    latitude: 45.1974,
+    longitude: 8.9247,
+    radius: 1000,
+}
