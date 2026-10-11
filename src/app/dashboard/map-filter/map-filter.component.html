@@ -3,7 +3,7 @@
       height="500px"
       width="100%"
       [mapId]="mapId"
-      [options]="mapOptions"
+      [options]="mapOptions()"
       (mapInitialized)="onMapReady($event)"
       (boundsChanged)="onBoundsChanged()">
 

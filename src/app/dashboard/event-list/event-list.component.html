@@ -1,0 +1,40 @@
+<section class="results" aria-labelledby="results-title" aria-live="polite">
+    <div class="results-heading">
+        <div>
+            <p class="eyebrow">Cronologia</p>
+        </div>
+    </div>
+    @if (!items().length) {
+        <div class="state-message empty-state">
+            <span aria-hidden="true">⌕</span>
+            <p>Nessun evento corrisponde ai filtri selezionati.</p>
+        </div>
+    } @else {
+        <ol class="event-list">
+            @for (line of displayedItems(); track line.fact?.id || 'last') {
+                <li class="event-item">
+                    <time class="event-time" [attr.datetime]="line.fact?.start_date">
+                    <span>{{ line.fact?.start_date | date:'dd' }}</span>
+                    <span>{{ line.fact?.start_date | date:'MMM yyyy':'':'it' }}</span>
+                    <span>{{ line.fact?.start_date | date:'HH:mm' }}</span>
+                    </time>
+                    <article class="event-content">
+                        <div class="event-title-line">
+                            <h3>{{ line.fact?.name }}</h3>
+                            <span class="reliability">Rilevanza
+                            <app-tickbar [level]="line.fact?.relevance || 0"></app-tickbar>
+                            </span>
+                        </div>
+                        <p>{{ line.fact?.description }}</p>
+                        @if (line.fact?.start_position) {
+                            <p class="event-location">
+                            <span aria-hidden="true">⌖</span>
+                            {{ line.fact?.start_position?.latitude | number:'1.3-3':'it' }}, {{ line.fact?.start_position?.longitude | number:'1.3-3':'it' }}
+                            </p>
+                        }
+                    </article>
+                </li>
+            }
+        </ol>
+    }
+</section>

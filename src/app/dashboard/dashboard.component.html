@@ -12,16 +12,21 @@
       <div>
         <p class="eyebrow">Filtri</p>
       </div>
-      <button class="reset-button" type="button" (click)="resetFilters()">Reimposta</button>
     </div>
     <div class="filter-layout">
       <div class="filter-shoulder">
+        <app-person-filter
+          [selectedIds]="currentFilters.peronsIds"
+          (selectionChange)="handlePersonFilter($event)">
+        </app-person-filter  >
       </div>
       <div class="filter-stack">
         @defer (on idle) {
           <app-range-filter 
-            [initialFrom]="defaultFilters.from"
-            [initialTo]="defaultFilters.to"
+            [initialFrom]="currentFilters.interval.from"
+            [initialTo]="currentFilters.interval.to"
+            [initialMin]="currentFilters.interval.min"
+            [initialMax]="currentFilters.interval.max"
             [minimum]="MIN_DATE"
             [maximum]="MAX_DATE"
             (rangeChange)="handleTimeFilter($event)">
@@ -33,7 +38,7 @@
         @defer (on idle) {
           @if (showMap) {
             <app-map-filter 
-              [initialBounds]="defaultFilters.bounds"
+              [initialBounds]="currentFilters.bounds"
               [markers]="actionEvents()"
               (mapChange)="handleMapFilter($event)">
             </app-map-filter>
@@ -46,7 +51,6 @@
   </section>
 
   <section class="event-list-section" aria-labelledby="event-list-title">
-    <h2 id="event-list-title" class="visually-hidden">Elenco eventi</h2>
     <app-event-list 
       [items]="events()"
       (scrolledToBottom)="onScrollBottom()">

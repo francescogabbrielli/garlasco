@@ -28,6 +28,8 @@ export class RangeFilterComponent implements OnInit {
 
   initialFrom = input<Date>()
   initialTo = input<Date>()
+  initialMin = input<Date>()
+  initialMax = input<Date>()
   maximum = input<Date>(new Date())
   minimum = input<Date>(new Date(0))
 
@@ -45,11 +47,11 @@ export class RangeFilterComponent implements OnInit {
       this.maxTimestamp = this.initialTo()?.getTime() || Date.now()
       
       // Finestra iniziale visibile dello slider impostata a 6 mesi intorno ai valori iniziali
-      this.currentAbsoluteMin = Math.max(this.minimum().getTime(), this.minTimestamp)
-      this.currentAbsoluteMax = Math.min(this.maximum().getTime(), this.maxTimestamp)
+      this.currentAbsoluteMin = this.initialMin()?.getTime() || Math.max(this.minimum().getTime(), this.minTimestamp)
+      this.currentAbsoluteMax = this.initialMax()?.getTime() || Math.min(this.maximum().getTime(), this.maxTimestamp)
       
       this.updateStep();
-      this.generateTimeline();    
+      this.generateTimeline();
     })
   }
 

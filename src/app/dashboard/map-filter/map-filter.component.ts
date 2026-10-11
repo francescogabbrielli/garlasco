@@ -21,11 +21,11 @@ export class MapFilterComponent implements OnInit {
 
   initialBounds = input<Coordinates | null>(null);
   mapId = window.__appConfig?.googleMapsMapId ?? 'DEMO_MAP_ID';
-  // Fractional zoom only works on vector maps
-  mapOptions: google.maps.MapOptions = { 
+
+  mapOptions = input<google.maps.MapOptions>({ 
     isFractionalZoomEnabled: true, 
-    renderingType: 'VECTOR' as google.maps.RenderingType 
-  }
+    renderingType: 'VECTOR' as google.maps.RenderingType // Fractional zoom only works on vector maps
+  })
   
   // Riceve la lista dei marker reattivi filtrati dal componente padre
   markers = input<Event[]>([])

@@ -1,0 +1,38 @@
+    <section class="control-section" aria-labelledby="person-selection">
+        
+      <div class="section-heading">
+        <div>
+          <h3 id="person-selection" class="filter-title">Persone</h3>
+          <p>Seleziona una o più persone</p>
+        </div>
+        @if (selectedIds().length) {
+          <button class="clear-control" type="button" (click)="clear()">Azzera</button>
+        }
+      </div>
+      @if (loading) {
+        <p class="control-message" aria-live="polite">Caricamento persone…</p>
+      } @else if (error) {
+        <p class="control-message control-error" role="status">{{ error }}</p>
+      } @else if (people.length) {
+        <div class="actor-list" role="group" aria-label="Filtra per persona">
+          @for (person of people; track person.id) {
+            <button
+              class="actor-option"
+              [class.selected]="selectedIds().includes(person.id)"
+              type="button"
+              [attr.aria-pressed]="selectedIds().includes(person.id)"
+              [attr.aria-label]="person.name + ' ' + person.surname"
+              [attr.aria-describedby]="'actor-tooltip-' + person.id"
+              (click)="toggle(person.id)"
+            >
+              <span class="initials" aria-hidden="true">{{ person.initials }}</span>
+              <span class="actor-tooltip" [id]="'actor-tooltip-' + person.id" role="tooltip">
+                {{ person.name }} {{ person.surname }}
+              </span>
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="control-message">Nessuna persona disponibile.</p>
+      }
+    </section>
