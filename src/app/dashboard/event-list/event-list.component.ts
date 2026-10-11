@@ -1,5 +1,5 @@
-import { Component, computed, input } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common'
+import { Component, computed, input, output } from '@angular/core';
+import { DatePipe } from '@angular/common'
 import { Schema } from '../../../../amplify/data/resource';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component'
 
@@ -20,13 +20,14 @@ class EventLine {
 
 @Component({
   selector: 'app-event-list',
-  imports: [DatePipe, DecimalPipe, TickbarComponent],
+  imports: [DatePipe, TickbarComponent],
   templateUrl: './event-list.component.html',
   styleUrl: './event-list.component.css',
 })
 export class EventListComponent {
 
   items = input<Event[]>([])
+  scrolledToBottom = output<void>()
 
   // accumulator shows a single line for each fact, compressing communications and documents into the same line
   displayedItems = computed(() => this.items().reduce((acc, item, i, arr) => {
@@ -43,5 +44,12 @@ export class EventListComponent {
     return acc
 
   }, [new EventLine()] as EventLine[]))
-  
+
+  onListScroll(event: globalThis.Event): void {
+    const list = event.target as HTMLElement | null
+    if (list && list.scrollHeight - list.scrollTop - list.clientHeight <= 50) {
+      console.log('Scrolled to bottom!')
+      this.scrolledToBottom.emit()
+    }
+  }
 }

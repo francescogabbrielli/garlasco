@@ -65,7 +65,9 @@ mat-slider.range-slider {
 }
 
 .time-display-container {
+  color: var(--amplify-colors-font-primary);
   text-align: center;
-  padding: 0;
-  margin: 0;
+  padding: 1em;
+  font-size: 0.9rem;
+  font-variant: small-caps;
 }

@@ -206,7 +206,7 @@ export class RangeFilterComponent implements OnInit {
   getFormattedInterval(): string {
     const start = new Date(this.minTimestamp);
     const end = new Date(this.maxTimestamp);
-    const options:Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', year: '2-digit' }
+    const options:Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', year: 'numeric' }
     return `${start.toLocaleString('it-IT', options)} — ${end.toLocaleString('it-IT', options)}`;
   }
 

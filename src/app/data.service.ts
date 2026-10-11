@@ -1,7 +1,7 @@
 import { inject, Injectable, Signal, signal } from '@angular/core';
 
-import { Observable, from, Subject, of, merge, BehaviorSubject } from 'rxjs';
-import { map, debounceTime, switchMap, tap, catchError, withLatestFrom, filter, scan } from 'rxjs/operators';
+import { from, Subject, of, merge, BehaviorSubject } from 'rxjs';
+import { map, debounceTime, switchMap, tap, catchError, exhaustMap, finalize } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { generateClient } from 'aws-amplify/api';
@@ -38,7 +38,6 @@ export class DataService {
   // Segnali di stato per monitorare il caricamento e la paginazione
   readonly activeNextTokens: Signal<string | null>[] = []
   readonly hasMorePages: Signal<boolean>[] = []
-    // I tuoi Subject esistenti e nuovi per la paginazione
   readonly filterSubject = new BehaviorSubject<Filter | null>(null)
   private readonly loadMoreSubject = new Subject<void>()
 
@@ -50,7 +49,7 @@ export class DataService {
   private personTokens: Record<string, string | null> = {}
 
   /**
-   * Load async events (debounced) data as a signal (limited to 100 records)
+   * Load filtered events and append later pages as they are requested.
    */
   readonly getEvents = toSignal(
     this.filterSubject.pipe(
@@ -62,14 +61,25 @@ export class DataService {
         this.personTokens = {};
         this.hasMore.set(false);
       }),
-      // Chiamiamo la funzione di recupero (passando false perché è la prima pagina)
-      switchMap(filter => this.fetchPage(filter, false)),
-      tap(() => this.isLoading.set(false))
+      switchMap(filter => merge(
+        of(false),
+        this.loadMoreSubject.pipe(map(() => true))
+      ).pipe(
+        exhaustMap(isLoadMore => {
+          if (isLoadMore && !this.hasMore()) return of(this.accumulatedEvents)
+
+          return this.fetchPage(filter, isLoadMore).pipe(
+            finalize(() => this.isLoading.set(false))
+          )
+        })
+      ))
     ),
     { initialValue: [] }
   )
   
   setFilters(personIds: string[], from:Date, to:Date, viewportDisc:Coordinates):void {
+    this.isLoading.set(true)
+    this.hasMore.set(false)
     const newFilter = { 
       personIds: personIds,
       dateFrom: from.toISOString(), 
@@ -79,22 +89,11 @@ export class DataService {
     this.filterSubject.next(newFilter)
   }
 
-  /**
-   * Trigger esterno per caricare la pagina successiva
-   */
+  /** Trigger loading the next page when one is available. */
   loadMore() {
-    const currentFilter = this.filterSubject.value;
-    if (!currentFilter) return;
-
-    this.isLoading.set(true);
-    // Chiamiamo la stessa funzione di recupero, ma dicendogli che è un "Load More" (true)
-    this.fetchPage(currentFilter, true).subscribe({
-      next: (events) => {
-        // Aggiorna il Signal di Angular scatenando l'aggiornamento della mappa/interfaccia
-        this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false)
-    });
+    if (!this.hasMore() || this.isLoading()) return
+    this.isLoading.set(true)
+    this.loadMoreSubject.next()
   }
 
   /**
@@ -144,16 +143,11 @@ export class DataService {
           .flatMap(res => (res.data || [] as Event[]).map((conn: any) => conn.event as Event))
           .filter((e: Event) => e !== null)
 
-        // 3. AGGIUNGIAMO IN CODA i nuovi eventi a quelli che avevamo già in memoria
+        // 3. AGGIUNGIAMO IN CODA i nuovi eventi
         this.accumulatedEvents = [...this.accumulatedEvents, ...newEvents]
-
-        // 4. Rimuoviamo eventuali duplicati (stesso evento per più persone)
-        const uniqueEvents = this.accumulatedEvents.filter(
-          (event, index, self) => self.findIndex(e => e.id === event.id) === index
-        );
-
-        // Aggiorniamo la memoria interna definitiva
-        this.accumulatedEvents = uniqueEvents
+        // 4. Rimuoviamo eventuali duplicati (stesso evento per più persone) e rioridiniamo per data di inizio
+          .filter((event, index, self) => self.findIndex(e => e.id === event.id) === index)
+          .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())  
 
         // 5. Controlliamo se c'è ancora almeno una persona con pagine da leggere
         const moreDataAvailable = Object.values(this.personTokens).some(token => token !== null)

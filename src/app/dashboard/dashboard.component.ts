@@ -46,8 +46,8 @@ export class DashboardComponent implements OnInit {
     interval: {
       from: new Date("2007-07-15T00:00"),
       to: new Date("2007-08-14T23:59"),
-      min: new Date("2007-07-15T00:00"),
-      max: new Date("2007-08-14T23:59")
+      min: new Date("2007-07-01T00:00"),
+      max: new Date("2007-08-31T23:59")
     },
     bounds: DEFAULT_COORDINATES,
   }
@@ -73,22 +73,17 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     // Recupera lo stato iniziale dalla cache locale
-    try {
-      const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || 'x')
-      this.currentFilters = {
-        peronsIds: savedFilters.peronsIds ? savedFilters.peronsIds : this.defaultFilters.peronsIds,
-        interval: {
-          from: savedFilters.interval?.from ? new Date(savedFilters.interval.from) : this.defaultFilters.interval.from,
-          to: savedFilters.interval?.to ? new Date(savedFilters.interval.to) : this.defaultFilters.interval.to,
-          min: savedFilters.interval?.min ? new Date(savedFilters.interval.min) : this.defaultFilters.interval.min,
-          max: savedFilters.interval?.max ? new Date(savedFilters.interval.max) : this.defaultFilters.interval.max,
-        },
-        bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds
-      }
-    } catch (error) {
-      console.error('Failed to load saved filters:', error);
-      this.currentFilters = {...this.defaultFilters};
-    }
+    const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '')
+    this.currentFilters = savedFilters ? {
+      peronsIds: savedFilters.peronsIds ? savedFilters.peronsIds : this.defaultFilters.peronsIds,
+      interval: {
+        from: savedFilters.interval?.from ? new Date(savedFilters.interval.from) : this.defaultFilters.interval.from,
+        to: savedFilters.interval?.to ? new Date(savedFilters.interval.to) : this.defaultFilters.interval.to,
+        min: savedFilters.interval?.min ? new Date(savedFilters.interval.min) : this.defaultFilters.interval.min,
+        max: savedFilters.interval?.max ? new Date(savedFilters.interval.max) : this.defaultFilters.interval.max,
+      },
+      bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds
+    } : this.currentFilters = {...this.defaultFilters}
 
     // Invia i dati di partenza al servizio per innescare la prima chiamata al DB
     this.triggerReload()
@@ -113,6 +108,7 @@ export class DashboardComponent implements OnInit {
    * Richiamata quando l'utente arriva in fondo alla lista di dettaglio
    */
   onScrollBottom(): void {
+    if (this.dataService.isLoading() || !this.dataService.hasMore()) return
     this.dataService.loadMore()
   }
 

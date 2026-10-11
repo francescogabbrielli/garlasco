@@ -15,24 +15,36 @@
 }
 
 /* Very large screens: mask on the left, event list on the right */
-@media (min-width: 2500px) {
+@media (min-width: 2201px) {
+    :host {
+        flex: 1;
+        min-height: 0;
+    }
     .main-view {
+        flex: 1;
+        min-height: 0;
         width: 100%;
         display: grid;
         grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+        grid-template-rows: auto minmax(0, 1fr);
         grid-template-areas:
             "heading heading"
             "mask list";
         gap: 1.5rem;
-        align-items: start;
+        align-items: stretch;
     }
-    .page-heading { grid-area: heading; }
-    .mask { grid-area: mask; min-width: 0; }
+    .page-heading { grid-area: heading; margin-bottom: 0; }
+    .mask { grid-area: mask; min-width: 0; min-height: 0; overflow-y: auto; }
     .event-list-section {
         grid-area: list;
-        position: sticky;
-        top: 1rem;
-        max-height: 100%;
-        overflow-y: auto;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .event-list-section app-event-list {
+        flex: 1;
+        min-height: 0;
     }
 }
