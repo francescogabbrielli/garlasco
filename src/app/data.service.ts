@@ -147,7 +147,7 @@ export class DataService {
         this.accumulatedEvents = [...this.accumulatedEvents, ...newEvents]
         // 4. Rimuoviamo eventuali duplicati (stesso evento per più persone) e rioridiniamo per data di inizio
           .filter((event, index, self) => self.findIndex(e => e.id === event.id) === index)
-          .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())  
+          .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
 
         // 5. Controlliamo se c'è ancora almeno una persona con pagine da leggere
         const moreDataAvailable = Object.values(this.personTokens).some(token => token !== null)

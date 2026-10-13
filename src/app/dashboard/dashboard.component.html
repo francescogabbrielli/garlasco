@@ -16,6 +16,9 @@
     <div class="filter-layout">
       <div class="filter-shoulder">
         <app-person-filter
+          [people]="people()"
+          [loading]="peopleLoading()"
+          [error]="peopleError()"
           [selectedIds]="currentFilters.peronsIds"
           (selectionChange)="handlePersonFilter($event)">
         </app-person-filter  >
@@ -39,7 +42,10 @@
           @if (showMap) {
             <app-map-filter 
               [initialBounds]="currentFilters.bounds"
-              [markers]="actionEvents()"
+              [markers]="facts()"
+              [highlightedId]="hoveredEventId()"
+              (eventHover)="hoveredEventId.set($event)"
+              (eventClick)="openEventById($event)"
               (mapChange)="handleMapFilter($event)">
             </app-map-filter>
           }
@@ -53,8 +59,15 @@
   <section class="event-list-section" aria-labelledby="event-list-title">
     <app-event-list 
       [items]="events()"
+      [highlightedId]="hoveredEventId()"
+      (eventHover)="hoveredEventId.set($event)"
+      (eventClick)="openedEvent.set($event)"
       (scrolledToBottom)="onScrollBottom()">
     </app-event-list>
   </section>  
+
+  @if (openedEvent(); as opened) {
+    <app-event-popup [event]="opened" (closed)="openedEvent.set(null)"></app-event-popup>
+  }
 
 </main>

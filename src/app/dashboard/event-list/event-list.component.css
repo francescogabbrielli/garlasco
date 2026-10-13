@@ -38,6 +38,20 @@
 
 .event-list .event-item {
     min-width: 42rem;
+    cursor: pointer;
+}
+
+.event-related-list .clickable {
+    cursor: pointer;
+}
+
+.event-related-list .clickable:hover {
+    color: #167c72;
+    text-decoration: underline;
+}
+
+.event-list .event-item.highlighted {
+    background: #e3f3ed;
 }
 
 .event-time {

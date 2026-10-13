@@ -16,11 +16,23 @@
       (mapInitialized)="onMapReady($event)"
       (boundsChanged)="onBoundsChanged()">
 
-    @for (point of markers(); track point.id) {
+    @for (track of tracks(); track track.id) {
+      <map-polyline [path]="track.path" [options]="trackOptions()[track.id]"></map-polyline>
+    }
+
+    @for (pin of pins(); track pin.id) {
       <map-advanced-marker
-          [position]="{ lat: point.start_position.latitude, lng: point.start_position.longitude }"
-          [title]="point.name">
+          [position]="pin.start"
+          [content]="pin.startContent"
+          [title]="pin.title">
       </map-advanced-marker>
+      @if (pin.end) {
+        <map-advanced-marker
+            [position]="pin.end"
+            [content]="pin.endContent"
+            [title]="pin.title">
+        </map-advanced-marker>
+      }
     }
   </google-map>
 } @else {

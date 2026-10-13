@@ -27,7 +27,10 @@ class EventLine {
 export class EventListComponent {
 
   items = input<Event[]>([])
+  highlightedId = input<string | null>(null)
   scrolledToBottom = output<void>()
+  eventHover = output<string | null>()
+  eventClick = output<Event>()
 
   // accumulator shows a single line for each fact, compressing communications and documents into the same line
   displayedItems = computed(() => this.items().reduce((acc, item, i, arr) => {

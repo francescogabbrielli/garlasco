@@ -4,12 +4,17 @@ import { GeoService } from '../geo.service';
 
 import { DEFAULT_COORDINATES } from '../app.constants';
 import { Schema } from '../../../amplify/data/resource';
+import { generateClient } from 'aws-amplify/api';
 
 import { PersonFilterComponent } from './person-filter/person-filter.component';
 import { EventListComponent } from './event-list/event-list.component';
 import { MapFilterComponent } from './map-filter/map-filter.component';
 import { RangeFilterComponent } from './range-filter/range-filter.component';
+import { EventPopupComponent } from './event-popup/event-popup.component';
 
+const client = generateClient<Schema>()
+
+type Person = Schema['Person']['type']
 type Event = Schema['Event']['type']
 type Coordinates = Schema['Coordinates']['type']
 
@@ -21,7 +26,7 @@ type Filter = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [PersonFilterComponent, RangeFilterComponent, MapFilterComponent, EventListComponent],
+  imports: [PersonFilterComponent, RangeFilterComponent, MapFilterComponent, EventListComponent, EventPopupComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -39,7 +44,7 @@ export class DashboardComponent implements OnInit {
   events = signal<Event[]>([])
 
   // Solo fatti
-  actionEvents = computed<Event[]>(() => this.events().filter(e => e.type === "Fatto"))
+  facts = computed<Event[]>(() => this.events().filter(e => e.type === "Fatto"))
 
   readonly defaultFilters:Filter = {
     peronsIds: [],
@@ -55,6 +60,30 @@ export class DashboardComponent implements OnInit {
   currentFilters!: Filter
 
   showMap = true
+
+  // People are loaded once here and shared with the filter and the map
+  people = signal<Person[]>([])
+  peopleLoading = signal(true)
+  peopleError = signal('')
+  selectedIds = signal<string[]>([])
+  hoveredEventId = signal<string | null>(null)
+  openedEvent = signal<Event | null>(null)
+
+  openEventById(id: string): void {
+    const event = this.events().find(e => e.id === id)
+    if (event) this.openedEvent.set(event)
+  }
+
+  private async loadPeople(): Promise<void> {
+    try {
+      const response = await client.models.Person.list()
+      this.people.set(response.data ?? [])
+    } catch {
+      this.peopleError.set('Impossibile caricare le persone.')
+    } finally {
+      this.peopleLoading.set(false)
+    }
+  }
 
   constructor() {
     // Sincronizziamo il Signal 'getEvents' del Service con il nostro accumulatore locale.
@@ -72,6 +101,9 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
+    this.loadPeople()
+
     // Recupera lo stato iniziale dalla cache locale
     const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '')
     this.currentFilters = savedFilters ? {
@@ -85,12 +117,14 @@ export class DashboardComponent implements OnInit {
       bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds
     } : this.currentFilters = {...this.defaultFilters}
 
-    // Invia i dati di partenza al servizio per innescare la prima chiamata al DB
+    this.selectedIds.set(this.currentFilters.peronsIds)
+
     this.triggerReload()
   }
 
   handlePersonFilter(selectedIds: string[]): void {
     this.currentFilters.peronsIds = selectedIds
+    this.selectedIds.set(selectedIds)
     this.triggerReload()
   }
 
@@ -114,7 +148,8 @@ export class DashboardComponent implements OnInit {
 
   resetFilters(): void {
     this.currentFilters = {...this.defaultFilters}
-    this.triggerReload();
+    this.selectedIds.set(this.currentFilters.peronsIds)
+    this.triggerReload()
   }
 
 }

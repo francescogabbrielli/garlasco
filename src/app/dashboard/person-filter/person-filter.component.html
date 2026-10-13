@@ -9,26 +9,21 @@
           <button class="clear-control" type="button" (click)="clear()">Azzera</button>
         }
       </div>
-      @if (loading) {
+      @if (loading()) {
         <p class="control-message" aria-live="polite">Caricamento persone…</p>
-      } @else if (error) {
-        <p class="control-message control-error" role="status">{{ error }}</p>
-      } @else if (people.length) {
+      } @else if (error()) {
+        <p class="control-message control-error" role="status">{{ error() }}</p>
+      } @else if (people().length) {
         <div class="actor-list" role="group" aria-label="Filtra per persona">
-          @for (person of people; track person.id) {
+          @for (person of people(); track person.id) {
             <button
               class="actor-option"
-              [class.selected]="selectedIds().includes(person.id)"
               type="button"
               [attr.aria-pressed]="selectedIds().includes(person.id)"
               [attr.aria-label]="person.name + ' ' + person.surname"
-              [attr.aria-describedby]="'actor-tooltip-' + person.id"
               (click)="toggle(person.id)"
             >
-              <span class="initials" aria-hidden="true">{{ person.initials }}</span>
-              <span class="actor-tooltip" [id]="'actor-tooltip-' + person.id" role="tooltip">
-                {{ person.name }} {{ person.surname }}
-              </span>
+              <app-person-marker [person]="person" [selected]="selectedIds().includes(person.id)"></app-person-marker>
             </button>
           }
         </div>

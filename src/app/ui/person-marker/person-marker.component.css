@@ -1,0 +1,8 @@
+:host { display: inline-block; }
+.marker { position: relative; display: grid; width: var(--marker-size, 2.5rem); height: var(--marker-size, 2.5rem); place-items: center; box-sizing: border-box; border: 1px solid #d2dad7; border-radius: 50%; background: #fff; color: #263a38; transition: background .15s, border-color .15s, color .15s; }
+.marker:hover { border-color: #167c72; }
+.marker.selected { border-color: #167c72; background: #e3f3ed; color: #145c54; }
+.initials { display: grid; width: 100%; height: 100%; place-items: center; border-radius: 50%; background: #e9eee8; color: #35524b; font-size: .72rem; font-weight: 700; }
+.selected .initials { background: #167c72; color: #fff; }
+.tooltip { position: absolute; bottom: calc(100% + .5rem); left: 50%; z-index: 3; width: max-content; max-width: min(16rem, 70vw); padding: .4rem .6rem; transform: translate(-50%, .2rem); border-radius: 4px; background: #203633; color: #fff; font-size: .75rem; line-height: 1.3; opacity: 0; pointer-events: none; visibility: hidden; transition: opacity .12s, transform .12s, visibility .12s; }
+.marker:hover .tooltip { transform: translate(-50%, 0); opacity: 1; visibility: visible; }

@@ -21,7 +21,11 @@
             </div>
             <ol class="event-list" (scroll)="onListScroll($event)">
                 @for (line of displayedItems(); track line.fact?.id || 'last') {
-                    <li class="event-item">
+                    <li class="event-item"
+                        [class.highlighted]="!!line.fact && line.fact.id === highlightedId()"
+                        (mouseenter)="eventHover.emit(line.fact?.id ?? null)"
+                        (mouseleave)="eventHover.emit(null)"
+                        (click)="line.fact && eventClick.emit(line.fact)">
                         <time class="event-time" [attr.datetime]="line.fact?.start_date">
                             <span>{{ line.fact?.start_date | date:'dd' }}</span>
                             <span>{{ line.fact?.start_date | date:'MMM yyyy':'':'it' }}</span>
@@ -32,14 +36,14 @@
                         </article>
                         <ul class="event-related-list" aria-label="Comunicazioni">
                             @for (communication of line.communications; track communication.id) {
-                                <li>{{ communication.name }}</li>
+                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(communication)">{{ communication.name }}</li>
                             } @empty {
                                 <li class="empty-related">—</li>
                             }
                         </ul>
                         <ul class="event-related-list" aria-label="Documenti">
                             @for (document of line.documents; track document.id) {
-                                <li>{{ document.name }}</li>
+                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(document)">{{ document.name }}</li>
                             } @empty {
                                 <li class="empty-related">—</li>
                             }
