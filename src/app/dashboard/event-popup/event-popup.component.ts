@@ -25,36 +25,27 @@ export class EventPopupComponent {
 
   event = input.required<Event>()
   closed = output<void>()
+  saved = output<void>()
   help = false
 
   isEditor = () => this.userService.user().isEditor() && this.userService.user().editEnabled()
-  allPeople = signal<Person[]>([])
+  people = input.required<Person[]>()
 
-  people = signal<Person[]>([])
+  actors = signal<Person[]>([])
   personsLoading = signal(false)
 
   constructor() {
-    effect(() => {
-      if (this.isEditor() && this.allPeople().length === 0) untracked(() => this.loadAllPeople())
-    })
+    // effect(() => {
+    //   if (this.isEditor() && this.people().length === 0) untracked(() => this.loadAllPeople())
+    // })
     effect(() => {
       const id = this.event().id
       this.loadPersons(id)
     })
   }
 
-  private async loadAllPeople(): Promise<void> {
-    try {
-      const { data } = await client.models.Person.list()
-      this.allPeople.set(data.sort((a, b) =>
-        `${a.name} ${a.surname}`.localeCompare(`${b.name} ${b.surname}`)))
-    } catch (e) {
-      console.error('Errore nel caricamento delle persone', e)
-    }
-  }
-
   private async loadPersons(eventId: string): Promise<void> {
-    this.people.set([])
+    this.actors.set([])
     this.personsLoading.set(true)
     try {
       const { data } = await client.models.Event.get(
@@ -62,7 +53,7 @@ export class EventPopupComponent {
         { selectionSet: ['id', 'actors.person.*'] }
       )
       if (this.event().id !== eventId) return
-      this.people.set(
+      this.actors.set(
         (data?.actors ?? []).map(a => a.person as Person).filter(p => !!p)
       )
     } catch (e) {

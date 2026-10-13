@@ -27,7 +27,7 @@ body {
     color: #1d3332; 
     font: 500 2rem/1.1 Georgia, 'Times New Roman', serif; 
     font-size: 1.5rem;
-    line-height: 1.2rem;
+    line-height: 1.5rem;
     padding-top: 1rem;
   }
   
@@ -74,21 +74,11 @@ body {
     list-style-type: none;
     display: flex;
     flex-direction: column;
-    margin: 8px 0;
-    border: 1px solid black;
-    gap: 1px;
-    background-color: black;
-    border-radius: 8px;
     overflow: auto;
   }
   
   li {
-    background-color: white;
-    padding: 8px;
-  }
-  
-  li:hover {
-    background: #dadbf9;
+    padding: 2px;
   }
   
   a {
@@ -293,6 +283,25 @@ body {
       color: #7551c2;
     }
 
+  .dialog-help {
+      display: grid;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgba(117, 81, 194, 0.35);
+      border-radius: 50%;
+      background: transparent;
+      color: #7551c2;
+      font-size: 1rem;
+      font-weight: 700;
+  }
+
+  .dialog-help:hover {
+      border-color: #7551c2;
+      background: #dadbf9;
+  }
+
   .main-view { 
     width: min(100%, 78rem); 
     margin: 0 auto; 
@@ -346,14 +355,6 @@ body {
     background: #fbfcfa; 
     box-shadow: 0 5px 18px rgba(25, 49, 44, .05);
   }
-
-  .dialog h2 {
-      margin: 0;
-      color: #221f2b;
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: 1.8rem;
-      font-weight: 500;
-    }
 
   .event-form {
       display: grid;

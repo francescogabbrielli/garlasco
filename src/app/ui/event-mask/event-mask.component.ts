@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
@@ -10,6 +10,7 @@ import { EVENT_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
 import { GeoService } from '../../geo.service';
 import { MapPickerComponent } from '../map-picker/map-picker.component';
+import { PersonDialogComponent } from '../person-dialog/person-dialog.component';
 
 type EventModel = Schema['Event']['type']
 type EventType = Schema['Event']['type']['type']
@@ -27,7 +28,7 @@ const client = generateClient<Schema>()
 
 @Component({
   selector: 'app-event-mask',
-  imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent],
+  imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent, PersonDialogComponent],
   templateUrl: './event-mask.component.html',
   styleUrl: './event-mask.component.css',
 })
@@ -36,6 +37,16 @@ export class EventMaskComponent {
   people = input<Person[]>([])
   event = input<EventModel | null>(null)
   saved = output<void>()
+  personCreated = output<Person>()
+
+  // people created from this mask, merged with the ones received as input
+  private createdPeople = signal<Person[]>([])
+  readonly allPeople = computed(() => {
+    const base = this.people()
+    return [...base, ...this.createdPeople().filter(p => !base.some(b => b.id === p.id))]
+  })
+  readonly personDialogOpen = signal(false)
+  private personDialogRowId: number | null = null
 
   isHelpDialogOpen = model(false)
 
@@ -107,7 +118,9 @@ export class EventMaskComponent {
   actorSelectionError = false
   actorRoleError = false
   private nextActorRowId = 1
+  readonly newPersonOption = '__new_person__'
   readonly displayPerson = (person: Person | string | null): string => {
+    if (person === this.newPersonOption) return ''
     if (typeof person === 'string') return person
     return person ? `${person.name} ${person.surname}` : ''
   }
@@ -144,7 +157,7 @@ export class EventMaskComponent {
 
   filteredPeople(actor: SelectedActor): Person[] {
     const query = actor.personQuery.trim().toLocaleLowerCase()
-    return this.people().filter((person) => {
+    return this.allPeople().filter((person) => {
       const alreadySelected = this.selectedActors.some(
         (selectedActor) => selectedActor.rowId !== actor.rowId && selectedActor.personId === person.id,
       )
@@ -154,7 +167,7 @@ export class EventMaskComponent {
   }
 
   isActorPersonValid(actor: SelectedActor): boolean {
-    const person = this.people().find((item) => item.id === actor.personId)
+    const person = this.allPeople().find((item) => item.id === actor.personId)
     return !!person
       && actor.personQuery.trim().toLocaleLowerCase()
         === `${person.name} ${person.surname}`.trim().toLocaleLowerCase()
@@ -182,7 +195,7 @@ export class EventMaskComponent {
   }
 
   selectActorPerson(rowId: number, person: Person): void {
-    if (!this.people().some((currentPerson) => currentPerson.id === person.id)) return
+    if (!this.allPeople().some((currentPerson) => currentPerson.id === person.id)) return
 
     this.selectedActors = this.selectedActors.map((actor) =>
       actor.rowId === rowId
@@ -201,8 +214,36 @@ export class EventMaskComponent {
   }
 
   personName(personId: string): string {
-    const person = this.people().find((item) => item.id === personId)
+    const person = this.allPeople().find((item) => item.id === personId)
     return person ? `${person.name} ${person.surname}` : ''
+  }
+
+  onPersonOptionSelected(rowId: number, value: Person | string): void {
+    if (value !== this.newPersonOption) {
+      this.selectActorPerson(rowId, value as Person)
+      return
+    }
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId ? { ...actor, personId: '', personQuery: '' } : actor,
+    )
+    this.openPersonDialog(rowId)
+  }
+
+  openPersonDialog(rowId: number): void {
+    this.personDialogRowId = rowId
+    this.personDialogOpen.set(true)
+  }
+
+  closePersonDialog(): void {
+    this.personDialogOpen.set(false)
+    this.personDialogRowId = null
+  }
+
+  onPersonCreated(person: Person): void {
+    this.createdPeople.update(list => [...list, person])
+    if (this.personDialogRowId !== null) this.selectActorPerson(this.personDialogRowId, person)
+    this.personCreated.emit(person)
+    this.closePersonDialog()
   }
 
   updateActorRole(rowId: number, event: Event): void {

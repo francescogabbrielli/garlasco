@@ -1,6 +1,3 @@
 <span class="marker" [class.selected]="selected()">
-  <span class="initials" aria-hidden="true">{{ person().initials }}</span>
-  @if (tooltip()) {
-    <span class="tooltip" role="tooltip">{{ fullName() }}</span>
-  }
+  <span class="initials" aria-hidden="true" title="{{ fullName() }}">{{ person().initials }}</span>
 </span>

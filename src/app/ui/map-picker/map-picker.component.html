@@ -15,7 +15,9 @@
             (mapInitialized)="onMapReady($event)"
             (mapClick)="onMapClick($event)">
           @if (selectedPoint(); as point) {
-            <map-advanced-marker [position]="point"></map-advanced-marker>
+            @if (!selectedIsPlace()) {
+              <map-advanced-marker [position]="point"></map-advanced-marker>
+            }
           }
         </google-map>
       } @else if (mapError()) {

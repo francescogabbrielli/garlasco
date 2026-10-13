@@ -14,6 +14,19 @@
     gap: 1.5rem; 
 }
 
+.filter-shoulder,
+.filter-stack {
+    min-width: 0;
+}
+
+/* Smaller devices: single column, shoulder above the stack */
+@media (max-width: 900px) {
+    .filter-layout {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
 /* Very large screens: mask on the left, event list on the right */
 @media (min-width: 2201px) {
     :host {

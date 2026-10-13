@@ -73,8 +73,6 @@
 
 @if (isSubmitDialogOpen) {
   <app-event-submit-dialog
-    [ownerId]="ownerId()"
-    [isAdmin]="isAdmin()"
     (closed)="closeSubmitDialog()"
   ></app-event-submit-dialog>
 }

@@ -93,7 +93,7 @@ export class DashboardComponent implements OnInit {
     effect(() => this.events.set(this.dataService.getEvents()))
   }
 
-  private triggerReload() {
+  triggerReload() {
     localStorage.setItem(this.STORAGE_FILTERS, JSON.stringify(this.currentFilters));
     this.dataService.setFilters(
       this.currentFilters.peronsIds,

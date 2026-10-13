@@ -9,8 +9,8 @@
     <div class="dialog-heading">
 
       <div>
-        <p class="eyebrow">{{ isEditor() ? 'Evento' : event().type }}</p>
-        <h2 id="event-popup-title">{{ event().name }}</h2>
+        <p class="eyebrow">{{ isEditor() ? 'Modifica' : event().type }}</p>
+        <h1 id="event-popup-title">{{ isEditor() ? 'Evento' : event().name }}</h1>
       </div>
 
       <div class="dialog-controls">
@@ -33,11 +33,13 @@
 
     @if (isEditor()) {
       @defer (on viewport) {
-        <app-event-mask id="event-mask" 
-          [event]="event()" 
-          [people]="allPeople()"
-          [(isHelpDialogOpen)]="help"
-          (saved)="closed.emit()" ></app-event-mask>
+        <div class="dialog-scrollable">
+          <app-event-mask id="event-mask" 
+            [event]="event()" 
+            [people]="people()"
+            [(isHelpDialogOpen)]="help"
+            (saved)="saved.emit(); closed.emit()" ></app-event-mask>
+        </div>  
       } @placeholder {
         <div>Loading Event Mask...</div>
       }
@@ -77,8 +79,8 @@
 
       <dt>Persone</dt>
       <dd>
-          <ul class="persons">
-            @for (p of people(); track p.id) {
+          <ul class="actors">
+            @for (p of actors(); track p.id) {
               <li><app-person-marker [person]="p"></app-person-marker></li>
             }
           </ul>

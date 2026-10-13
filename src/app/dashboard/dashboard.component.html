@@ -67,7 +67,11 @@
   </section>  
 
     @if (openedEvent(); as opened) {
-      <app-event-popup [event]="opened" (closed)="openedEvent.set(null)"></app-event-popup>
+      <app-event-popup 
+        [event]="opened"
+        [people]="people()"
+        (saved)="triggerReload()"
+        (closed)="openedEvent.set(null)"></app-event-popup>
     }
 
 </main>

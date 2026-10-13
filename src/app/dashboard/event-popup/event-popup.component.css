@@ -9,6 +9,11 @@
 .event-fields dt {
   font-weight: 600;
   opacity: 0.7;
+  text-align: right;
+  font-style: italic;
+  font-size: 0.8rem;
+  padding-top: 2px;
+  
 }
 
 .event-fields dd {
@@ -20,33 +25,14 @@
   white-space: pre-wrap;
 }
 
-.persons {
+.actors {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
+  flex-direction: row;
   gap: 0.5rem;
-}
-
-
-.dialog-help {
-    display: grid;
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0;
-    place-items: center;
-    border: 1px solid rgba(117, 81, 194, 0.35);
-    border-radius: 50%;
-    background: transparent;
-    color: #7551c2;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.dialog-help:hover {
-    border-color: #7551c2;
-    background: #dadbf9;
 }
 
 /*.position-section > .field-group-label {
