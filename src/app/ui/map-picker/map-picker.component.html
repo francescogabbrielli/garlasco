@@ -1,0 +1,43 @@
+<div class="map-picker-backdrop" (click)="close()">
+  <div class="map-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="map-picker-title" (click)="$event.stopPropagation()">
+    <header class="map-picker-header">
+      <h3 id="map-picker-title">{{ title() }}</h3>
+      <button type="button" class="map-picker-close" aria-label="Chiudi" (click)="close()">×</button>
+    </header>
+
+    <div class="map-picker-body">
+      @if (mapReady()) {
+        <google-map
+            height="100%"
+            width="100%"
+            [mapId]="mapId"
+            [options]="mapOptions"
+            (mapInitialized)="onMapReady($event)"
+            (mapClick)="onMapClick($event)">
+          @if (selectedPoint(); as point) {
+            <map-advanced-marker [position]="point"></map-advanced-marker>
+          }
+        </google-map>
+      } @else if (mapError()) {
+        <p class="map-picker-error">{{ mapError() }}</p>
+      } @else {
+        <p>Caricamento mappa…</p>
+      }
+    </div>
+
+    <footer class="map-picker-footer">
+      <span class="map-picker-hint">
+        @if (selectedPoint()) {
+          Posizione precisa selezionata.
+        } @else {
+          Clicca un punto sulla mappa, oppure centra e zooma l'area approssimativa.
+        }
+      </span>
+      @if (selectedPoint()) {
+        <button type="button" (click)="clearSelection()">Annulla punto</button>
+      }
+      <button type="button" (click)="close()">Annulla</button>
+      <button type="button" class="map-picker-confirm" [disabled]="!mapReady()" (click)="confirm()">Usa questa posizione</button>
+    </footer>
+  </div>
+</div>

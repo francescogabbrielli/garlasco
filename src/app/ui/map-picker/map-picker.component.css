@@ -1,0 +1,46 @@
+.map-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .5);
+}
+
+.map-picker-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(900px, 95vw);
+  height: min(700px, 90vh);
+  background: #fff;
+  border-radius: .5rem;
+  overflow: hidden;
+}
+
+.map-picker-header,
+.map-picker-footer {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .75rem 1rem;
+}
+
+.map-picker-header { justify-content: space-between; }
+.map-picker-header h3 { margin: 0; }
+.map-picker-footer { justify-content: flex-end; }
+.map-picker-hint { margin-right: auto; font-size: .85rem; }
+
+.map-picker-body { flex: 1; min-height: 0; }
+.map-picker-error { color: #b00020; padding: 1rem; }
+
+.map-picker-close {
+  border: 0;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.map-picker-confirm {
+  background: #167c72;
+  color: #fff;
+}

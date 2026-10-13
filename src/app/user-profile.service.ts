@@ -1,13 +1,22 @@
-import { Injectable } from '@angular/core'
+import { computed, effect, Injectable, signal } from '@angular/core'
 import { fetchUserAttributes, fetchAuthSession, UserAttributeKey } from 'aws-amplify/auth'
 
 export class UserData {
   attributes: Partial<Record<UserAttributeKey, string>> = {}
   groups: string[] = []
+  // whether the user has switched on editing (only meaningful for editors)
+  editEnabled = signal(false)
+
+  constructor(attributes: Partial<Record<UserAttributeKey, string>> = {}, groups: string[] = []) {
+    this.attributes = attributes
+    this.groups = groups
+    this.editEnabled.set(JSON.parse(localStorage.getItem('editEnabled') || 'false'))
+  }
 
   clear() {
     this.attributes = {}
     this.groups = []
+    this.editEnabled.set(false)
   }
 
   getId(): string {
@@ -35,9 +44,13 @@ export class UserData {
 @Injectable({ providedIn: 'root' })
 export class UserProfileService {
 
-  user: UserData = new UserData()
+  user = signal<UserData>(new UserData())
 
-  loggedIn:boolean = false
+  constructor() {
+    effect(() => {
+      localStorage.setItem('editEnabled', JSON.stringify(this.user().editEnabled()))
+    })
+  }
 
   /**
    * To be called after the user has logged in, to fetch and cache the user attributes and groups
@@ -48,32 +61,30 @@ export class UserProfileService {
    */
   async logIn(): Promise<UserData> {
 
-    if (this.loggedIn) {
-      return this.user
+    if (this.isLoggedIn()) {
+      return this.user()
     }
     
+    let attributes: Partial<Record<UserAttributeKey, string>> = {}
     let authSession: any
 
-    [this.user.attributes, authSession] = await Promise.all([
+    [attributes, authSession] = await Promise.all([
         fetchUserAttributes(),
         fetchAuthSession()
       ]);
 
     const groups = authSession.tokens?.idToken?.payload['cognito:groups']
-    this.user.groups = Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []
 
-    this.loggedIn = true
-
-    return this.user;
+    this.user.set(new UserData(attributes, Array.isArray(groups) ? groups.map(obj => obj?.toString() || "?") : []))
+    return this.user()
   }
 
   logOut(): void {
-    this.user.clear()
-    this.loggedIn = false
+    this.user().clear()
   }
 
   isLoggedIn(): boolean {
-    return this.loggedIn
+    return this.user().getId() !== ''
   }
 
 }

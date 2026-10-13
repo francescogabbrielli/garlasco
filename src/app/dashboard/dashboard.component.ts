@@ -77,7 +77,9 @@ export class DashboardComponent implements OnInit {
   private async loadPeople(): Promise<void> {
     try {
       const response = await client.models.Person.list()
-      this.people.set(response.data ?? [])
+      this.people.set(response.data
+        .sort((a, b) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)) 
+        ?? [])
     } catch {
       this.peopleError.set('Impossibile caricare le persone.')
     } finally {

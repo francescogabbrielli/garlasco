@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 import { Schema } from '../../../../amplify/data/resource';
@@ -17,6 +17,8 @@ export class PersonFilterComponent {
   error = input('')
   selectedIds = input<string[]>([])
   selectionChange = output<string[]>()
+
+  filteredPeople = computed(() => this.people().filter(p => p.type === "Protagonista")) // TODO: add filters for other types if needed
 
   toggle(personId: string): void {
     this.selectionChange.emit(

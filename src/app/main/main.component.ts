@@ -27,6 +27,7 @@ export class MainComponent {
   isUserMenuOpen = false;
   isAdminVisible = false;
   isAdmin = signal(false)
+  isEditor = signal(false)
   ownerId = signal('')
   givenName = signal('')
   familyName = signal('')
@@ -34,13 +35,15 @@ export class MainComponent {
   async ngOnInit(): Promise<void> {
     const user = await this.userProfile.logIn();
     this.isAdmin.set(user.isAdmin())
+    this.isEditor.set(user.isEditor())
     this.ownerId.set(user.getId())
     this.givenName.set(user.getName())
     this.familyName.set(user.getSurname())
   }
 
-  get loggedIn(): string {
-    return `${this.givenName()} ${this.familyName()}`.trim() || 'Utente';
+  toggleEdit(): void {
+    const editEnabled = this.userProfile.user().editEnabled
+    editEnabled.update(value => !value)
   }
 
   toggleUserMenu(): void {

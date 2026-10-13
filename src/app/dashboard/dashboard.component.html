@@ -66,8 +66,8 @@
     </app-event-list>
   </section>  
 
-  @if (openedEvent(); as opened) {
-    <app-event-popup [event]="opened" (closed)="openedEvent.set(null)"></app-event-popup>
-  }
+    @if (openedEvent(); as opened) {
+      <app-event-popup [event]="opened" (closed)="openedEvent.set(null)"></app-event-popup>
+    }
 
 </main>

@@ -1,5 +1,6 @@
 /// <reference types="google.maps" />
 
+import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi, Mock } from 'vitest'
@@ -14,13 +15,25 @@ describe('MainComponent', () => {
 
   beforeEach(async () => {
     signOutSpy = vi.fn().mockName('signOut')
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const userData = {
+      isAdmin: () => true,
+      isEditor: () => true,
+      editEnabled: signal(false),
+      getId: () => 'user-123',
+      getName: () => 'Mario',
+      getSurname: () => 'Rossi',
+    };
     const userProfile = {
-      logIn: vi.fn().mockName('logIn').mockResolvedValue({
-        isAdmin: () => true,
-        getId: () => 'user-123',
-        getName: () => 'Mario',
-        getSurname: () => 'Rossi',
-      }),
+      user: signal(userData),
+      logIn: vi.fn().mockName('logIn').mockResolvedValue(userData),
     };
 
     await TestBed.configureTestingModule({
@@ -55,8 +68,32 @@ describe('MainComponent', () => {
   });
 
   it('should show the admin link for administrators', () => {
-    expect(fixture.nativeElement.querySelector('.admin-link')).not.toBeNull();
-    expect(fixture.componentInstance.ownerId).toBe('user-123');
+    expect(fixture.nativeElement.querySelector('.main-link')).not.toBeNull();
+    expect(fixture.componentInstance.ownerId()).toBe('user-123');
+  });
+
+  it('should show the import link with its label', () => {
+    const adminLink = fixture.nativeElement.querySelector('a[routerLink="/admin"]');
+
+    expect(adminLink.getAttribute('aria-label')).toBe('Import');
+  });
+
+  it('should toggle editEnabled from the edit button', () => {
+    const userProfile = TestBed.inject(UserProfileService) as any;
+    const button = fixture.nativeElement.querySelector('button.main-link');
+
+    expect(button.getAttribute('aria-pressed')).toBe('false');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(userProfile.user().editEnabled()).toBe(true);
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(userProfile.user().editEnabled()).toBe(false);
   });
 
   it('should open the user menu from the user name', () => {

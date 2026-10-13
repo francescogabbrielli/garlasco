@@ -3,7 +3,7 @@
 
   <nav class="menu" aria-label="Menu principale">
       <a
-        class="admin-link"
+        class="main-link"
         routerLink="/dashboard"
         routerLinkActive="active"
         aria-label="Dashboard"
@@ -11,15 +11,28 @@
       >
         ▦
       </a>
+    @if (isEditor()) {
+      <button
+        class="main-link"
+        type="button"
+        [class.active]="userProfile.user().editEnabled()"
+        [attr.aria-pressed]="userProfile.user().editEnabled()"
+        aria-label="Modifica"
+        title="Modifica"
+        (click)="toggleEdit()"
+      >
+        ✐
+      </button>
+    }
     @if (isAdmin()) {
       <a
-        class="admin-link"
+        class="main-link"
         routerLink="/admin"
         routerLinkActive="active"
-        aria-label="Amministrazione"
-        title="Amministrazione"
+        aria-label="Import"
+        title="Import"
       >
-        ✎
+        ⇪
       </a>
     }
     <div class="user-menu">

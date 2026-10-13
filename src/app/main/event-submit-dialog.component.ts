@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, inject, input, output, signal } from '@angular/core'
+import { Component, ElementRef, OnInit, ViewChild, inject, input, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
@@ -32,8 +32,9 @@ declare global {
   templateUrl: './event-submit-dialog.component.html',
   styleUrls: ['./event-submit-dialog.component.css']
 })
-export class EventSubmitDialogComponent implements OnChanges, OnInit {
-  ownerId = input('')
+export class EventSubmitDialogComponent implements OnInit {
+  
+  ownerId = input.required()
   isAdmin = input(false)
   closed = output<void>()
 
@@ -98,12 +99,6 @@ export class EventSubmitDialogComponent implements OnChanges, OnInit {
 
   public createClient(): ReturnType<typeof generateClient<Schema>> {
     return generateClient<Schema>()
-  }
-
-  ngOnChanges(_changes: SimpleChanges): void {
-    if (this.ownerId()) {
-      this.eventForm.controls.owner.setValue(this.ownerId(), { emitEvent: false })
-    }
   }
 
   async ngOnInit(): Promise<void> {

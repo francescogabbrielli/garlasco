@@ -1,0 +1,376 @@
+import { Component, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { MatAutocompleteModule } from '@angular/material/autocomplete'
+import { generateClient } from 'aws-amplify/data'
+
+import { UserProfileService } from '../../user-profile.service';
+
+import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../../app.constants'
+import { EVENT_TYPES } from '../../../../amplify/data/enums'
+import type { Schema } from '../../../../amplify/data/resource'
+import { GeoService } from '../../geo.service';
+import { MapPickerComponent } from '../map-picker/map-picker.component';
+
+type EventModel = Schema['Event']['type']
+type EventType = Schema['Event']['type']['type']
+type Person = Schema['Person']['type']
+type Coordinates = Schema['Coordinates']['type']
+
+type SelectedActor = { 
+  rowId: number;
+  personId: string;
+  personQuery: string;
+  role: string
+}
+
+const client = generateClient<Schema>()
+
+@Component({
+  selector: 'app-event-mask',
+  imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent],
+  templateUrl: './event-mask.component.html',
+  styleUrl: './event-mask.component.css',
+})
+export class EventMaskComponent {
+
+  people = input<Person[]>([])
+  event = input<EventModel | null>(null)
+  saved = output<void>()
+
+  isHelpDialogOpen = model(false)
+
+  constructor() {
+    effect(() => {
+      const event = this.event()
+      // re-run once the people list is available so actor names can be resolved
+      if (this.people().length === 0) return
+      if (event) untracked(() => this.loadEvent(event))
+    })
+  }
+
+  private toLocalInput(iso: string | null | undefined): string {
+    if (!iso) return ''
+    const d = new Date(iso)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
+  private async loadEvent(event: EventModel): Promise<void> {
+    this.eventForm.patchValue({
+      type: event.type,
+      name: event.name,
+      description: event.description,
+      reliability: event.reliability ?? this.reliabilityOptions.length,
+      relevance: event.relevance,
+      start: {
+        date: this.toLocalInput(event.start_date),
+        latitude: event.start_position.latitude,
+        longitude: event.start_position.longitude,
+        radius: event.start_position.radius,
+      },
+      end: {
+        date: this.toLocalInput(event.end_date),
+        latitude: event.end_position?.latitude ?? null,
+        longitude: event.end_position?.longitude ?? null,
+        radius: event.end_position?.radius ?? null,
+      },
+    })
+
+    const { data } = await client.models.EventPerson.list({ filter: { eventId: { eq: event.id } } })
+    if (this.event()?.id !== event.id) return
+    this.existingActorIds = data.map(a => a.id)
+    if (data.length) {
+      this.nextActorRowId = data.length
+      this.selectedActors = data.map((a, i) => ({
+        rowId: i,
+        personId: a.personId,
+        personQuery: this.personName(a.personId),
+        role: a.role,
+      }))
+    }
+  }
+
+  private existingActorIds: string[] = []
+
+  userService = inject(UserProfileService)
+  geoService = inject(GeoService)
+
+  readonly relevanceOptions = RELEVANCE_LABELS.map(LABEL_MAP).slice(1).reverse()
+  readonly reliabilityOptions = RELIABILITY_LABELS.map(LABEL_MAP).slice(1).reverse()
+  readonly typeOptions: readonly EventType[] = EVENT_TYPES
+
+  readonly isSaving = signal(false)
+  readonly submitError = signal('')
+
+  // actors involved in the event
+  selectedActors: SelectedActor[] = [{ rowId: 0, personId: '', personQuery: '', role: '' }]
+  actorSelectionError = false
+  actorRoleError = false
+  private nextActorRowId = 1
+  readonly displayPerson = (person: Person | string | null): string => {
+    if (typeof person === 'string') return person
+    return person ? `${person.name} ${person.surname}` : ''
+  }
+
+  readonly eventForm = new FormGroup({
+    owner: new FormControl(this.userService.user().getId(), { nonNullable: true, validators: [Validators.required] }),
+    type: new FormControl<EventType | null>(null, Validators.required),
+    name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    reliability: new FormControl(this.reliabilityOptions.length, {
+      nonNullable: true,
+      validators: [Validators.min(1), Validators.max(4)],
+    }),
+    relevance: new FormControl(this.relevanceOptions.length, {
+      nonNullable: true,
+      validators: [Validators.min(1), Validators.max(4)],
+    }),
+    start: new FormGroup({
+      date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      latitude: new FormControl<number | null>(null, { nonNullable: true, validators: [Validators.required] }),
+      longitude: new FormControl<number | null>(null, { nonNullable: true }),
+      radius: new FormControl<number | null>(null, { nonNullable: true }),
+    }),
+    end: new FormGroup({
+      date: new FormControl('', { nonNullable: false }),
+      latitude: new FormControl<number | null>(null, { nonNullable: false }),
+      longitude: new FormControl<number | null>(null, { nonNullable: false }),
+      radius: new FormControl<number | null>(null, { nonNullable: false }),
+    }),
+  })
+  
+
+  isAdmin = () => this.userService.user().isAdmin()
+
+  filteredPeople(actor: SelectedActor): Person[] {
+    const query = actor.personQuery.trim().toLocaleLowerCase()
+    return this.people().filter((person) => {
+      const alreadySelected = this.selectedActors.some(
+        (selectedActor) => selectedActor.rowId !== actor.rowId && selectedActor.personId === person.id,
+      )
+      const name = `${person.name} ${person.surname}`.toLocaleLowerCase()
+      return !alreadySelected && name.includes(query)
+    })
+  }
+
+  isActorPersonValid(actor: SelectedActor): boolean {
+    const person = this.people().find((item) => item.id === actor.personId)
+    return !!person
+      && actor.personQuery.trim().toLocaleLowerCase()
+        === `${person.name} ${person.surname}`.trim().toLocaleLowerCase()
+  }
+
+  addActor(): void {
+    this.selectedActors = [
+      ...this.selectedActors,
+      { rowId: this.nextActorRowId++, personId: '', personQuery: '', role: '' },
+    ]
+    this.actorSelectionError = false
+    this.actorRoleError = false
+  }
+
+  updateActorPersonQuery(rowId: number, event: Event): void {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId
+        ? { ...actor, personId: '', personQuery: target.value }
+        : actor,
+    )
+    this.actorSelectionError = false
+  }
+
+  selectActorPerson(rowId: number, person: Person): void {
+    if (!this.people().some((currentPerson) => currentPerson.id === person.id)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId
+        ? { ...actor, personId: person.id, personQuery: this.personName(person.id) }
+        : actor,
+    )
+    this.actorSelectionError = false
+  }
+
+  removeActor(rowId: number): void {
+    if (this.selectedActors.length <= 1) return
+
+    this.selectedActors = this.selectedActors.filter((actor) => actor.rowId !== rowId)
+    this.actorSelectionError = false
+    this.actorRoleError = false
+  }
+
+  personName(personId: string): string {
+    const person = this.people().find((item) => item.id === personId)
+    return person ? `${person.name} ${person.surname}` : ''
+  }
+
+  updateActorRole(rowId: number, event: Event): void {
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+
+    this.selectedActors = this.selectedActors.map((actor) =>
+      actor.rowId === rowId ? { ...actor, role: target.value } : actor,
+    )
+    this.actorRoleError = false
+  }
+
+  async submitEvent(): Promise<void> {
+
+    this.eventForm.markAllAsTouched()
+    this.submitError.set('')
+    this.actorSelectionError = this.selectedActors.length === 0
+      || this.selectedActors.some((actor) => !this.isActorPersonValid(actor))
+
+    if (this.eventForm.invalid) {
+      this.submitError.set(
+        this.isAdmin() && (
+          this.eventForm.controls.reliability.invalid
+          || this.eventForm.controls.relevance.invalid
+        )
+          ? 'Per attendibilità e rilevanza scegli un valore da 1 a 4.'
+          : 'Completa tutti i campi obbligatori prima di salvare l’evento.',
+      )
+      return
+    }
+
+    if (this.actorSelectionError) {
+      this.submitError.set(
+        this.selectedActors.length === 0
+          ? 'Seleziona almeno una persona coinvolta.'
+          : this.selectedActors.some((actor) => this.isActorPersonValid(actor))
+            ? 'Seleziona una persona in ogni riga.'
+            : 'Seleziona una persona valida dall’elenco in ogni riga.',
+      )
+      return
+    }
+
+    this.actorRoleError = this.selectedActors.some((actor) => !actor.role.trim())
+    if (this.actorRoleError) {
+      this.submitError.set('Indica il ruolo per ogni persona selezionata.')
+      return
+    }
+
+    const start = this.eventForm.controls.start.getRawValue()
+    const end = this.eventForm.controls.end.getRawValue()
+    const type = this.eventForm.controls.type.value
+
+    if (!type) {
+      this.submitError.set('Seleziona la tipologia dell’evento.')
+      return
+    }
+
+    this.isSaving.set(true)
+
+    try {
+
+      const startPosition:Coordinates = {
+        latitude: Number(start.latitude),
+        longitude: Number(start.longitude),
+        radius: Number(start.radius),
+      }
+
+      const endPosition:Coordinates | null = end.latitude ? {
+        latitude: Number(end.latitude),
+        longitude: Number(end.longitude),
+        radius: Number(end.radius),
+      } : null
+
+      const payload = {
+        owner: this.eventForm.controls.owner.value,
+        type,
+        name: this.eventForm.controls.name.value.trim(),
+        description: this.eventForm.controls.description.value.trim(),
+        start_date: new Date(start.date).toISOString(),
+        end_date: end.date ? new Date(end.date).toISOString() : null,
+        start_position: startPosition,
+        end_position: endPosition,
+        geoHash: this.geoService.computeGeoHash(
+          this.geoService.computeCenterPosition(startPosition, endPosition)),
+        reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
+        relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
+      }
+
+      const existing = this.event()
+      const { data, errors } = existing
+        ? await client.models.Event.update({ id: existing.id, ...payload, owner: existing.owner })
+        : await client.models.Event.create(payload)
+
+      if (errors?.length || !data?.id) {
+        console.error('Error saving Event', payload, errors)
+        this.submitError.set('Errore durante il salvataggio dell’evento! Contattare l’amministratore.')
+        return
+      }
+
+      if (existing) {
+        for (const id of this.existingActorIds) {
+          await client.models.EventPerson.delete({ id })
+        }
+        this.existingActorIds = []
+      }
+
+      for (const actor of this.selectedActors) {
+        const { errors: actorErrors } = await client.models.EventPerson.create({
+          eventId: data.id,
+          eventName: data.name,
+          eventStartDate: data.start_date,
+          eventGeoHash: data.geoHash,
+          personId: actor.personId,
+          role: actor.role.trim(),
+        })
+        if (actorErrors?.length) {
+          this.submitError.set(`L’evento è stato creato, ma non è stato possibile associare ${this.personName(actor.personId)}: ${actorErrors[0].message}`)
+          return
+        }
+      }
+
+      this.saved.emit()
+
+    // } catch (error) {
+      // const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
+      // this.submitError.set(message);
+    } finally {
+      this.isSaving.set(false);
+    }
+  }
+
+  readonly pickerTarget = signal<'start' | 'end' | null>(null)
+
+  requestPosition(target: 'start' | 'end'): void {
+    this.pickerTarget.set(target)
+  }
+
+  pickerInitialPosition(): Coordinates | null {
+    const target = this.pickerTarget()
+    if (!target) return null
+    const value = this.eventForm.controls[target].getRawValue()
+    return value.latitude != null && value.longitude != null
+      ? { latitude: Number(value.latitude), longitude: Number(value.longitude), radius: Number(value.radius ?? 0) }
+      : null
+  }
+
+  onPositionPicked(position: Coordinates): void {
+    const target = this.pickerTarget()
+    if (target) {
+      this.eventForm.controls[target].patchValue({
+        latitude: position.latitude,
+        longitude: position.longitude,
+        radius: position.radius,
+      })
+      this.eventForm.controls[target].markAsDirty()
+    }
+    this.pickerTarget.set(null)
+  }
+
+  closePicker(): void {
+    this.pickerTarget.set(null)
+  }
+  
+  openHelpDialog(): void {
+    this.isHelpDialogOpen.set(true)
+  }
+
+  closeHelpDialog(): void {
+    this.isHelpDialogOpen.set(false)
+  }
+}

@@ -1,16 +1,47 @@
 <div class="dialog-backdrop" (click)="closed.emit()">
-  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="event-popup-title"
-           (click)="$event.stopPropagation()">
+  <section 
+    class="dialog" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="event-popup-title"
+    (click)="$event.stopPropagation()"
+  >
     <div class="dialog-heading">
+
       <div>
-        <p class="eyebrow">{{ event().type }}</p>
+        <p class="eyebrow">{{ isEditor() ? 'Evento' : event().type }}</p>
         <h2 id="event-popup-title">{{ event().name }}</h2>
       </div>
+
       <div class="dialog-controls">
-        <button class="dialog-close" type="button" aria-label="Chiudi" title="Chiudi" (click)="closed.emit()">×</button>
+          @if (isEditor()) {
+          <button
+            class="dialog-help"
+            type="button"
+            aria-label="Apri aiuto"
+            title="Apri aiuto"
+            (click)="help = true">?</button>
+          }
+          <button 
+            class="dialog-close" 
+            type="button" 
+            aria-label="Chiudi" 
+            title="Chiudi" 
+            (click)="closed.emit()">×</button>
       </div>
     </div>
 
+    @if (isEditor()) {
+      @defer (on viewport) {
+        <app-event-mask id="event-mask" 
+          [event]="event()" 
+          [people]="allPeople()"
+          [(isHelpDialogOpen)]="help"
+          (saved)="closed.emit()" ></app-event-mask>
+      } @placeholder {
+        <div>Loading Event Mask...</div>
+      }
+    } @else {
     <dl class="event-fields">
       <dt>Descrizione</dt>
       <dd class="description">{{ event().description }}</dd>
@@ -53,5 +84,6 @@
           </ul>
       </dd>
     </dl>
+    }
   </section>
 </div>

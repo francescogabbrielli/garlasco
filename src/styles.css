@@ -148,7 +148,7 @@ body {
       color: #7551c2;
     }
 
-  .admin-link {
+  .main-link {
       display: inline-grid;
       width: 2.25rem;
       height: 2.25rem;
@@ -160,8 +160,16 @@ body {
       line-height: 1;
     }
 
-  .admin-link:hover,
-  .admin-link.active {
+  button.main-link {
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+  .main-link:hover,
+  .main-link.active {
       background: #dadbf9;
       color: #7551c2;
     }

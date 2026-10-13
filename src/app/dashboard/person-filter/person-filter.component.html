@@ -13,9 +13,9 @@
         <p class="control-message" aria-live="polite">Caricamento persone…</p>
       } @else if (error()) {
         <p class="control-message control-error" role="status">{{ error() }}</p>
-      } @else if (people().length) {
+      } @else if (filteredPeople().length) {
         <div class="actor-list" role="group" aria-label="Filtra per persona">
-          @for (person of people(); track person.id) {
+          @for (person of filteredPeople(); track person.id) {
             <button
               class="actor-option"
               type="button"
