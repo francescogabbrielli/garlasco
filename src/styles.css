@@ -171,7 +171,6 @@ body {
   .user-label {
       padding: 0.6em 0.6em 0.6em 0.6em;
       border: 0;
-      border-left: 1px solid rgba(34, 31, 43, 0.16);
       border-radius: 0;
       background: transparent;
       color: rgba(34, 31, 43, 0.72);
@@ -220,6 +219,34 @@ body {
       width: 100%;
       min-height: calc(100vh - 4rem);
       padding: 2rem 5vw;
+    }
+
+  .context-controls {
+      display: flex;
+      flex-direction: row;
+      padding: 0.5rem 0;
+      align-items: flex-end;
+      float: right;
+      gap: 0.35rem;
+    }
+
+  .context-button {
+      display: grid;
+      width: 2.25rem;
+      height: 2.25rem;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgba(117, 81, 194, 0.35);
+      border-radius: 50%;
+      background: transparent;
+      color: #7551c2;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+  .context-button:hover {
+      background: #dadbf9;
+      color: #7551c2;
     }
 
   .dialog-backdrop {
@@ -472,7 +499,7 @@ body {
 
   .coordinate-fields input[readonly] {
       background: rgba(34, 31, 43, 0.05);
-      color: rgba(34, 31, 43, 0.78);
+      color: rgba(34, 31, 43, 0.78);    
     }
 
   .coordinate-fields .search-control {

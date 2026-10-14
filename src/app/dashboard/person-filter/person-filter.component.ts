@@ -18,7 +18,7 @@ export class PersonFilterComponent {
   selectedIds = input<string[]>([])
   selectionChange = output<string[]>()
 
-  filteredPeople = computed(() => this.people().filter(p => p.type === "Protagonista")) // TODO: add filters for other types if needed
+  filteredPeople = computed(() => this.people().filter(p => p.type === "Protagonista" || p.type === "Testimone")) // TODO: add filters for other types if needed
 
   toggle(personId: string): void {
     this.selectionChange.emit(

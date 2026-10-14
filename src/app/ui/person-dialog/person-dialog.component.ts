@@ -28,6 +28,7 @@ export class PersonDialogComponent {
     surname: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     type: new FormControl<Person['type'] | null>(null, Validators.required),
     profession: new FormControl('', { nonNullable: true }),
+    initials: new FormControl('', { nonNullable: false }),
   })
 
   async submit(): Promise<void> {
@@ -35,7 +36,7 @@ export class PersonDialogComponent {
       this.form.markAllAsTouched()
       return
     }
-    const { name, surname, type, profession } = this.form.getRawValue()
+    const { name, surname, type, profession, initials } = this.form.getRawValue()
     this.isSaving.set(true)
     this.error.set('')
     try {
@@ -44,7 +45,7 @@ export class PersonDialogComponent {
         surname: surname.trim(),
         type: type!,
         profession: profession.trim() || undefined,
-        initials: `${name.trim()[0] ?? ''}${surname.trim()[0] ?? ''}`.toUpperCase(),
+        initials: initials?.trim() || `${name.trim()[0] ? name.trim()[0] + '.' : ''}${surname.trim().substring(0, 2) + '.'}`.toUpperCase(),
       })
       if (!data) throw new Error(errors?.[0]?.message ?? 'Creazione non riuscita')
       this.created.emit(data)

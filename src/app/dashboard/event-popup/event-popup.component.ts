@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
 import { generateClient } from 'aws-amplify/api';
 
 import { Schema } from '../../../../amplify/data/resource';
@@ -27,17 +27,21 @@ export class EventPopupComponent {
   closed = output<void>()
   saved = output<void>()
   help = false
+  maskTouched = false
 
-  isEditor = () => this.userService.user().isEditor() && this.userService.user().editEnabled()
+  isEditor = computed(() => {
+    const edit = this.userService.user().editEnabled()
+    const isOwner = this.userService.user().isEditor() && this.userService.user().getId() === this.event().owner
+    const isNew = !this.event().id
+    return edit || isOwner || isNew
+  })
+  
   people = input.required<Person[]>()
 
   actors = signal<Person[]>([])
   personsLoading = signal(false)
 
   constructor() {
-    // effect(() => {
-    //   if (this.isEditor() && this.people().length === 0) untracked(() => this.loadAllPeople())
-    // })
     effect(() => {
       const id = this.event().id
       this.loadPersons(id)
@@ -65,7 +69,12 @@ export class EventPopupComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.closed.emit()
+    this.close()
+  }
+
+  close() {
+    if (!this.maskTouched || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
+      this.closed.emit()
   }
 
 }

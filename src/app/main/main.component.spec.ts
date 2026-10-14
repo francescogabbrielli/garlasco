@@ -103,10 +103,10 @@ describe('MainComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="menu"]')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('.submit-event-button').textContent).toContain(
+    expect(fixture.nativeElement.querySelector('#submit-event-button').textContent).toContain(
       'Invia nuovo evento',
     );
-    expect(fixture.nativeElement.querySelector('.logout-menuitem').textContent).toContain('Esci');
+    expect(fixture.nativeElement.querySelector('#logout_button').textContent).toContain('Esci');
   });
 
   it('should render links to home and the admin console', () => {
@@ -122,7 +122,7 @@ describe('MainComponent', () => {
     const userLabel = fixture.nativeElement.querySelector('.user-label');
     userLabel.click();
     fixture.detectChanges();
-    fixture.nativeElement.querySelector('.logout-menuitem').click();
+    fixture.nativeElement.querySelector('#logout_button').click();
 
     expect(signOutSpy).toHaveBeenCalled();
   });
@@ -133,7 +133,7 @@ describe('MainComponent', () => {
     userLabel.click();
     fixture.detectChanges();
 
-    const submitButton = fixture.nativeElement.querySelector('.submit-event-button');
+    const submitButton = fixture.nativeElement.querySelector('#submit-event-button');
 
     submitButton.click();
     fixture.detectChanges();

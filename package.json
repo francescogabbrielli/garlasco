@@ -1,6 +1,7 @@
 {
   "name": "garlasco",
   "version": "0.0.2",
+  "lastUpdate": "2026-10-13",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",

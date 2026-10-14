@@ -1,8 +1,9 @@
+/* TODO: find a better solution for scaling small form fields (i.e. for coordinates) */
 div.form-field.form-field-small > label, div.form-field.form-field-small > input {
-  font-size: 0.6em;
   line-height: 0.6em;
   font-style: italic;
-  height: 0.5em;
+  height: 0;
+  transform: scale(0.75);  
 }
 
 div.form-field.form-field-small > label > span {
@@ -10,6 +11,7 @@ div.form-field.form-field-small > label > span {
     font-weight: 400;
 }
 
+/** TODO: Create a global help dialog component */
 .help-dialog-backdrop {
     position: fixed;
     inset: 0;

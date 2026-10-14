@@ -208,7 +208,7 @@
                 Salvataggio...
             } @else {
                 <span aria-hidden="true">➤</span>
-                {{ event() ? 'Salva modifiche' : 'Invia evento' }}
+                {{ event()?.id ? 'Salva modifiche' : 'Invia evento' }}
             }
             </button>
         </div>

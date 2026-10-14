@@ -11,6 +11,7 @@ import { EventListComponent } from './event-list/event-list.component';
 import { MapFilterComponent } from './map-filter/map-filter.component';
 import { RangeFilterComponent } from './range-filter/range-filter.component';
 import { EventPopupComponent } from './event-popup/event-popup.component';
+import { UserProfileService } from '../user-profile.service';
 
 const client = generateClient<Schema>()
 
@@ -34,6 +35,7 @@ export class DashboardComponent implements OnInit {
 
   protected dataService = inject(DataService)
   protected geoService = inject(GeoService)
+  protected userService = inject(UserProfileService)
 
   readonly MAX_DATE = new Date()
   readonly MIN_DATE = new Date(2007, 1, 1)
@@ -72,6 +74,10 @@ export class DashboardComponent implements OnInit {
   openEventById(id: string): void {
     const event = this.events().find(e => e.id === id)
     if (event) this.openedEvent.set(event)
+  }
+
+  createNewEvent(): void { 
+    this.openedEvent.set({owner: this.userService.user().getId()} as Event)
   }
 
   private async loadPeople(): Promise<void> {

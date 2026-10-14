@@ -40,6 +40,11 @@
       <input class="search-control" id="person-profession" type="text" formControlName="profession" />
     </div>
 
+    <div class="form-field">
+      <label for="person-initials">Iniziali <span>(opzionale)</span></label>
+      <input class="search-control" id="person-initials" type="text" formControlName="initials" />
+    </div>
+
     @if (error()) {
       <p class="field-error">{{ error() }}</p>
     }

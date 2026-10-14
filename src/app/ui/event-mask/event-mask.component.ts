@@ -1,16 +1,17 @@
-import { Component, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
 
-import { UserProfileService } from '../../user-profile.service';
+import { UserProfileService } from '../../user-profile.service'
+import { GeoService } from '../../geo.service'
 
 import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../../app.constants'
 import { EVENT_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
-import { GeoService } from '../../geo.service';
-import { MapPickerComponent } from '../map-picker/map-picker.component';
-import { PersonDialogComponent } from '../person-dialog/person-dialog.component';
+
+import { MapPickerComponent } from '../map-picker/map-picker.component'
+import { PersonDialogComponent } from '../person-dialog/person-dialog.component'
 
 type EventModel = Schema['Event']['type']
 type EventType = Schema['Event']['type']['type']
@@ -49,13 +50,14 @@ export class EventMaskComponent {
   private personDialogRowId: number | null = null
 
   isHelpDialogOpen = model(false)
+  isFormTouched = model(false)
 
   constructor() {
     effect(() => {
-      const event = this.event()
       // re-run once the people list is available so actor names can be resolved
       if (this.people().length === 0) return
-      if (event) untracked(() => this.loadEvent(event))
+      this.loadEvent()
+      this.eventForm.events.subscribe((event) => this.isFormTouched.set(event.source.touched))
     })
   }
 
@@ -66,29 +68,31 @@ export class EventMaskComponent {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
-  private async loadEvent(event: EventModel): Promise<void> {
+  private async loadEvent(): Promise<void> {
+    const e = this.event()
+    if (!e?.id) return
     this.eventForm.patchValue({
-      type: event.type,
-      name: event.name,
-      description: event.description,
-      reliability: event.reliability ?? this.reliabilityOptions.length,
-      relevance: event.relevance,
+      type: e.type,
+      name: e.name,
+      description: e.description,
+      reliability: e.reliability ?? this.reliabilityOptions.length,
+      relevance: e.relevance,
       start: {
-        date: this.toLocalInput(event.start_date),
-        latitude: event.start_position.latitude,
-        longitude: event.start_position.longitude,
-        radius: event.start_position.radius,
+        date: this.toLocalInput(e.start_date),
+        latitude: e.start_position.latitude,
+        longitude: e.start_position.longitude,
+        radius: e.start_position.radius,
       },
       end: {
-        date: this.toLocalInput(event.end_date),
-        latitude: event.end_position?.latitude ?? null,
-        longitude: event.end_position?.longitude ?? null,
-        radius: event.end_position?.radius ?? null,
+        date: this.toLocalInput(e.end_date),
+        latitude: e.end_position?.latitude ?? null,
+        longitude: e.end_position?.longitude ?? null,
+        radius: e.end_position?.radius ?? null,
       },
     })
 
-    const { data } = await client.models.EventPerson.list({ filter: { eventId: { eq: event.id } } })
-    if (this.event()?.id !== event.id) return
+    const { data } = await client.models.EventPerson.list({ filter: { eventId: { eq: e.id } } })
+    if (this.event()?.id !== e.id) return
     this.existingActorIds = data.map(a => a.id)
     if (data.length) {
       this.nextActorRowId = data.length
@@ -151,7 +155,6 @@ export class EventMaskComponent {
       radius: new FormControl<number | null>(null, { nonNullable: false }),
     }),
   })
-  
 
   isAdmin = () => this.userService.user().isAdmin()
 

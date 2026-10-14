@@ -4,7 +4,22 @@
       <p class="eyebrow">Archivio Garlasco</p>
       <h1>Esplora gli eventi</h1>
     </div>
-    <p class="heading-note">Persone, tempi e luoghi in un'unica cronologia.</p>
+    <div>
+      <p class="heading-note">Persone, tempi e luoghi in un'unica cronologia.</p>
+      <div class="context-controls">
+        <button
+          class="context-button"
+          type="button"
+          aria-label="Apri aiuto"
+          title="Apri aiuto">?</button>
+        <button 
+          class="context-button" 
+          type="button" 
+          aria-label="Invia un nuovo evento" 
+          title="Invia un nuovo evento"
+          (click)="createNewEvent()">＋</button>
+      </div>      
+    </div>
   </header>
 
   <section class="mask" aria-labelledby="search-title">

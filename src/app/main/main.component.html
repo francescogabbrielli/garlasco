@@ -1,5 +1,5 @@
 <header class="topbar">
-  <a class="brand" routerLink="/" aria-label="Torna alla home">Garlasco</a>
+  <p class="brand" routerLink="/" aria-label="Torna alla home">I fatti di Garlasco</p>
 
   <nav class="menu" aria-label="Menu principale">
       <a
@@ -11,19 +11,6 @@
       >
         ▦
       </a>
-    @if (isEditor()) {
-      <button
-        class="main-link"
-        type="button"
-        [class.active]="userProfile.user().editEnabled()"
-        [attr.aria-pressed]="userProfile.user().editEnabled()"
-        aria-label="Modifica"
-        title="Modifica"
-        (click)="toggleEdit()"
-      >
-        ✐
-      </button>
-    }
     @if (isAdmin()) {
       <a
         class="main-link"
@@ -35,6 +22,18 @@
         ⇪
       </a>
     }
+    <span class="toolbar-separator" role="separator" aria-orientation="vertical"></span>
+    <button
+      class="main-link"
+      type="button"
+      [class.active]="userProfile.user().editEnabled()"
+      [attr.aria-pressed]="userProfile.user().editEnabled()"
+      aria-label="Modifica"
+      title="Modifica"
+      (click)="toggleEdit()"
+    >
+      ✐
+    </button>
     <div class="user-menu">
       <button
         class="user-label"
@@ -47,17 +46,14 @@
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
-          <button
-            class="submit-event-button"
-            type="button"
-            role="menuitem"
-            (click)="openSubmitDialog()"
-          >
-            <span aria-hidden="true">＋</span>
-            Invia nuovo evento
+
+          <hr role="separator" />
+          <button id="about_button" type="button" role="menuitem" (click)="openAboutDialog()">
+            <span aria-hidden="true">ℹ</span>
+            Informazioni
           </button>
           <hr role="separator" />
-          <button class="logout-menuitem" type="button" role="menuitem" (click)="logout()">
+          <button id="logout_button" type="button" role="menuitem" (click)="logout()">
             <span aria-hidden="true">⎋</span>
             Esci
           </button>
@@ -71,8 +67,35 @@
   <router-outlet />
 </main>
 
-@if (isSubmitDialogOpen) {
-  <app-event-submit-dialog
-    (closed)="closeSubmitDialog()"
-  ></app-event-submit-dialog>
-}
+@if (isAboutDialogOpen) {
+  <div class="dialog-backdrop" (click)="closeAboutDialog()">
+    <section
+      class="dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Informazioni</p>
+          <h1 id="about-title">I Fatti di Garlasco</h1>
+        </div>
+        <button
+          class="dialog-close"
+          type="button"
+          aria-label="Chiudi informazioni"
+          title="Chiudi informazioni"
+          (click)="closeAboutDialog()"
+        >
+          ×
+        </button>
+      </div>
+
+      <!-- pick the version from package.json -->
+      <p>versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
+      <small>Francesco Gabbrielli & Copilot (also known as Matteo Garlasco) &copy; 2026</small>
+    
+    </section>
+  </div>
+} 

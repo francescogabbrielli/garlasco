@@ -1,4 +1,4 @@
-<div class="dialog-backdrop" (click)="closed.emit()">
+<div class="dialog-backdrop" (click)="close()">
   <section 
     class="dialog" 
     role="dialog" 
@@ -9,7 +9,7 @@
     <div class="dialog-heading">
 
       <div>
-        <p class="eyebrow">{{ isEditor() ? 'Modifica' : event().type }}</p>
+        <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Nuovo') : event().type }}</p>
         <h1 id="event-popup-title">{{ isEditor() ? 'Evento' : event().name }}</h1>
       </div>
 
@@ -27,7 +27,7 @@
             type="button" 
             aria-label="Chiudi" 
             title="Chiudi" 
-            (click)="closed.emit()">×</button>
+            (click)="close()">×</button>
       </div>
     </div>
 
@@ -38,6 +38,7 @@
             [event]="event()" 
             [people]="people()"
             [(isHelpDialogOpen)]="help"
+            [(isFormTouched)]="maskTouched"
             (saved)="saved.emit(); closed.emit()" ></app-event-mask>
         </div>  
       } @placeholder {
