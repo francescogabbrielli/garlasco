@@ -1,7 +1,13 @@
 {
+
   "name": "garlasco",
-  "version": "0.0.2",
-  "lastUpdate": "2026-10-13",
+  "displayName": "I fatti di Garlasco",
+  "author": {
+    "name": "Francesco Gabbrielli"
+  },
+  "version": "0.0.3",
+  "description": "Sistema integrato e normalizzato di ricerca/indagine",
+  "lastUpdate": "2026-10-15",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",
