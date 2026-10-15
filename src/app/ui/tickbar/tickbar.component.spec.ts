@@ -20,4 +20,20 @@ describe('TickbarComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('shows the empty state for a zero level', () => {
+    fixture.componentRef.setInput('level', 0);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.tick-bar-container').getAttribute('data-status')).toBe('empty');
+    expect(fixture.nativeElement.querySelector('.error-x')).not.toBeNull();
+  });
+
+  it('highlights the number of ticks matching the level', () => {
+    fixture.componentRef.setInput('level', 3);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.tick-bar-container').getAttribute('data-status')).toBe('healthy');
+    expect(fixture.nativeElement.querySelectorAll('.tick.active')).toHaveLength(3);
+  });
 });

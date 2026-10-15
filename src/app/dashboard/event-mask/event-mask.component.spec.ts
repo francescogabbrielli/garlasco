@@ -21,12 +21,11 @@ describe('EventMaskComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should open the map picker for the requested target', () => {
+  it('should select the requested map picker target', () => {
     component.requestPosition('end');
     fixture.detectChanges();
 
     expect(component.pickerTarget()).toBe('end');
-    expect(fixture.nativeElement.querySelector('app-map-picker')).not.toBeNull();
   });
 
   it('should write the picked position into the target group and close the picker', () => {

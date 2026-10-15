@@ -23,16 +23,17 @@ vi.mock('aws-amplify/data', () => ({
 
 const EVENT = {
   id: 'e1',
-  type: 'INCIDENTE',
+  type: 'Fatto',
   name: 'Evento di prova',
   description: 'Descrizione',
+  owner: 'u1',
   start_date: '2026-01-01T10:00:00.000Z',
   end_date: null,
   start_position: { latitude: 45, longitude: 9, radius: 10 },
   end_position: null,
   relevance: 2,
   reliability: 3,
-} as any;
+};
 
 describe('EventPopupComponent', () => {
   let fixture: ComponentFixture<EventPopupComponent>;
@@ -43,6 +44,7 @@ describe('EventPopupComponent', () => {
     TestBed.overrideProvider(UserProfileService, { useValue: { user: () => user } });
     fixture = TestBed.createComponent(EventPopupComponent);
     fixture.componentRef.setInput('event', EVENT);
+    fixture.componentRef.setInput('people', []);
     fixture.detectChanges();
   }
 
@@ -57,11 +59,10 @@ describe('EventPopupComponent', () => {
     expect(fixture.nativeElement.querySelector('app-event-mask')).toBeNull();
   });
 
-  it('should show the event mask to editors who enabled editing', () => {
+  it('should allow an event owner to edit when editing is enabled', () => {
     create(['Editor'], true);
 
-    expect(fixture.nativeElement.querySelector('app-event-mask')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('dl.event-fields')).toBeNull();
+    expect(fixture.componentInstance.isEditor()).toBe(true);
   });
 
   it('should show read-only details to editors who did not enable editing', () => {

@@ -1,4 +1,4 @@
-import { Component, effect, input, OnInit, output } from '@angular/core'; // Usiamo output (funzione, non decoratore)
+import { Component, effect, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 import { CommonModule } from '@angular/common';
@@ -16,7 +16,7 @@ export interface TimelineTick {
   templateUrl: './timeline-slider.component.html',
   styleUrls: ['./timeline-slider.component.css']
 })
-export class TimelineSliderComponent implements OnInit {
+export class TimelineSliderComponent {
   readonly ONE_MINUTE = 60 * 1000;
   readonly ONE_HOUR = 60 * this.ONE_MINUTE;
   readonly ONE_DAY = 24 * this.ONE_HOUR;
@@ -43,23 +43,16 @@ export class TimelineSliderComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      this.minTimestamp = this.initialFrom()?.getTime() || 0
-      this.maxTimestamp = this.initialTo()?.getTime() || Date.now()
+      this.minTimestamp = this.initialFrom()?.getTime() ?? 0
+      this.maxTimestamp = this.initialTo()?.getTime() ?? Date.now()
       
       // Finestra iniziale visibile dello slider impostata a 6 mesi intorno ai valori iniziali
-      this.currentAbsoluteMin = this.initialMin()?.getTime() || Math.max(this.minimum().getTime(), this.minTimestamp)
-      this.currentAbsoluteMax = this.initialMax()?.getTime() || Math.min(this.maximum().getTime(), this.maxTimestamp)
+      this.currentAbsoluteMin = this.initialMin()?.getTime() ?? Math.max(this.minimum().getTime(), this.minTimestamp)
+      this.currentAbsoluteMax = this.initialMax()?.getTime() ?? Math.min(this.maximum().getTime(), this.maxTimestamp)
       
       this.updateStep();
       this.generateTimeline();
     })
-  }
-
-  ngOnInit(): void {
-    this.minTimestamp = this.minTimestamp ?? this.initialFrom()?.getTime()
-    this.maxTimestamp = this.maxTimestamp ?? this.initialTo()?.getTime()
-    this.updateStep()
-    this.generateTimeline()
   }
 
   onWheel(event: WheelEvent): void {
@@ -67,7 +60,7 @@ export class TimelineSliderComponent implements OnInit {
     event.preventDefault()
 
     const viewCenter = (this.minTimestamp + this.maxTimestamp) / 2;
-    let viewHalfWidth = (this.currentAbsoluteMax - this.currentAbsoluteMin) / 2;
+    let viewHalfWidth = Math.abs(this.currentAbsoluteMax - this.currentAbsoluteMin) / 2;
 
     if (event.deltaY > 0) {
       viewHalfWidth = viewHalfWidth * (1 + this.ZOOM_FACTOR); // Zoom Out
@@ -75,29 +68,26 @@ export class TimelineSliderComponent implements OnInit {
       viewHalfWidth = viewHalfWidth * (1 - this.ZOOM_FACTOR); // Zoom In
     }
 
-    // Non scendere sotto 1 giorno visibile totale
-    if (viewHalfWidth < (this.ONE_DAY / 2)) 
-      viewHalfWidth = this.ONE_DAY / 2
+    const availableMin = this.minimum().getTime()
+    const availableMax = this.maximum().getTime()
+    const maxHalfWidth = Math.max(0, (availableMax - availableMin) / 2)
+    viewHalfWidth = Math.min(viewHalfWidth, maxHalfWidth)
+    if (viewHalfWidth < this.ONE_DAY / 2)
+      viewHalfWidth = Math.min(this.ONE_DAY / 2, maxHalfWidth)
 
-    // Limite massimo dello zoom (non oltre l'intervallo totale disponibile)
-    const maxHalfWidth = (this.maximum().getTime() - this.minimum().getTime()) / 2
-    if (viewHalfWidth > maxHalfWidth) 
-      viewHalfWidth = maxHalfWidth
-
-    let newAbsMin = Math.round(viewCenter - viewHalfWidth);
-    let newAbsMax = Math.round(viewCenter + viewHalfWidth);
-
-    /*if (newAbsMin < this.minimum().getTime()) {
-      newAbsMin = this.minimum().getTime()
-      newAbsMax = Math.min(this.maximum().getTime(), Math.round(newAbsMin + (viewHalfWidth * 2)))
+    let newAbsoluteMin = Math.round(viewCenter - viewHalfWidth)
+    let newAbsoluteMax = Math.round(viewCenter + viewHalfWidth)
+    if (newAbsoluteMin < availableMin) {
+      newAbsoluteMax += availableMin - newAbsoluteMin
+      newAbsoluteMin = availableMin
     }
-    if (newAbsMax > this.maximum().getTime()) {
-      newAbsMax = this.maximum().getTime()
-      newAbsMin = Math.max(this.minimum().getTime(), Math.round(newAbsMax - (viewHalfWidth * 2)))
-    }*/
+    if (newAbsoluteMax > availableMax) {
+      newAbsoluteMin -= newAbsoluteMax - availableMax
+      newAbsoluteMax = availableMax
+    }
 
-    this.currentAbsoluteMin = newAbsMin
-    this.currentAbsoluteMax = newAbsMax
+    this.currentAbsoluteMin = newAbsoluteMin
+    this.currentAbsoluteMax = newAbsoluteMax
 
     this.updateStep()
     this.clampSelectedValues()
@@ -110,6 +100,10 @@ export class TimelineSliderComponent implements OnInit {
   generateTimeline(): void {
     const ticks: TimelineTick[] = [];
     const totalDuration = this.currentAbsoluteMax - this.currentAbsoluteMin;
+    if (totalDuration <= 0) {
+      this.timelineTicks = ticks;
+      return;
+    }
 
     const startDate = new Date(this.currentAbsoluteMin);
     const endDate = new Date(this.currentAbsoluteMax);
