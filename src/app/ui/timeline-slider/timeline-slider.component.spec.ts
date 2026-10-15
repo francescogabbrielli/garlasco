@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RangeFilterComponent } from './range-filter.component';
+import { TimelineSliderComponent } from './timeline-slider.component';
 
-describe('RangeFilterComponent', () => {
-  let component: RangeFilterComponent;
-  let fixture: ComponentFixture<RangeFilterComponent>;
+describe('TimelineSliderComponent', () => {
+  let component: TimelineSliderComponent;
+  let fixture: ComponentFixture<TimelineSliderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RangeFilterComponent]
+      imports: [TimelineSliderComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RangeFilterComponent);
+    fixture = TestBed.createComponent(TimelineSliderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

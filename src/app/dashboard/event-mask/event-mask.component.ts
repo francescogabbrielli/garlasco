@@ -10,8 +10,8 @@ import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../../app.const
 import { EVENT_TYPES } from '../../../../amplify/data/enums'
 import type { Schema } from '../../../../amplify/data/resource'
 
-import { MapPickerComponent } from '../map-picker/map-picker.component'
-import { PersonDialogComponent } from '../person-dialog/person-dialog.component'
+import { MapPickerComponent } from '../../ui/map-picker/map-picker.component'
+import { PersonDialogComponent } from '../person-popup/person-popup.component'
 
 type EventModel = Schema['Event']['type']
 type EventType = Schema['Event']['type']['type']
@@ -72,6 +72,7 @@ export class EventMaskComponent {
     const e = this.event()
     if (!e?.id) return
     this.eventForm.patchValue({
+      owner: e.owner,
       type: e.type,
       name: e.name,
       description: e.description,
@@ -115,7 +116,7 @@ export class EventMaskComponent {
   readonly typeOptions: readonly EventType[] = EVENT_TYPES
 
   readonly isSaving = signal(false)
-  readonly submitError = signal('')
+  readonly submitError = model('')
 
   // actors involved in the event
   selectedActors: SelectedActor[] = [{ rowId: 0, personId: '', personQuery: '', role: '' }]
@@ -130,7 +131,7 @@ export class EventMaskComponent {
   }
 
   readonly eventForm = new FormGroup({
-    owner: new FormControl(this.userService.user().getId(), { nonNullable: true, validators: [Validators.required] }),
+    owner: new FormControl(''),
     type: new FormControl<EventType | null>(null, Validators.required),
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     description: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -259,6 +260,18 @@ export class EventMaskComponent {
     this.actorRoleError = false
   }
 
+  private logInvalidControls() {
+    const controls = this.eventForm.controls
+    Object.keys(controls).forEach(key => {
+      // Usiamo il casting "as keyof typeof controls" per rassicurare TypeScript
+      const control = controls[key as keyof typeof controls];
+      
+      if (control.invalid) {
+        console.log(`Campo invalido: ${key}`, control.errors);
+      }
+    })
+  }
+
   async submitEvent(): Promise<void> {
 
     this.eventForm.markAllAsTouched()
@@ -275,6 +288,7 @@ export class EventMaskComponent {
           ? 'Per attendibilità e rilevanza scegli un valore da 1 a 4.'
           : 'Completa tutti i campi obbligatori prima di salvare l’evento.',
       )
+      this.logInvalidControls()
       return
     }
 
@@ -321,7 +335,7 @@ export class EventMaskComponent {
       } : null
 
       const payload = {
-        owner: this.eventForm.controls.owner.value,
+        owner: this.eventForm.controls.owner.value || this.userService.user().getId(),
         type,
         name: this.eventForm.controls.name.value.trim(),
         description: this.eventForm.controls.description.value.trim(),
@@ -335,9 +349,9 @@ export class EventMaskComponent {
         relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
       }
 
-      const existing = this.event()
-      const { data, errors } = existing
-        ? await client.models.Event.update({ id: existing.id, ...payload, owner: existing.owner })
+      const existingId = this.event()?.id
+      const { data, errors } = existingId
+        ? await client.models.Event.update({ id: existingId, ...payload })
         : await client.models.Event.create(payload)
 
       if (errors?.length || !data?.id) {
@@ -346,7 +360,8 @@ export class EventMaskComponent {
         return
       }
 
-      if (existing) {
+      // refresh associated actors
+      if (existingId) {
         for (const id of this.existingActorIds) {
           await client.models.EventPerson.delete({ id })
         }
@@ -375,6 +390,32 @@ export class EventMaskComponent {
       // this.submitError.set(message);
     } finally {
       this.isSaving.set(false);
+    }
+  }
+
+  async deleteEvent(): Promise<void> {
+    const existingId = this.event()?.id
+    if (!existingId) return
+
+    //show confirm popup
+    const confirmed = window.confirm('Sei sicuro di voler eliminare questo evento?')
+    if (!confirmed) return
+
+    this.isSaving.set(true)
+    try {
+      const { errors } = await client.models.Event.delete({ id: existingId })
+      if (errors?.length) {
+        console.error('Error deleting Event', errors)
+        this.submitError.set('Errore durante l’eliminazione dell’evento! Contattare l’amministratore.')
+        return
+      }
+      //TODO: gestire eventuali errori durante l'eliminazione degli attori associati all'evento
+      for (const id of this.existingActorIds) {
+        await client.models.EventPerson.delete({ id })
+      }
+      this.saved.emit()
+    } finally {
+      this.isSaving.set(false)
     }
   }
 

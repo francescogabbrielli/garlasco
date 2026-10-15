@@ -59,11 +59,11 @@
                     />
                     <mat-autocomplete
                         #personAutocomplete="matAutocomplete"
-                        panelClass="person-autocomplete-panel"
+                        panelClass="custom-autocomplete-panel"
                         [displayWith]="displayPerson"
                         (optionSelected)="onPersonOptionSelected(actor.rowId, $event.option.value)"
                     >
-                    @if (isAdmin()) {
+                    @if (isAdmin() && !actor.personQuery) {
                         <mat-option [value]="newPersonOption" class="new-person-option">+ Nuova persona…</mat-option>
                     }
                     @for (person of filteredPeople(actor); track person.id) {
@@ -202,13 +202,19 @@
         }
 
         <div class="event-form-actions">
-            <button class="submit-event-action" type="submit" [disabled]="isSaving()">
+            @if (isAdmin() && event()?.id) {
+            <button class="danger-button" type="button" [disabled]="isSaving()" (click)="deleteEvent()">
+                <span aria-hidden="true">✖</span>
+                'Elimina'
+            </button>
+            }
+            <button class="action-button" type="submit" [disabled]="isSaving()">
             @if (isSaving()) {
                 <span aria-hidden="true">⏳</span>
                 Salvataggio...
             } @else {
                 <span aria-hidden="true">➤</span>
-                {{ event()?.id ? 'Salva modifiche' : 'Invia evento' }}
+                {{ event()?.id ? 'Salva' : 'Invia evento' }}
             }
             </button>
         </div>
@@ -216,7 +222,7 @@
 
 
 @if (personDialogOpen()) {
-    <app-person-dialog (created)="onPersonCreated($event)" (closed)="closePersonDialog()" />
+    <app-person-popup (created)="onPersonCreated($event)" (closed)="closePersonDialog()" />
 }
 
 @if (pickerTarget(); as target) {

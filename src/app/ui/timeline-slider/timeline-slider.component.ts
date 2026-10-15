@@ -10,13 +10,13 @@ export interface TimelineTick {
 }
 
 @Component({
-  selector: 'app-range-filter',
+  selector: 'app-timeline-slider',
   standalone: true,
   imports: [MatSliderModule, FormsModule, CommonModule],
-  templateUrl: './range-filter.component.html',
-  styleUrls: ['./range-filter.component.css']
+  templateUrl: './timeline-slider.component.html',
+  styleUrls: ['./timeline-slider.component.css']
 })
-export class RangeFilterComponent implements OnInit {
+export class TimelineSliderComponent implements OnInit {
   readonly ONE_MINUTE = 60 * 1000;
   readonly ONE_HOUR = 60 * this.ONE_MINUTE;
   readonly ONE_DAY = 24 * this.ONE_HOUR;
@@ -146,8 +146,15 @@ export class RangeFilterComponent implements OnInit {
         type = "month"
         label = currentScan.toLocaleString('it-IT', { month: 'short' })
       } 
-      if (currentScan.getDay() === 0) {
-        type = "sunday"
+
+      if (totalDuration > this.ONE_DAY * 2000) {
+        currentScan.setFullYear(currentScan.getFullYear() + 1)
+      } else if (totalDuration > this.ONE_DAY * 120) {
+        currentScan.setMonth(currentScan.getMonth() + 1)
+      } else {
+        if (currentScan.getDay() === 0)
+          type = "sunday"    
+        currentScan.setDate(currentScan.getDate() + 1)
       }
 
       if (type === "year" || type === "month" && (isMonthVisible || isSixthMonthVisible) || type.endsWith("day") && (isDayVisible || isFiveDayVisible)) {
@@ -158,13 +165,6 @@ export class RangeFilterComponent implements OnInit {
         })
       }
 
-      if (totalDuration > this.ONE_DAY * 2000)
-        currentScan.setFullYear(currentScan.getFullYear() + 1)
-      else if (totalDuration > this.ONE_DAY * 120)
-        currentScan.setMonth(currentScan.getMonth() + 1)
-      else
-        currentScan.setDate(currentScan.getDate() + 1)
-    
     }
 
     this.timelineTicks = ticks

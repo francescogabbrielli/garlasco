@@ -9,10 +9,10 @@ type Person = Schema['Person']['type']
 const client = generateClient<Schema>()
 
 @Component({
-  selector: 'app-person-dialog',
+  selector: 'app-person-popup',
   imports: [ReactiveFormsModule],
-  templateUrl: './person-dialog.component.html',
-  styleUrl: './person-dialog.component.css',
+  templateUrl: './person-popup.component.html',
+  styleUrl: './person-popup.component.css',
 })
 export class PersonDialogComponent {
 

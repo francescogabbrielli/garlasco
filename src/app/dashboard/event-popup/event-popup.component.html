@@ -1,4 +1,4 @@
-<div class="dialog-backdrop" (click)="close()">
+<div class="dialog-backdrop">
   <section 
     class="dialog" 
     role="dialog" 
@@ -9,7 +9,7 @@
     <div class="dialog-heading">
 
       <div>
-        <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Nuovo') : event().type }}</p>
+        <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Creazione') : event().type }}</p>
         <h1 id="event-popup-title">{{ isEditor() ? 'Evento' : event().name }}</h1>
       </div>
 
@@ -33,12 +33,18 @@
 
     @if (isEditor()) {
       @defer (on viewport) {
+
+        @if (submitError()) {
+          <span class="field-error">{{ submitError() }}</span>
+        }
+
         <div class="dialog-scrollable">
           <app-event-mask id="event-mask" 
             [event]="event()" 
             [people]="people()"
             [(isHelpDialogOpen)]="help"
             [(isFormTouched)]="maskTouched"
+            [(submitError)]="submitError"
             (saved)="saved.emit(); closed.emit()" ></app-event-mask>
         </div>  
       } @placeholder {

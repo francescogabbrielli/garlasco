@@ -9,7 +9,7 @@ import { generateClient } from 'aws-amplify/api';
 import { PersonFilterComponent } from './person-filter/person-filter.component';
 import { EventListComponent } from './event-list/event-list.component';
 import { MapFilterComponent } from './map-filter/map-filter.component';
-import { RangeFilterComponent } from './range-filter/range-filter.component';
+import { TimelineSliderComponent } from '../ui/timeline-slider/timeline-slider.component';
 import { EventPopupComponent } from './event-popup/event-popup.component';
 import { UserProfileService } from '../user-profile.service';
 
@@ -27,7 +27,7 @@ type Filter = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [PersonFilterComponent, RangeFilterComponent, MapFilterComponent, EventListComponent, EventPopupComponent],
+  imports: [PersonFilterComponent, TimelineSliderComponent, MapFilterComponent, EventListComponent, EventPopupComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

@@ -430,6 +430,13 @@ body {
       font-weight: 400;
     }
 
+    /* Il token ufficiale generato da Angular Material per il testo delle opzioni mat-autocomplete */
+  .mat-mdc-option {
+    --mat-option-label-text-size: 12px;
+    min-height: 36px !important; 
+    line-height: 36px !important;
+  }
+
   .search-control {
       width: 100%;
       min-width: 0;
@@ -518,11 +525,19 @@ body {
       padding-top: 0.25rem;
     }
 
-  .submit-event-action {
+  .action-button, .danger-button {
+      margin: 2px;
+      padding: 0.5rem 1rem;
+      background: #167c72;
+      color: #fff;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
     }
+
+  .danger-button {
+      background: #a32929;
+  }
 
   @media (max-width: 700px) {
       .topbar {

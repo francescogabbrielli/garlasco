@@ -7,17 +7,19 @@
     <div>
       <p class="heading-note">Persone, tempi e luoghi in un'unica cronologia.</p>
       <div class="context-controls">
+        @if (userService.user().editEnabled()) {
+          <button 
+            class="context-button" 
+            type="button" 
+            aria-label="Invia un nuovo evento" 
+            title="Invia un nuovo evento"
+            (click)="createNewEvent()">＋</button>
+        }
         <button
           class="context-button"
           type="button"
           aria-label="Apri aiuto"
           title="Apri aiuto">?</button>
-        <button 
-          class="context-button" 
-          type="button" 
-          aria-label="Invia un nuovo evento" 
-          title="Invia un nuovo evento"
-          (click)="createNewEvent()">＋</button>
       </div>      
     </div>
   </header>
@@ -40,7 +42,7 @@
       </div>
       <div class="filter-stack">
         @defer (on idle) {
-          <app-range-filter 
+          <app-timeline-slider
             [initialFrom]="currentFilters.interval.from"
             [initialTo]="currentFilters.interval.to"
             [initialMin]="currentFilters.interval.min"
@@ -48,7 +50,7 @@
             [minimum]="MIN_DATE"
             [maximum]="MAX_DATE"
             (rangeChange)="handleTimeFilter($event)">
-          </app-range-filter>
+          </app-timeline-slider>
         } @placeholder {
           <div>Loading Timeline Slider...</div>
         }

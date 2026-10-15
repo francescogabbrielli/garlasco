@@ -4,7 +4,7 @@ import { generateClient } from 'aws-amplify/api';
 
 import { Schema } from '../../../../amplify/data/resource';
 import { UserProfileService } from '../../user-profile.service';
-import { EventMaskComponent } from '../../ui/event-mask/event-mask.component';
+import { EventMaskComponent } from '../event-mask/event-mask.component';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 
@@ -23,6 +23,8 @@ export class EventPopupComponent {
 
   private userService = inject(UserProfileService)
 
+  readonly submitError = signal('')
+
   event = input.required<Event>()
   closed = output<void>()
   saved = output<void>()
@@ -33,7 +35,7 @@ export class EventPopupComponent {
     const edit = this.userService.user().editEnabled()
     const isOwner = this.userService.user().isEditor() && this.userService.user().getId() === this.event().owner
     const isNew = !this.event().id
-    return edit || isOwner || isNew
+    return edit && (isOwner || isNew)
   })
   
   people = input.required<Person[]>()
@@ -73,6 +75,7 @@ export class EventPopupComponent {
   }
 
   close() {
+    //TODO: maskTouched is not the best option, put another one
     if (!this.maskTouched || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
       this.closed.emit()
   }
