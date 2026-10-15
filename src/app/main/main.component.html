@@ -1,4 +1,5 @@
 <header class="topbar">
+
   <p class="brand">I fatti di Garlasco</p>
 
   <nav class="menu" aria-label="Menu principale">
@@ -23,9 +24,8 @@
       </a>
     }
     <span class="toolbar-separator" role="separator" aria-orientation="vertical"></span>
-    <button
-      class="main-link"
-      type="button"
+    <button type="button"
+      class="context-button"
       [class.active]="userProfile.user().editEnabled()"
       [attr.aria-pressed]="userProfile.user().editEnabled()"
       aria-label="Modifica"
@@ -33,6 +33,14 @@
       (click)="toggleEdit()"
     >
       ✐
+    </button>
+    <button type="button"
+      class="context-button"
+      aria-label="Aiuto"
+      title="Aiuto"
+      (click)="help.set({page: 'main', title: 'Pagina principale'})"
+    >
+      ?
     </button>
     <div class="user-menu">
       <button
@@ -99,3 +107,11 @@
     </section>
   </div>
 } 
+
+@if (help().page) {
+  <app-help-popup 
+    [page]="help().page" 
+    [title]="help().title"
+    (close)="closeHelpPopup()"
+    ></app-help-popup>
+}

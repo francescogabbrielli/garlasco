@@ -13,6 +13,8 @@ import { TimelineSliderComponent } from '../ui/timeline-slider/timeline-slider.c
 import { EventPopupComponent } from './event-popup/event-popup.component';
 import { UserProfileService } from '../user-profile.service';
 
+import { MainComponent } from '../main/main.component';
+
 const client = generateClient<Schema>()
 
 type Person = Schema['Person']['type']
@@ -36,6 +38,8 @@ export class DashboardComponent implements OnInit {
   protected dataService = inject(DataService)
   protected geoService = inject(GeoService)
   protected userService = inject(UserProfileService)
+
+  protected mainComponent = inject(MainComponent)
 
   readonly MAX_DATE = new Date()
   readonly MIN_DATE = new Date(2007, 1, 1)

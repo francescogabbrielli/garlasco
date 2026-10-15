@@ -1,0 +1,19 @@
+<div class="dialog-backdrop" (click)="close.emit()">
+    <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"
+        (click)="$event.stopPropagation()">
+        <div class="dialog-heading">
+            <div>
+                <p class="eyebrow">Aiuto</p>
+                <h1 id="about-title">{{ title() }}</h1>
+            </div>
+            <button class="dialog-close" type="button" aria-label="Chiudi aiuto" title="Chiudi aiuto" (click)="close.emit()">
+                ×
+            </button>
+        </div>
+
+        <div class="dialog-scrollable">
+        <div class="help-content" [innerHTML]="content()"></div>
+        </div>
+
+    </section>
+</div>

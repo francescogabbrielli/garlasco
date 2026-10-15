@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
 import { UserProfileService } from '../user-profile.service';
+import { HelpPopupComponent } from './help-popup/help-popup.component';
 
 @Component({
   selector: 'app-main',
@@ -11,7 +12,8 @@ import { UserProfileService } from '../user-profile.service';
     AmplifyAuthenticatorModule,
     RouterLink,
     RouterLinkActive,
-    RouterOutlet
+    RouterOutlet,
+    HelpPopupComponent
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',
@@ -26,6 +28,7 @@ export class MainComponent {
 
   authenticator = inject(AuthenticatorService)
   userProfile = inject(UserProfileService)
+  help = signal<{page: string, title: string}>({page: '', title: ''})
 
   isAboutDialogOpen = false
   isUserMenuOpen = false
@@ -80,6 +83,10 @@ export class MainComponent {
 
   closeAboutDialog(): void {  
     this.isAboutDialogOpen = false
+  }
+
+  closeHelpPopup(): void {
+    this.help.set({page: '', title: ''})
   }
 
 }
