@@ -1,4 +1,4 @@
-import { Component, effect, input, output } from '@angular/core';
+import { Component, effect, input, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 import { CommonModule } from '@angular/common';
@@ -16,7 +16,7 @@ export interface TimelineTick {
   templateUrl: './timeline-slider.component.html',
   styleUrls: ['./timeline-slider.component.css']
 })
-export class TimelineSliderComponent {
+export class TimelineSliderComponent implements OnInit {
   readonly ONE_MINUTE = 60 * 1000;
   readonly ONE_HOUR = 60 * this.ONE_MINUTE;
   readonly ONE_DAY = 24 * this.ONE_HOUR;
@@ -41,18 +41,16 @@ export class TimelineSliderComponent {
   
   rangeChange = output<{from: Date, to: Date, min: Date, max: Date}>();
 
-  constructor() {
-    effect(() => {
-      this.minTimestamp = this.initialFrom()?.getTime() ?? 0
-      this.maxTimestamp = this.initialTo()?.getTime() ?? Date.now()
-      
-      // Finestra iniziale visibile dello slider impostata a 6 mesi intorno ai valori iniziali
-      this.currentAbsoluteMin = this.initialMin()?.getTime() ?? Math.max(this.minimum().getTime(), this.minTimestamp)
-      this.currentAbsoluteMax = this.initialMax()?.getTime() ?? Math.min(this.maximum().getTime(), this.maxTimestamp)
-      
-      this.updateStep();
-      this.generateTimeline();
-    })
+  ngOnInit(): void {
+    this.minTimestamp = this.initialFrom()?.getTime() ?? 0
+    this.maxTimestamp = this.initialTo()?.getTime() ?? Date.now()
+    
+    // Finestra iniziale visibile dello slider impostata a 6 mesi intorno ai valori iniziali
+    this.currentAbsoluteMin = this.initialMin()?.getTime() ?? Math.max(this.minimum().getTime(), this.minTimestamp)
+    this.currentAbsoluteMax = this.initialMax()?.getTime() ?? Math.min(this.maximum().getTime(), this.maxTimestamp)
+    
+    this.updateStep()
+    this.generateTimeline()
   }
 
   onWheel(event: WheelEvent): void {
@@ -166,7 +164,7 @@ export class TimelineSliderComponent {
   }
 
   onSliderChange(): void {
-    this.updateStep()
+    //this.updateStep()
     this.emitChange()
   }
 
