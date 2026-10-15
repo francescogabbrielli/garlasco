@@ -74,7 +74,10 @@ export class EventPopupComponent {
     this.close()
   }
 
-  close() {
+  close(disabledOnEdit = false) {
+    // Quando l'utente può modificare, non chiude!
+    if (disabledOnEdit && this.userService.user().editEnabled()) 
+      return
     //TODO: maskTouched is not the best option, put another one
     if (!this.maskTouched || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
       this.closed.emit()

@@ -113,7 +113,7 @@ export class DashboardComponent implements OnInit {
     this.loadPeople()
 
     // Recupera lo stato iniziale dalla cache locale
-    const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '')
+    const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '{}')
     this.currentFilters = savedFilters ? {
       peronsIds: savedFilters.peronsIds ? savedFilters.peronsIds : this.defaultFilters.peronsIds,
       interval: {

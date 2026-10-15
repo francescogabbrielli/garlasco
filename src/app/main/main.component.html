@@ -1,5 +1,5 @@
 <header class="topbar">
-  <p class="brand" routerLink="/" aria-label="Torna alla home">I fatti di Garlasco</p>
+  <p class="brand">I fatti di Garlasco</p>
 
   <nav class="menu" aria-label="Menu principale">
       <a
@@ -79,7 +79,7 @@
       <div class="dialog-heading">
         <div>
           <p class="eyebrow">Informazioni</p>
-          <h1 id="about-title">I Fatti di Garlasco</h1>
+          <h1 id="about-title">{{ appTitle() }}</h1>
         </div>
         <button
           class="dialog-close"
@@ -91,10 +91,10 @@
           ×
         </button>
       </div>
-
+      <p>{{ appDescription() }}</p>
       <!-- pick the version from package.json -->
       <p>versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
-      <small>Francesco Gabbrielli & Copilot (also known as Matteo Garlasco) &copy; 2026</small>
+      <small>{{ appAuthor() }} & Copilot @ 2026</small>
     
     </section>
   </div>

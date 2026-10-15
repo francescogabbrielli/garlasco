@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
@@ -19,6 +19,9 @@ import { UserProfileService } from '../user-profile.service';
 export class MainComponent {
 
   version = signal('0.0.0')
+  appAuthor = signal('')
+  appTitle = signal('')
+  appDescription = signal('')
   lastUpdate = signal(new Date('2026-01-01').toISOString())
 
   authenticator = inject(AuthenticatorService)
@@ -33,15 +36,24 @@ export class MainComponent {
   givenName = signal('')
   familyName = signal('')
 
+  constructor() {
+    effect(() => {
+      const user = this.userProfile.user()
+      this.isAdmin.set(user.isAdmin())
+      this.isEditor.set(user.isEditor())
+      this.ownerId.set(user.getId())
+      this.givenName.set(user.getName())
+      this.familyName.set(user.getSurname())
+    })
+  }
+
   async ngOnInit(): Promise<void> {
-    const user = await this.userProfile.logIn()
+    await this.userProfile.logIn()
     const packageJson = await import('../../../package.json')
-    this.isAdmin.set(user.isAdmin())
-    this.isEditor.set(user.isEditor())
-    this.ownerId.set(user.getId())
-    this.givenName.set(user.getName())
-    this.familyName.set(user.getSurname())
     this.version.set(packageJson.version)
+    this.appAuthor.set(packageJson.author.name)
+    this.appTitle.set(packageJson.displayName)
+    this.appDescription.set(packageJson.description)
     this.lastUpdate.set(new Date(packageJson.lastUpdate).toLocaleDateString('it-IT'))
   }
 

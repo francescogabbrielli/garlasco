@@ -20,10 +20,8 @@ export const routes: Routes = [
 		children: [
 			{
 				path: '',
-				loadComponent: () =>
-					import('./home/home.component').then(
-						({ HomeComponent }) => HomeComponent,
-					),
+				redirectTo: 'dashboard',
+				pathMatch: 'full',
 			},
 			{
 				path: 'dashboard',

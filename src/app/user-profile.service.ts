@@ -61,10 +61,9 @@ export class UserProfileService {
    */
   async logIn(): Promise<UserData> {
 
-    if (this.isLoggedIn()) {
+    if (this.user().getId())
       return this.user()
-    }
-    
+
     let attributes: Partial<Record<UserAttributeKey, string>> = {}
     let authSession: any
 
@@ -81,10 +80,6 @@ export class UserProfileService {
 
   logOut(): void {
     this.user().clear()
-  }
-
-  isLoggedIn(): boolean {
-    return this.user().getId() !== ''
   }
 
 }
