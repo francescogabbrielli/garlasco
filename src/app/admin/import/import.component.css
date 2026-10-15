@@ -1,16 +1,80 @@
-:host { display: block; }
+:host {
+    display: block;
+}
+
 /*.seed-container { width: min(100%, 72rem); margin: 0 auto; color: #233734; }*/
-.seed-title { margin: 0; color: #1d3332; font: 500 1.8rem/1.2 Georgia, 'Times New Roman', serif; }
-.seed-text { margin: .5rem 0 1.4rem; color: #62706d; font-size: .9rem; }
-.import-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
-.import-panel { min-width: 0; padding: 1.15rem; border: 1px solid #d5ddda; border-top: 3px solid #167c72; border-radius: 5px; background: #fbfcfa; }
-.import-panel h2 { margin: 0 0 .9rem; color: #1d3332; font: 600 1.1rem/1.25 Georgia, 'Times New Roman', serif; }
-.import-panel label { display: block; margin-bottom: .4rem; color: #50615d; font-size: .78rem; }
-.custom-textarea { display: block; width: 100%; min-height: 18rem; box-sizing: border-box; resize: vertical; padding: .7rem; border: 1px solid #cbd5d2; border-radius: 4px; background: #fff; color: #263a38; font: .78rem/1.45 Consolas, 'Courier New', monospace; }
-.custom-textarea:focus-visible { outline: 2px solid #167c72; outline-offset: 1px; }
-.actions-panel { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
-.actions-panel button { min-height: 2.4rem; padding: .45rem .75rem; border: 1px solid #167c72; border-radius: 4px; background: #167c72; color: #fff; cursor: pointer; font: inherit; font-size: .8rem; }
-.actions-panel button.btn-secondary { border-color: #cbd5d2; background: #fff; color: #425650; }
-.actions-panel button:disabled { cursor: wait; opacity: .6; }
-.import-note { margin: .8rem 0 0; color: #71807c; font-size: .75rem; line-height: 1.45; }
-@media (max-width: 760px) { .import-grid { grid-template-columns: 1fr; } .custom-textarea { min-height: 13rem; } }
+.seed-title {
+    margin: 0;
+    color: #1d3332;
+    font: 500 1.8rem/1.2 Georgia, 'Times New Roman', serif;
+}
+
+.seed-text {
+    margin: .5rem 0 1.4rem;
+    color: #62706d;
+    font-size: .9rem;
+}
+
+.import-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.import-panel {
+    min-width: 0;
+    padding: 1.15rem;
+    border: 1px solid #d5ddda;
+    border-top: 3px solid #167c72;
+    border-radius: 5px;
+    background: #fbfcfa;
+}
+
+.import-panel h2 {
+    margin: 0 0 .9rem;
+    color: #1d3332;
+    font: 600 1.1rem/1.25 Georgia, 'Times New Roman', serif;
+}
+
+.import-panel label {
+    display: block;
+    margin-bottom: .4rem;
+    color: #50615d;
+    font-size: .78rem;
+}
+
+.custom-textarea {
+    display: block;
+    width: 100%;
+    min-height: 18rem;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: .7rem;
+    border: 1px solid #cbd5d2;
+    border-radius: 4px;
+    background: #fff;
+    color: #263a38;
+    font: .78rem/1.45 Consolas, 'Courier New', monospace;
+}
+
+.custom-textarea:focus-visible {
+    outline: 2px solid #167c72;
+    outline-offset: 1px;
+}
+
+.import-note {
+    margin: .8rem 0 0;
+    color: #71807c;
+    font-size: .75rem;
+    line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+    .import-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .custom-textarea {
+        min-height: 13rem;
+    }
+}

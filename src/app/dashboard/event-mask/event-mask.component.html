@@ -201,7 +201,7 @@
         </div>
         }
 
-        <div class="event-form-actions">
+        <div class="actions-panel">
             @if (isAdmin() && event()?.id) {
             <button class="danger-button" type="button" [disabled]="isSaving()" (click)="deleteEvent()">
                 <span aria-hidden="true">✖</span>

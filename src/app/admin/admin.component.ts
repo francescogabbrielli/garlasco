@@ -1,21 +1,22 @@
 import { Component, inject } from '@angular/core';
 import { ImportComponent } from './import/import.component';
-import { UserProfileService } from '../user-profile.service';
+import { ExportComponent } from './export/export.component';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [ImportComponent],
+  imports: [ImportComponent, ExportComponent],
   template: `
     <main class="main-view" aria-label="Dashboard Amministrativa">
       <header class="page-heading">
         <div>
           <p class="eyebrow">Dashboard Amministrativa (temporanea)</p>
-          <h1>Importazione JSON</h1>
         </div>
-        <p class="heading-note">Carica separatamente gli eventi e le persone nel database.</p>
+        <p class="heading-note">Carica separatamente gli eventi e le persone da/verso ill database.</p>
       </header>    
       <app-import></app-import>
+      <hr/>
+      <app-export></app-export>
     </main>`
 })
 export class AdminComponent {

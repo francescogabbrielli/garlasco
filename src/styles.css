@@ -32,7 +32,12 @@ body {
   }
   
   h3.filter-title { margin: 0; color: #1d3332; font: 600 1rem/1.25 Georgia, 'Times New Roman', serif; }
-  
+
+  hr {
+    width: 100%;
+    margin: 1rem 0;
+  }
+
   button {
     border-radius: 8px;
     border: 1px solid transparent;
@@ -397,7 +402,7 @@ body {
     }
 
   .form-field-wide,
-  .event-form-actions {
+  .actions-panel {
       grid-column: 1 / -1;
     }
 
@@ -519,24 +524,48 @@ body {
       font-size: 0.75rem;
     }
 
-  .event-form-actions {
+  .actions-panel {
       display: flex;
       justify-content: flex-end;
       padding-top: 0.25rem;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: .75rem;
     }
 
-  .action-button, .danger-button {
-      margin: 2px;
-      padding: 0.5rem 1rem;
+  .actions-panel button {
+      min-height: 2.4rem;
+      padding: .45rem .75rem;
+      border-radius: 4px;
       background: #167c72;
       color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-size: .8rem;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
     }
 
-  .danger-button {
+  button.action-button {
+      border: 1px solid #167c72;
+      background: #167c72;
+    }
+
+  button.danger-button {
+      border: 1px solid #a32929;
       background: #a32929;
+    }
+
+  button.secondary-button {
+      border: 1px solid #cbd5d2;
+      background: #fff;
+      color: #425650;
+    }
+
+  .actions-panel button:disabled {
+    cursor: wait;
+    opacity: .6;
   }
 
   @media (max-width: 700px) {
@@ -561,7 +590,7 @@ body {
       }
 
       .form-field-wide,
-      .event-form-actions,
+      .actions-panel,
       .position-section {
         grid-column: auto;
       }
