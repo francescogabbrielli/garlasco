@@ -26,7 +26,7 @@ export class HelpPopupComponent {
       }
       console.log(`Loading help page: ${page}`)
       const sub = this.http
-        .get(`assets/help/${encodeURIComponent(page)}.help.html`, { responseType: 'text' })
+        .get(`assets/help/${page}.txt`, { responseType: 'text' })
         .subscribe({
           next: html => this.content.set(html),
           error: () => this.content.set('<p>Help not available.</p>')
