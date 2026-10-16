@@ -148,7 +148,7 @@ export class ImportComponent {
           description: event.description,
           start_date: event.start_date,
           start_position: event.start_position,
-          //center_position: this.mapsService.computeCenterPosition(event.start_position, event.end_position),
+          end_date: event.end_date,
           end_position: event.end_position,
           geoHash: this.mapsService.computeGeoHash(
             this.mapsService.computeCenterPosition(

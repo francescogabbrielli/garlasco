@@ -55,7 +55,7 @@ export class ExportComponent {
         }
         for (const { eventId, personId, role } of data) {
           const actors = actorsByEvent.get(eventId) ?? []
-          actors.push({ personId, role })
+          actors.push({ personId: personId, role: role })
           actorsByEvent.set(eventId, actors)
         }
         nextToken = token
@@ -87,9 +87,10 @@ export class ExportComponent {
         description: event.description,
         start_date: event.start_date,
         start_position: event.start_position,
+        ...(event.end_date ? { end_date: event.end_date } : {}),
         ...(event.end_position ? { end_position: event.end_position } : {}),
-        relevance: event.relevance ?? 0,
-        reliability: event.reliability ?? 0,
+        relevance: event.relevance,
+        reliability: event.reliability,
         actors: actorsByEvent.get(event.id) ?? [],
       }))
 
