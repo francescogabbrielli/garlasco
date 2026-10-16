@@ -36,29 +36,28 @@ export class MainComponent {
   isAdmin = signal(false)
   isEditor = signal(false)
   ownerId = signal('')
-  givenName = signal('')
-  familyName = signal('')
-
+  name = signal('')
+  
   constructor() {
     effect(() => {
       const user = this.userProfile.user()
       this.isAdmin.set(user.isAdmin())
       this.isEditor.set(user.isEditor())
       this.ownerId.set(user.getId())
-      this.givenName.set(user.getName())
-      this.familyName.set(user.getSurname())
+      this.name.set(user.getName() + ' ' + user.getSurname())
     })
   }
 
-  async ngOnInit(): Promise<void> {
-    await this.userProfile.logIn()
-    const packageJson = await import('../../../package.json')
-    this.version.set(packageJson.version)
-    this.appAuthor.set(packageJson.author.name)
-    this.appTitle.set(packageJson.displayName)
-    this.appDescription.set(packageJson.description)
-    this.lastUpdate.set(new Date(packageJson.lastUpdate).toLocaleDateString('it-IT'))
-  }
+  ngOnInit(): void {
+    this.userProfile.logIn()
+    const packageJson = import('../../../package.json').then((p) => {
+      this.version.set(p.version)
+      this.appAuthor.set(p.author.name)
+      this.appTitle.set(p.displayName)
+      this.appDescription.set(p.description)
+      this.lastUpdate.set(new Date(p.lastUpdate).toLocaleDateString('it-IT'))
+    }) 
+  }  
 
   toggleEdit(): void {
     const editEnabled = this.userProfile.user().editEnabled

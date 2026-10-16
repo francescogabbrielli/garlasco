@@ -8,6 +8,10 @@
     padding: 0 5vw;
     border-bottom: 1px solid rgba(34, 31, 43, 0.12);
     background: rgba(255, 255, 255, 0.82);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
   }
 
 .brand {
@@ -35,7 +39,7 @@
 .menu {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
     color: #221f2b;
     font-size: 0.9rem;
   }
@@ -61,6 +65,28 @@
     font-weight: 400;
     line-height: 1;
   }
+
+.main-link-label {
+    display: none;
+    font-variant: small-caps;
+    font-size: 0.9rem;
+}
+
+@media (min-width: 801px) {
+    .main-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        width: auto;
+        padding: 0 0.75rem;
+        border-radius: 1.125rem;
+    }
+
+    .main-link-label {
+        display: inline;
+    }
+}
 
 button.main-link {
     padding: 0;
@@ -112,8 +138,9 @@ button.main-link {
     align-items: center;
     gap: 0.5rem;
     width: 100%;
-    padding: 0.6em 0.75em;
+    padding: 0.25rem;
     border: 0;
+    margin: 0;
     border-radius: 6px;
     background: transparent;
     color: rgba(34, 31, 43, 0.72);
@@ -125,6 +152,10 @@ button.main-link {
     border-color: transparent;
     background: #dadbf9;
     color: #221f2b;
+}
+
+.user-dropdown hr {
+    margin: 0.25rem 0;
 }
 
 @media (min-width: 2201px) {

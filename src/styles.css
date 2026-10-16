@@ -140,6 +140,10 @@ body {
       background: #dadbf9;
       color: #7551c2;
     }
+  .context-button[aria-pressed="true"] {
+      color: #c25172;
+      background: #dadbf9;
+    }
 
   .dialog-backdrop {
       position: fixed;

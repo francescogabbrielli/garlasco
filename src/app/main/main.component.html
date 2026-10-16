@@ -10,7 +10,8 @@
         aria-label="Dashboard"
         title="Dashboard"
       >
-        ▦
+        <span aria-hidden="true">▦</span>
+        <span class="main-link-label">Dashboard</span>
       </a>
     @if (isAdmin()) {
       <a
@@ -20,7 +21,8 @@
         aria-label="Import"
         title="Import"
       >
-        ⇪
+        <span aria-hidden="true">⇪</span>
+        <span class="main-link-label">Import</span>
       </a>
     }
     <span class="toolbar-separator" role="separator" aria-orientation="vertical"></span>
@@ -28,8 +30,8 @@
       class="context-button"
       [class.active]="userProfile.user().editEnabled()"
       [attr.aria-pressed]="userProfile.user().editEnabled()"
-      aria-label="Modifica"
-      title="Modifica"
+      aria-label="Modifica {{ userProfile.user().editEnabled() ? 'abilitata!' : '' }}"
+      title="Modifica {{ userProfile.user().editEnabled() ? 'abilitata!' : '' }}"
       (click)="toggleEdit()"
     >
       ✐
@@ -50,7 +52,7 @@
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ givenName()}} {{ familyName() }}
+        {{ name() || '--- Caricamento ---' }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
