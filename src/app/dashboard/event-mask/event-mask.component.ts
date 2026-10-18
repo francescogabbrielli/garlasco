@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
-import { MatAutocompleteModule } from '@angular/material/autocomplete'
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
 
 import { UserProfileService } from '../../user-profile.service'
@@ -220,6 +220,33 @@ export class EventMaskComponent {
   personName(personId: string): string {
     const person = this.allPeople().find((item) => item.id === personId)
     return person ? `${person.name} ${person.surname}` : ''
+  }
+
+  applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'start_date' | 'end_date' | 'start_position' | 'end_position' | 'reliability' | 'relevance']?: EventModel[K] | null }): void {
+    const clamp = (n: number | null | undefined, def: number) =>
+      n && n >= 1 && n <= 4 ? n : def
+    const type = this.typeOptions.find(t => t === g.type) ?? null
+    this.eventForm.patchValue({
+      type,
+      name: g.name ?? '',
+      description: g.description ?? '',
+      reliability: clamp(g.reliability, this.reliabilityOptions.length),
+      relevance: clamp(g.relevance, this.relevanceOptions.length),
+      start: {
+        date: this.toLocalInput(g.start_date),
+        latitude: g.start_position?.latitude ?? null,
+        longitude: g.start_position?.longitude ?? null,
+        radius: g.start_position?.radius ?? null,
+      },
+      end: {
+        date: this.toLocalInput(g.end_date),
+        latitude: g.end_position?.latitude ?? null,
+        longitude: g.end_position?.longitude ?? null,
+        radius: g.end_position?.radius ?? null,
+      },
+    })
+    this.eventForm.markAsTouched()
+    this.isFormTouched.set(true)
   }
 
   onPersonOptionSelected(rowId: number, value: Person | string): void {
@@ -457,5 +484,10 @@ export class EventMaskComponent {
 
   closeHelpDialog(): void {
     this.isHelpDialogOpen.set(false)
+  }
+
+  // Trucco per chiudere il pannello dell'autocomplete dopo che l'input perde il focus
+  closeAutocomplete(trigger: MatAutocompleteTrigger): void {
+    setTimeout(() => trigger.closePanel(), 250)
   }
 }

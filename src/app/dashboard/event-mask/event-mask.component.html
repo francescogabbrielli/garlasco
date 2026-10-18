@@ -38,7 +38,7 @@
             </button>
         </div>
 
-                    @if (!allPeople().length) {
+        @if (!allPeople().length) {
             <p class="actor-control-message">Nessuna persona disponibile.</p>
         }
 
@@ -55,6 +55,8 @@
                         [value]="actor.personQuery"
                         [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
                         [disabled]="!allPeople().length"
+                        #trigger="matAutocompleteTrigger"
+                        (blur)="closeAutocomplete(trigger)"
                         (input)="updateActorPersonQuery(actor.rowId, $event)"
                     />
                     <mat-autocomplete

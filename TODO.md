@@ -12,10 +12,11 @@ NEXT: 0.1.0
 TODO: 0.0.5
 -----------
 - fix topbar glitches & layout / show more text if there is room &check;
-- fix glitches in the autocomplete
+- fix glitches in the autocomplete &check;
 - check export / import consistency &check;
 - make time/map filter optional? &cross; (maybe next)
-- add more events!!!! lots! or add AI hints ...
+- add AI hints ...
+- still user displays error after delayed login ...
 
 TODO: 0.0.4
 -----------
