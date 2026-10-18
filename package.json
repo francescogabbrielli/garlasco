@@ -1,13 +1,12 @@
 {
-
   "name": "garlasco",
   "displayName": "I fatti di Garlasco",
   "author": {
     "name": "Francesco Gabbrielli"
   },
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Sistema integrato e normalizzato di ricerca/indagine",
-  "lastUpdate": "2026-10-16",
+  "lastUpdate": "2026-10-18",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",
@@ -43,7 +42,9 @@
     "@angular/compiler-cli": "^20.3.32",
     "@aws-amplify/backend": "^1.25.1",
     "@aws-amplify/backend-cli": "^1.10.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1152.0",
     "@types/google.maps": "^3.66.5",
+    "@types/node": "^22.17.1",
     "aws-cdk": "^2.137.0",
     "aws-cdk-lib": "^2.137.0",
     "constructs": "^10.3.0",

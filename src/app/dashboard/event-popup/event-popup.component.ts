@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, HostListener, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { generateClient } from 'aws-amplify/api';
 
 import { Schema } from '../../../../amplify/data/resource';
@@ -24,6 +24,25 @@ export class EventPopupComponent {
   private userService = inject(UserProfileService)
 
   readonly submitError = signal('')
+  readonly generating = signal(false)
+  private mask = viewChild(EventMaskComponent)
+
+  async generate(): Promise<void> {
+    const description = prompt('Descrivi l\'evento da generare')?.trim()
+    if (!description) return
+    this.generating.set(true)
+    this.submitError.set('')
+    try {
+      const { data, errors } = await client.queries.generateEvent({ description }, { authMode: 'userPool' })
+      console.error("AI ERROR?", errors)
+      if (errors?.length || !data) throw new Error(errors?.[0]?.message ?? 'Nessun risultato')
+      this.mask()?.applyGenerated(data)
+    } catch (e) {
+      this.submitError.set('Generazione evento non riuscita (' + (e instanceof Error ? e.message : String(e)) + ')')
+    } finally {
+      this.generating.set(false)
+    }
+  }
 
   event = input.required<Event>()
   closed = output<void>()

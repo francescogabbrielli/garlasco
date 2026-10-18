@@ -1,5 +1,6 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { EVENT_TYPES, PERSON_TYPES } from './enums';
+import { generateEventFn } from '../functions/generate-event/resource';
 
 const Coordinates = a.customType({
   latitude: a.float().required(),
@@ -56,6 +57,23 @@ const EventPerson = a.model({
   ])
   .authorization((allow) => [allow.publicApiKey()]);
 
+// AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
+const GeneratedEvent = a.customType({
+  type: a.ref('EventType').required(),
+  name: a.string().required(),
+  description: a.string().required(),
+  start_date: a.string().required(),
+  start_position: a.ref('Coordinates').required(),
+});
+
+const generateEvent = a.query()
+  .arguments({
+    description: a.string().required(),
+  })
+  .returns(a.ref('GeneratedEvent'))
+  .handler(a.handler.function(generateEventFn))
+  .authorization((allow) => allow.authenticated());
+
 const schema = a.schema({
   Coordinates,
   EventType,
@@ -63,6 +81,8 @@ const schema = a.schema({
   Person,
   Event,
   EventPerson,
+  GeneratedEvent,
+  generateEvent,
 });
 
 export type Schema = ClientSchema<typeof schema>;

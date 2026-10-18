@@ -12,6 +12,9 @@
       "$amplify/*": [
         "../.amplify/generated/*"
       ]
-    }
+    },
+    "types": [
+      "node"
+    ]
   }
 }

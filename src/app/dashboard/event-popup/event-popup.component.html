@@ -13,10 +13,19 @@
         <h1 id="event-popup-title">{{ isEditor() ? 'Evento' : event().name }}</h1>
       </div>
 
-      <div class="dialog-controls">
+      <div class="context-controls">
+          @if (!event().id) {
+          <button
+            class="context-button"
+            type="button"
+            aria-label="Genera evento con AI"
+            title="Genera evento con AI"
+            [disabled]="generating()"
+            (click)="generate()">🪄</button>
+          }
           @if (isEditor()) {
           <button
-            class="dialog-help"
+            class="context-button"
             type="button"
             aria-label="Apri aiuto"
             title="Apri aiuto"
