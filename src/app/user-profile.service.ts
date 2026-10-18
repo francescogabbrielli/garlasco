@@ -1,4 +1,4 @@
-import { computed, effect, Injectable, signal } from '@angular/core'
+import { effect, Injectable, signal } from '@angular/core'
 import { fetchUserAttributes, fetchAuthSession, UserAttributeKey } from 'aws-amplify/auth'
 
 export class UserData {
@@ -55,7 +55,7 @@ export class UserProfileService {
   /**
    * To be called after the user has logged in, to fetch and cache the user attributes and groups
    * 
-   * TODO: store user data in local storage to avoid fetching it on every page load
+   * TODO: store user data in local storage to avoid fetching it on every page load?
    * 
    * @returns a Promise with the user attributes.
    */

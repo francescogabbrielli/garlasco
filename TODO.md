@@ -16,7 +16,7 @@ TODO: 0.0.5
 - check export / import consistency &check;
 - make time/map filter optional? &cross; (maybe next)
 - add AI hints ...
-- still user displays error after delayed login ...
+- still user displays error after delayed login &check;
 
 TODO: 0.0.4
 -----------

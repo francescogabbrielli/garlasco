@@ -36,7 +36,7 @@ export class MainComponent {
   isAdmin = signal(false)
   isEditor = signal(false)
   ownerId = signal('')
-  name = signal('')
+  name = signal('--- Caricamento ---')
   
   constructor() {
     effect(() => {
@@ -49,14 +49,18 @@ export class MainComponent {
   }
 
   ngOnInit(): void {
-    this.userProfile.logIn()
-    const packageJson = import('../../../package.json').then((p) => {
+    import('../../../package.json').then((p) => {
       this.version.set(p.version)
       this.appAuthor.set(p.author.name)
       this.appTitle.set(p.displayName)
       this.appDescription.set(p.description)
       this.lastUpdate.set(new Date(p.lastUpdate).toLocaleDateString('it-IT'))
-    }) 
+    })
+      .then(() => this.userProfile.logIn())
+      .catch((error) => {
+        alert('Errore imprevisto durante il login: ' + error)
+        this.logout(true)
+      })
   }  
 
   toggleEdit(): void {
@@ -68,10 +72,11 @@ export class MainComponent {
     this.isUserMenuOpen = !this.isUserMenuOpen;
   }
 
-  logout(): void {
-    if (confirm('Sei sicuro di voler uscire? Tutte le operazioni non salvate andranno perse.')) {
-      this.isUserMenuOpen = false;
-      this.authenticator.signOut();
+  logout(force = false): void {
+    if (force || confirm('Sei sicuro di voler uscire? Tutte le operazioni non salvate andranno perse.')) {
+      this.isUserMenuOpen = false
+      this.userProfile.logOut()
+      this.authenticator.signOut()
     }
   }
 

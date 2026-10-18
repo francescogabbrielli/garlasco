@@ -52,7 +52,7 @@
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ name() || '--- Caricamento ---' }}
+        {{ name() }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
