@@ -10,10 +10,12 @@ import { HttpClient } from '@angular/common/http';
 export class HelpPopupComponent {
 
   private http = inject(HttpClient)
-
+  
   page = input.required<string>()
   title = input.required<string>()
   content = signal<string>('')
+
+  isLoading = signal(false)
 
   close = output<void>()
 
@@ -24,12 +26,19 @@ export class HelpPopupComponent {
         this.content.set('')
         return
       }
-      console.log(`Loading help page: ${page}`)
+
+      this.isLoading.set(true)
       const sub = this.http
         .get(`assets/help/${page}.txt`, { responseType: 'text' })
         .subscribe({
-          next: html => this.content.set(html),
-          error: () => this.content.set('<p>Help not available.</p>')
+          next: html => {
+            this.content.set(html)
+            this.isLoading.set(false)
+          },
+          error: () => {
+            this.content.set('<p>Help not available.</p>')
+            this.isLoading.set(false)
+          }
         })
       onCleanup(() => sub.unsubscribe())
     })

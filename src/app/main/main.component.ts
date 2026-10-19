@@ -37,6 +37,8 @@ export class MainComponent {
   isEditor = signal(false)
   ownerId = signal('')
   name = signal('--- Caricamento ---')
+
+  isLoading = signal(false)
   
   constructor() {
     effect(() => {

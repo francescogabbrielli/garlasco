@@ -225,6 +225,13 @@ body {
       background: #dadbf9;
   }
 
+  .loading-inner-frame {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+
   .main-view { 
     width: min(100%, 78rem); 
     margin: 0 auto; 

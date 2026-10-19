@@ -46,6 +46,12 @@ describe('MainComponent', () => {
     expect(fixture.componentInstance.ownerId()).toBe('user-123');
   });
 
+  it('preloads the loading image for use throughout the app', () => {
+    const preload = fixture.nativeElement.querySelector('link[rel="preload"][as="image"]');
+
+    expect(preload.getAttribute('href')).toBe('assets/loading.gif');
+  });
+
   it('shows navigation links based on the signed-in user', () => {
     expect(fixture.nativeElement.querySelector('.brand').getAttribute('routerLink')).toBe('/');
     expect(fixture.nativeElement.querySelector('a[aria-label="Dashboard"]').getAttribute('routerLink'))

@@ -11,9 +11,15 @@
             </button>
         </div>
 
-        <div class="dialog-scrollable">
-        <div class="help-content" [innerHTML]="content()"></div>
+        @if (isLoading()) {
+        <div class="loading-inner-frame">
+            <img src="assets/loading.gif" alt="Caricamento in corso..." />
         </div>
-
+        } @else {
+        <div class="dialog-scrollable">
+            <div class="help-content" [innerHTML]="content()"></div>
+        </div>
+        }
+    
     </section>
 </div>
