@@ -7,7 +7,14 @@ NEXT: 0.1.0
 - add chat (also with AI bot!)
 - improve resource: add sources and related events to Event
 - log changes
+
+TODO: 0.0.6
+-----------
 - make time/map filter optional (or advanced search tools)
+- check map filter interference on results
+- check more events loading
+- add loading for help files and AI hints
+- popup should display over topbar &check;
 
 TODO: 0.0.5
 -----------
@@ -15,7 +22,7 @@ TODO: 0.0.5
 - fix glitches in the autocomplete &check;
 - check export / import consistency &check;
 - make time/map filter optional? &cross; (maybe next)
-- add AI hints ...
+- add AI hints &check;
 - still user displays error after delayed login &check;
 
 TODO: 0.0.4
