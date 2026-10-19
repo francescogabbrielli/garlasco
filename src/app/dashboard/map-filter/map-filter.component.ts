@@ -1,5 +1,5 @@
 // map-filter.component.ts
-import { Component, output, input, inject, OnInit, computed, effect } from '@angular/core';
+import { Component, output, input, inject, OnInit, computed, effect, model } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker, MapPolyline } from '@angular/google-maps'; 
 import { Schema } from '../../../../amplify/data/resource';
 import { GeoService } from '../../geo.service';
@@ -35,6 +35,8 @@ export class MapFilterComponent implements OnInit {
   mapChange = output<Coordinates>()
   eventHover = output<string | null>()
   eventClick = output<string>()
+
+  active = model(true)
 
   private pinElements = new Map<string, HTMLElement[]>()
 
@@ -122,16 +124,18 @@ export class MapFilterComponent implements OnInit {
   }
 
   onMapReady(map: google.maps.Map): void {
-    this.mapInstance = map;
     const boundsToApply = this.initialBounds()
     if (boundsToApply) {
-      this.mapInstance.fitBounds(this.geoService.toBounds(boundsToApply), 0)
+      map.fitBounds(this.geoService.toBounds(boundsToApply), 0)
     }
+    setTimeout(() => {
+      this.mapInstance = map
+    }, 500)
   }
 
   onBoundsChanged(): void {
     const bounds = this.mapInstance?.getBounds()
-    if (!bounds) return
+    if (!bounds || !this.mapInstance) return
     this.mapChange.emit(this.geoService.toCoordinates(bounds))
   }
 

@@ -18,7 +18,7 @@ type Filter = {
   personIds: string[]
   dateFrom: string
   dateTo: string
-  geoHash: string 
+  geoHash: string | null
 }
 
 interface Pagination {
@@ -53,7 +53,7 @@ export class DataService {
    */
   readonly getEvents = toSignal(
     this.filterSubject.pipe(
-      debounceTime(500),
+      debounceTime(800),
       tap(() => {
         this.isLoading.set(true);
         // Ogni volta che i filtri cambiano, AZZERIAMO la memoria per ripartire da capo
@@ -77,14 +77,14 @@ export class DataService {
     { initialValue: [] }
   )
   
-  setFilters(personIds: string[], from:Date, to:Date, viewportDisc:Coordinates):void {
+  setFilters(personIds: string[], from:Date, to:Date, viewportDisc:Coordinates | null):void {
     this.isLoading.set(true)
     this.hasMore.set(false)
     const newFilter = { 
       personIds: personIds,
       dateFrom: from.toISOString(), 
       dateTo: to.toISOString(), 
-      geoHash: this.geoService.computeGeoHash(viewportDisc)
+      geoHash: viewportDisc ? this.geoService.computeGeoHash(viewportDisc) : null
     }
     this.filterSubject.next(newFilter)
   }
@@ -120,9 +120,9 @@ export class DataService {
           eventStartDate: { 
             between: [filter.dateFrom, filter.dateTo] 
           },
-          filter: { 
+          filter: filter.geoHash ? { 
             eventGeoHash: { beginsWith: filter.geoHash } 
-          },
+          } : undefined,
           selectionSet: ['event.*'],
           limit: 20,
           nextToken: tokenForPerson || undefined // Usiamo il token se esiste

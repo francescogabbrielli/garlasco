@@ -1,4 +1,4 @@
-import { Component, effect, input, OnInit, output } from '@angular/core';
+import { Component, effect, input, model, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 import { CommonModule } from '@angular/common';
@@ -40,6 +40,8 @@ export class TimelineSliderComponent implements OnInit {
   timelineTicks: TimelineTick[] = [];
   
   rangeChange = output<{from: Date, to: Date, min: Date, max: Date}>();
+
+  active = model(true)
 
   ngOnInit(): void {
     this.minTimestamp = this.initialFrom()?.getTime() ?? 0

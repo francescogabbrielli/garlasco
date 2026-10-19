@@ -2,41 +2,50 @@
 
   <div class="section-heading">
     <div>
-      <h3 id="location-selection" class="filter-title">Mappa</h3>
-      <p>Seleziona un'area sulla mappa</p>
+      <div class="filter-heading">
+        <input type="checkbox" 
+            [checked]="active()"
+            (change)="active.set($event.target.checked)"
+            aria-label="Mostra mappa"
+            title="Mostra mappa" />
+        <h3 id="location-selection" class="filter-title" (click)="active.set(!active())">Mappa</h3>
+      </div>
+      <p [style.display]="active() ? 'block' : 'none'">Seleziona un'area sulla mappa</p>
     </div>
   </div>
 
-@if (mapReady) {
-  <google-map
-      height="500px"
-      width="100%"
-      [mapId]="mapId"
-      [options]="mapOptions()"
-      (mapInitialized)="onMapReady($event)"
-      (boundsChanged)="onBoundsChanged()">
+@if (active()) {
+  @if (mapReady) {
+    <google-map
+        height="500px"
+        width="100%"
+        [mapId]="mapId"
+        [options]="mapOptions()"
+        (mapInitialized)="onMapReady($event)"
+        (boundsChanged)="onBoundsChanged()">
 
-    @for (track of tracks(); track track.id) {
-      <map-polyline [path]="track.path" [options]="trackOptions()[track.id]"></map-polyline>
-    }
+      @for (track of tracks(); track track.id) {
+        <map-polyline [path]="track.path" [options]="trackOptions()[track.id]"></map-polyline>
+      }
 
-    @for (pin of pins(); track pin.id) {
-      <map-advanced-marker
-          [position]="pin.start"
-          [content]="pin.startContent"
-          [title]="pin.title">
-      </map-advanced-marker>
-      @if (pin.end) {
+      @for (pin of pins(); track pin.id) {
         <map-advanced-marker
-            [position]="pin.end"
-            [content]="pin.endContent"
+            [position]="pin.start"
+            [content]="pin.startContent"
             [title]="pin.title">
         </map-advanced-marker>
+        @if (pin.end) {
+          <map-advanced-marker
+              [position]="pin.end"
+              [content]="pin.endContent"
+              [title]="pin.title">
+          </map-advanced-marker>
+        }
       }
-    }
-  </google-map>
-} @else {
-  Impossibile caricare la mappa... ({{ mapError }})
+    </google-map>
+  } @else {
+    Impossibile caricare la mappa... ({{ mapError }})
+  }
 }
 
 </section>

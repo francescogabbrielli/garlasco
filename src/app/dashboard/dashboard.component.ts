@@ -1,4 +1,4 @@
-import { Component, signal, effect, OnInit, inject, computed } from '@angular/core';
+import { Component, signal, effect, OnInit, inject, computed, Signal } from '@angular/core';
 import { DataService } from '../data.service';
 import { GeoService } from '../geo.service';
 
@@ -14,6 +14,7 @@ import { EventPopupComponent } from './event-popup/event-popup.component';
 import { UserProfileService } from '../user-profile.service';
 
 import { MainComponent } from '../main/main.component';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 const client = generateClient<Schema>()
 
@@ -22,9 +23,11 @@ type Event = Schema['Event']['type']
 type Coordinates = Schema['Coordinates']['type']
 
 type Filter = {
-  peronsIds: string[],
+  personIds: string[],
   interval: {from: Date, to: Date, min: Date, max: Date},
-  bounds: Coordinates
+  bounds: Coordinates,
+  showTimeline: boolean,
+  showMap: boolean
 }
 
 @Component({
@@ -53,7 +56,7 @@ export class DashboardComponent implements OnInit {
   facts = computed<Event[]>(() => this.events().filter(e => e.type === "Fatto"))
 
   readonly defaultFilters:Filter = {
-    peronsIds: [],
+    personIds: [],
     interval: {
       from: new Date("2007-07-15T00:00"),
       to: new Date("2007-08-14T23:59"),
@@ -61,11 +64,15 @@ export class DashboardComponent implements OnInit {
       max: new Date("2007-08-31T23:59")
     },
     bounds: DEFAULT_COORDINATES,
+    showTimeline: true,
+    showMap: true
   }
 
   currentFilters!: Filter
 
-  showMap = true
+  showTimeline = signal( true )
+  showMap = signal( true )
+  private initialized = false
 
   // People are loaded once here and shared with the filter and the map
   people = signal<Person[]>([])
@@ -101,15 +108,29 @@ export class DashboardComponent implements OnInit {
     // Sincronizziamo il Signal 'getEvents' del Service con il nostro accumulatore locale.
     // Ogni volta che il Service completa il debounce e lo switchMap, resetta l'array iniziale.
     effect(() => this.events.set(this.dataService.getEvents()))
+
+    // ricarica i dati ogni volta che lo stato di visibiltà dei filtri cambia 
+    // (gestione separata dagli handler per poter essere spostata da altre parti del codice in futuro)
+    toObservable(this.showTimeline).subscribe(value => {
+      if (!this.initialized) return
+      this.currentFilters.showTimeline = value
+      this.triggerReload()  
+    })
+    toObservable(this.showMap).subscribe(value => {
+      if (!this.initialized) return
+      this.currentFilters.showMap = value
+      this.triggerReload()
+    })
+    
   }
 
   triggerReload() {
     localStorage.setItem(this.STORAGE_FILTERS, JSON.stringify(this.currentFilters));
     this.dataService.setFilters(
-      this.currentFilters.peronsIds,
-      this.currentFilters.interval.from, 
-      this.currentFilters.interval.to, 
-      this.currentFilters.bounds)
+      this.currentFilters.personIds,
+      this.showTimeline() ? this.currentFilters.interval.from : this.MIN_DATE, 
+      this.showTimeline() ? this.currentFilters.interval.to : this.MAX_DATE, 
+      this.showMap() ? this.currentFilters.bounds : null)
   }
 
   ngOnInit(): void {
@@ -118,24 +139,31 @@ export class DashboardComponent implements OnInit {
 
     // Recupera lo stato iniziale dalla cache locale
     const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '{}')
+    
     this.currentFilters = savedFilters ? {
-      peronsIds: savedFilters.peronsIds ? savedFilters.peronsIds : this.defaultFilters.peronsIds,
+      personIds: savedFilters.personIds ? savedFilters.personIds : this.defaultFilters.personIds,
       interval: {
         from: savedFilters.interval?.from ? new Date(savedFilters.interval.from) : this.defaultFilters.interval.from,
         to: savedFilters.interval?.to ? new Date(savedFilters.interval.to) : this.defaultFilters.interval.to,
         min: savedFilters.interval?.min ? new Date(savedFilters.interval.min) : this.defaultFilters.interval.min,
         max: savedFilters.interval?.max ? new Date(savedFilters.interval.max) : this.defaultFilters.interval.max,
       },
-      bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds
+      bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds,
+      showTimeline: savedFilters.showTimeline !== undefined ? savedFilters.showTimeline : this.defaultFilters.showTimeline,
+      showMap: savedFilters.showMap !== undefined ? savedFilters.showMap : this.defaultFilters.showMap
     } : this.currentFilters = {...this.defaultFilters}
 
-    this.selectedIds.set(this.currentFilters.peronsIds)
+    this.showTimeline.set(this.currentFilters.showTimeline)
+    this.showMap.set(this.currentFilters.showMap)
 
+    this.selectedIds.set(this.currentFilters.personIds)
     this.triggerReload()
+    this.initialized = true
+
   }
 
   handlePersonFilter(selectedIds: string[]): void {
-    this.currentFilters.peronsIds = selectedIds
+    this.currentFilters.personIds = selectedIds
     this.selectedIds.set(selectedIds)
     this.triggerReload()
   }
@@ -160,7 +188,7 @@ export class DashboardComponent implements OnInit {
 
   resetFilters(): void {
     this.currentFilters = {...this.defaultFilters}
-    this.selectedIds.set(this.currentFilters.peronsIds)
+    this.selectedIds.set(this.currentFilters.personIds)
     this.triggerReload()
   }
 

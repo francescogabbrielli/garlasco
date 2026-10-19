@@ -31,7 +31,21 @@ body {
     padding-top: 1rem;
   }
   
-  h3.filter-title { margin: 0; color: #1d3332; font: 600 1rem/1.25 Georgia, 'Times New Roman', serif; }
+  .filter-heading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  h3.filter-title { 
+    margin: 0; 
+    color: #1d3332; 
+    font: 600 1rem/1.25 Georgia, 
+    'Times New Roman', serif; 
+    cursor: pointer;
+    user-select: none;
+  }
 
   hr {
     width: 100%;

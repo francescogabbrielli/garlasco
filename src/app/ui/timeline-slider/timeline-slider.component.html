@@ -2,10 +2,19 @@
 
   <div class="section-heading">
     <div>
-      <h3 id="timeline-selection" class="filter-title">Timeline</h3>
-      <p>Seleziona un intervallo temporale</p>
+      <div class="filter-heading">
+        <input type="checkbox" 
+            [checked]="active()"
+            (change)="active.set($event.target.checked)"
+            aria-label="Mostra timeline"
+            title="Mostra timeline" />
+        <h3 id="timeline-selection" class="filter-title" (click)="active.set(!active())">Timeline</h3>
+      </div>
+      <p [style.display]="active() ? 'block' : 'none'">Seleziona un intervallo temporale</p>
     </div>
   </div>
+
+@if (active()) {
 
   <div class="time-display-container">
     <span class="current-time-range">{{ getFormattedInterval() }}</span>
@@ -29,5 +38,7 @@
     </mat-slider>
 
   </div>
+
+}
 
 </section>

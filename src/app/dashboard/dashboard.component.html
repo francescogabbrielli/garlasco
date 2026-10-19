@@ -37,7 +37,7 @@
           [people]="people()"
           [loading]="peopleLoading()"
           [error]="peopleError()"
-          [selectedIds]="currentFilters.peronsIds"
+          [selectedIds]="currentFilters.personIds"
           (selectionChange)="handlePersonFilter($event)">
         </app-person-filter  >
       </div>
@@ -50,6 +50,7 @@
             [initialMax]="currentFilters.interval.max"
             [minimum]="MIN_DATE"
             [maximum]="MAX_DATE"
+            [(active)]="showTimeline"
             (rangeChange)="handleTimeFilter($event)">
           </app-timeline-slider>
         } @placeholder {
@@ -57,16 +58,15 @@
         }
 
         @defer (on idle) {
-          @if (showMap) {
-            <app-map-filter 
-              [initialBounds]="currentFilters.bounds"
-              [markers]="facts()"
-              [highlightedId]="hoveredEventId()"
-              (eventHover)="hoveredEventId.set($event)"
-              (eventClick)="openEventById($event)"
-              (mapChange)="handleMapFilter($event)">
-            </app-map-filter>
-          }
+          <app-map-filter 
+            [initialBounds]="currentFilters.bounds"
+            [markers]="facts()"
+            [highlightedId]="hoveredEventId()"
+            [(active)]="showMap"
+            (eventHover)="hoveredEventId.set($event)"
+            (eventClick)="openEventById($event)"
+            (mapChange)="handleMapFilter($event)">
+          </app-map-filter>
         } @placeholder {
           <div>Caricamento della mappa in corso...</div>
         }
