@@ -1,10 +1,27 @@
-<div class="map-picker-backdrop" (click)="close()">
+<div class="dialog-backdrop map-picker-backdrop">
   
-  <div class="map-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="map-picker-title" (click)="$event.stopPropagation()">
+  <section 
+    class="dialog map-picker-dialog" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="map-picker-title" 
+    (click)="$event.stopPropagation()">
     
-    <header class="map-picker-header">
-      <h3 id="map-picker-title">{{ title() }}</h3>
-      <button type="button" class="map-picker-close" aria-label="Chiudi" (click)="close()">×</button>
+    <header class="dialog-heading">
+      <div>
+        <p id="map-picker-title" class="eyebrow">Scegli posizione</p>
+        <h1>{{ title() }}</h1>
+      </div>
+
+      <div class="context-controls">
+          <button 
+            class="dialog-close" 
+            type="button" 
+            aria-label="Chiudi" 
+            title="Chiudi" 
+            (click)="close()">×</button>
+      </div>
+
     </header>
 
     <div class="map-picker-body">
@@ -29,7 +46,7 @@
       }
     </div>
 
-    <footer class="map-picker-footer">
+    <footer class="actions-panel">
       <span class="map-picker-hint">
         @if (selectedPoint()) {
           Posizione precisa selezionata.
@@ -38,12 +55,19 @@
         }
       </span>
       @if (selectedPoint()) {
-        <button type="button" (click)="clearSelection()">Annulla punto</button>
+        <button type="button" 
+          class="secondary-button" 
+          (click)="clearSelection()">Annulla punto</button>
       }
-      <button type="button" (click)="close()">Annulla</button>
-      <button type="button" class="action-button" [disabled]="!mapReady()" (click)="confirm()">Usa questa posizione</button>
+      <button type="button" 
+        class="secondary-button" 
+        (click)="close()">Annulla</button>
+      <button type="button" 
+        class="action-button" 
+        [disabled]="!mapReady()" 
+        (click)="confirm()">Usa questa posizione</button>
     </footer>
     
-  </div>
+  </section>
 
 </div>

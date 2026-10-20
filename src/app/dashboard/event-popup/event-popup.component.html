@@ -6,7 +6,7 @@
     aria-labelledby="event-popup-title"
     (click)="$event.stopPropagation()"
   >
-    <div class="dialog-heading">
+    <header class="dialog-heading">
 
       <div>
         <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Creazione') : event().type }}</p>
@@ -29,7 +29,7 @@
             type="button"
             aria-label="Apri aiuto"
             title="Apri aiuto"
-            (click)="help = true">?</button>
+            (click)="main.help.set({page: 'dashboard/event-mask', 'title': 'Gestione eventi'})">?</button>
           }
           <button 
             class="dialog-close" 
@@ -38,7 +38,7 @@
             title="Chiudi" 
             (click)="close()">×</button>
       </div>
-    </div>
+    </header>
 
     @if (isEditor()) {
       @defer (on viewport) {
@@ -51,7 +51,6 @@
           <app-event-mask id="event-mask" 
             [event]="event()" 
             [people]="people()"
-            [(isHelpDialogOpen)]="help"
             [(isFormTouched)]="maskTouched"
             [(submitError)]="submitError"
             (saved)="saved.emit(); closed.emit()" ></app-event-mask>

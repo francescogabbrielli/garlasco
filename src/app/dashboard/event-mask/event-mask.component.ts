@@ -49,7 +49,9 @@ export class EventMaskComponent {
   readonly personDialogOpen = signal(false)
   private personDialogRowId: number | null = null
 
-  isHelpDialogOpen = model(false)
+  private COORDS_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
+
+  isHelpDialogOpen = input(false)
   isFormTouched = model(false)
 
   constructor() {
@@ -80,15 +82,15 @@ export class EventMaskComponent {
       relevance: e.relevance,
       start: {
         date: this.toLocalInput(e.start_date),
-        latitude: e.start_position.latitude,
-        longitude: e.start_position.longitude,
-        radius: e.start_position.radius,
+        latitude: this.COORDS_FORMAT.format(e.start_position.latitude),
+        longitude: this.COORDS_FORMAT.format(e.start_position.longitude),
+        radius: String(e.start_position.radius),
       },
       end: {
         date: this.toLocalInput(e.end_date),
-        latitude: e.end_position?.latitude ?? null,
-        longitude: e.end_position?.longitude ?? null,
-        radius: e.end_position?.radius ?? null,
+        latitude: e.end_position?.latitude ? this.COORDS_FORMAT.format(e.end_position.latitude) : null,
+        longitude: e.end_position?.longitude ? this.COORDS_FORMAT.format(e.end_position.longitude) : null,
+        radius: e.end_position?.radius ? String(e.end_position.radius) : null,
       },
     })
 
@@ -145,15 +147,15 @@ export class EventMaskComponent {
     }),
     start: new FormGroup({
       date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      latitude: new FormControl<number | null>(null, { nonNullable: true, validators: [Validators.required] }),
-      longitude: new FormControl<number | null>(null, { nonNullable: true }),
-      radius: new FormControl<number | null>(null, { nonNullable: true }),
+      latitude: new FormControl<string | null>(null, { nonNullable: true, validators: [Validators.required] }),
+      longitude: new FormControl<string | null>(null, { nonNullable: true }),
+      radius: new FormControl<string | null>(null, { nonNullable: true }),
     }),
     end: new FormGroup({
       date: new FormControl('', { nonNullable: false }),
-      latitude: new FormControl<number | null>(null, { nonNullable: false }),
-      longitude: new FormControl<number | null>(null, { nonNullable: false }),
-      radius: new FormControl<number | null>(null, { nonNullable: false }),
+      latitude: new FormControl<string | null>(null, { nonNullable: false }),
+      longitude: new FormControl<string | null>(null, { nonNullable: false }),
+      radius: new FormControl<string | null>(null, { nonNullable: false }),
     }),
   })
 
@@ -234,15 +236,15 @@ export class EventMaskComponent {
       relevance: clamp(g.relevance, this.relevanceOptions.length),
       start: {
         date: this.toLocalInput(g.start_date),
-        latitude: g.start_position?.latitude ?? null,
-        longitude: g.start_position?.longitude ?? null,
-        radius: g.start_position?.radius ?? null,
+        latitude: g.start_position?.latitude ? this.COORDS_FORMAT.format(g.start_position.latitude) : null,
+        longitude: g.start_position?.longitude ? this.COORDS_FORMAT.format(g.start_position.longitude) : null,
+        radius: g.start_position?.radius ? String(g.start_position.radius) : null,
       },
       end: {
         date: this.toLocalInput(g.end_date),
-        latitude: g.end_position?.latitude ?? null,
-        longitude: g.end_position?.longitude ?? null,
-        radius: g.end_position?.radius ?? null,
+        latitude: g.end_position?.latitude ? this.COORDS_FORMAT.format(g.end_position.latitude) : null,
+        longitude: g.end_position?.longitude ? this.COORDS_FORMAT.format(g.end_position.longitude) : null,
+        radius: g.end_position?.radius ? String(g.end_position.radius) :  null,
       },
     })
     this.eventForm.markAsTouched()
@@ -465,9 +467,9 @@ export class EventMaskComponent {
     const target = this.pickerTarget()
     if (target) {
       this.eventForm.controls[target].patchValue({
-        latitude: position.latitude,
-        longitude: position.longitude,
-        radius: position.radius,
+        latitude: this.COORDS_FORMAT.format(position.latitude),
+        longitude: this.COORDS_FORMAT.format(position.longitude),
+        radius: String(position.radius),
       })
       this.eventForm.controls[target].markAsDirty()
     }
@@ -476,14 +478,6 @@ export class EventMaskComponent {
 
   closePicker(): void {
     this.pickerTarget.set(null)
-  }
-  
-  openHelpDialog(): void {
-    this.isHelpDialogOpen.set(true)
-  }
-
-  closeHelpDialog(): void {
-    this.isHelpDialogOpen.set(false)
   }
 
   // Trucco per chiudere il pannello dell'autocomplete dopo che l'input perde il focus

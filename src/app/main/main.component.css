@@ -191,3 +191,17 @@ button.main-link {
         flex-direction: column;
     }
 }
+
+.version {
+    text-align: right;
+    font-size: 0.8rem;
+    font-family: Courier, monospace;
+    color: rgba(34, 31, 43, 0.5);
+}
+
+.author {
+    text-align: right;
+    font-variant: small-caps;
+    font-style: italic;
+    color: rgba(34, 31, 43, 0.5);
+}

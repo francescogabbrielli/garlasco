@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, HostListener, output, signal, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { generateClient } from 'aws-amplify/data';
 import { PERSON_TYPES } from '../../../../amplify/data/enums';
@@ -14,7 +14,7 @@ const client = generateClient<Schema>()
   templateUrl: './person-popup.component.html',
   styleUrl: './person-popup.component.css',
 })
-export class PersonDialogComponent {
+export class PersonDialogComponent implements OnInit {
 
   created = output<Person>()
   closed = output<void>()
@@ -31,9 +31,15 @@ export class PersonDialogComponent {
     initials: new FormControl('', { nonNullable: false }),
   })
 
+  ngOnInit(): void {
+    Array.from(document.getElementsByTagName('input'))
+      .forEach((el:HTMLInputElement) => el.hasAttribute('autofocus') && el.focus())
+  }
+
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched()
+      this.error.set('Compila tutti i campi obbligatori.')
       return
     }
     const { name, surname, type, profession, initials } = this.form.getRawValue()
@@ -56,7 +62,13 @@ export class PersonDialogComponent {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.close()
+  }
+
   close(): void {
     this.closed.emit()
   }
+  
 }

@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
@@ -94,5 +94,10 @@ export class MainComponent {
   closeHelpPopup(): void {
     this.help.set({page: '', title: ''})
   }
+
+  isHelpPopupOpen = computed(() => {
+    const help = this.help()
+    return help.page !== '' && help.title !== ''
+  })
 
 }

@@ -154,6 +154,7 @@ body {
       background: #dadbf9;
       color: #7551c2;
     }
+
   .context-button[aria-pressed="true"] {
       color: #c25172;
       background: #dadbf9;
@@ -175,7 +176,7 @@ body {
       display: flex;
       flex-direction: column;
       padding: 1.75rem;
-      border: 1px solid rgba(34, 31, 43, 0.14);
+      border: 2px groove rgba(34, 31, 43, 0.75);
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.98);
       opacity: 0.9;
@@ -183,11 +184,13 @@ body {
     }
 
   .dialog-scrollable {
+      border: 1px inset rgba(34, 31, 43, 0.1);
+      border-radius: 3px;
       overflow-y: auto;
-      padding-right: 0.25rem;
+      padding: 0.4rem;
     }
 
-  .dialog-heading {
+  .dialog header {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
@@ -424,6 +427,7 @@ body {
   .coordinate-fields input[readonly] {
       background: rgba(34, 31, 43, 0.05);
       color: rgba(34, 31, 43, 0.78);    
+      text-align: right;
     }
 
   .coordinate-fields .search-control {

@@ -47,13 +47,6 @@ div.form-field.form-field-small > label > span {
     background: transparent;
 }
 
-.help-text {
-    color: rgba(34, 31, 43, 0.78);
-    font-size: 0.9rem;
-    line-height: 1.2rem;
-    text-align: justify;
-}
-
 .event-person-section {
   grid-column: 1 / -1;
 }

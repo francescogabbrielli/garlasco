@@ -1,3 +1,7 @@
+.help-dialog {
+    width: min(100%, 60rem);
+}
+
 .help-content {
     color: #333;
     padding: 1rem;    
@@ -6,4 +10,11 @@
 
 .help-content {
     margin: 0 0 1rem 0;
+}
+
+.help-content p {
+    color: rgba(34, 31, 43, 0.78);
+    font-size: 0.9rem;
+    line-height: 1.2rem;
+    text-align: justify;
 }

@@ -1,20 +1,9 @@
 .person-dialog-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  background: rgba(0, 0, 0, .5);
 }
 
 .person-dialog {
-  display: flex;
-  flex-direction: column;
-  gap: .75rem;
   width: min(420px, 95vw);
-  padding: 1rem;
-  background: #fff;
-  border-radius: .5rem;
 }
 
 .person-dialog-header,
@@ -24,12 +13,28 @@
   gap: .5rem;
 }
 
-.person-dialog-header { justify-content: space-between; }
-.person-dialog-header h3 { margin: 0; }
-.person-dialog-footer { justify-content: flex-end; }
+.person-dialog-header {
+  justify-content: space-between;
+}
 
-.form-field { display: flex; flex-direction: column; gap: .25rem; }
-.field-error { color: #b00020; font-size: .85rem; }
+.person-dialog-header h3 {
+  margin: 0;
+}
+
+.person-dialog-footer {
+  justify-content: flex-end;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.field-error {
+  color: #b00020;
+  font-size: .85rem;
+}
 
 .person-dialog-close {
   border: 0;

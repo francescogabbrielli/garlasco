@@ -1,19 +1,10 @@
 .map-picker-backdrop {
-  position: fixed;
-  inset: 0;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  background: rgba(0, 0, 0, .5);
 }
 
 .map-picker-dialog {
-  display: flex;
-  flex-direction: column;
   width: min(900px, 95vw);
   height: min(700px, 90vh);
-  background: #fff;
-  border-radius: .5rem;
   overflow: hidden;
 }
 
@@ -30,7 +21,12 @@
 .map-picker-footer { justify-content: flex-end; }
 .map-picker-hint { margin-right: auto; font-size: .85rem; }
 
-.map-picker-body { flex: 1; min-height: 0; }
+.map-picker-body { 
+  flex: 1; 
+  min-height: 0; 
+  border: 1px inset rgba(34, 31, 43, 0.1);
+  border-radius: 4px;
+}
 .map-picker-error { color: #b00020; padding: 1rem; }
 
 .map-picker-close {

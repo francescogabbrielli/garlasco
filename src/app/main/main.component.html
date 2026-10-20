@@ -60,12 +60,17 @@
         <div class="user-dropdown" role="menu">
 
           <hr role="separator" />
-          <button id="about_button" type="button" role="menuitem" (click)="openAboutDialog()">
+          <button id="about_button" type="button" 
+            role="menuitem" 
+            (click)="this.openAboutDialog()">
             <span aria-hidden="true">ℹ</span>
             Informazioni
           </button>
           <hr role="separator" />
-          <button id="logout_button" type="button" role="menuitem" (click)="logout()">
+          <button id="logout_button" 
+            type="button" 
+            role="menuitem" 
+            (click)="logout()">
             <span aria-hidden="true">⎋</span>
             Esci
           </button>
@@ -88,25 +93,29 @@
       aria-labelledby="about-title"
       (click)="$event.stopPropagation()"
     >
-      <div class="dialog-heading">
+      <header>
         <div>
           <p class="eyebrow">Informazioni</p>
           <h1 id="about-title">{{ appTitle() }}</h1>
         </div>
-        <button
-          class="dialog-close"
-          type="button"
-          aria-label="Chiudi informazioni"
-          title="Chiudi informazioni"
-          (click)="closeAboutDialog()"
-        >
-          ×
-        </button>
-      </div>
+        <div class="context-controls">
+          <button
+            class="dialog-close"
+            type="button"
+            aria-label="Chiudi informazioni"
+            title="Chiudi informazioni"
+            (click)="closeAboutDialog()"
+          >
+            ×
+          </button>
+        </div>
+      </header>
+
       <p>{{ appDescription() }}</p>
+
       <!-- pick the version from package.json -->
-      <p>versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
-      <small>{{ appAuthor() }} & Copilot @ 2026</small>
+      <p class="version">versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
+      <small class="author">{{ appAuthor() }} + AI (Copilot, Claude, Gemini, ChatGPT) @ 2026</small>
     
     </section>
   </div>

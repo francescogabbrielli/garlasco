@@ -1,59 +1,87 @@
-<div class="person-dialog-backdrop" (click)="close()">
-  <form class="person-dialog" role="dialog" aria-modal="true" aria-labelledby="person-dialog-title"
-        [formGroup]="form" (ngSubmit)="submit()" (click)="$event.stopPropagation()" novalidate>
-    <header class="person-dialog-header">
-      <h3 id="person-dialog-title">Nuova persona</h3>
-      <button type="button" class="person-dialog-close" aria-label="Chiudi" (click)="close()">×</button>
-    </header>
+<div class="dialog-backdrop person-dialog-backdrop">
 
-    <div class="form-field">
-      <label for="person-name">Nome</label>
-      <input class="search-control" id="person-name" type="text" formControlName="name" required />
-      @if (form.controls.name.invalid && form.controls.name.touched) {
-        <span class="field-error">Inserisci il nome.</span>
+  <section 
+    class="dialog person-dialog" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="person-dialog-title"
+    (click)="$event.stopPropagation()">
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      
+      <header>
+
+        <div>
+          <p class="eyebrow">Creazione</p>
+          <h1 id="person-dialog-title">Persona</h1>
+        </div>
+        <div class="context-controls">
+          <button 
+            class="dialog-close" 
+            type="button" 
+            aria-label="Chiudi" 
+            title="Chiudi" 
+            (click)="close()">×</button>
+        </div>
+      </header>
+
+      @if (error()) {
+        <span class="field-error">{{ error() }}</span>
       }
-    </div>
 
-    <div class="form-field">
-      <label for="person-surname">Cognome</label>
-      <input class="search-control" id="person-surname" type="text" formControlName="surname" required />
-      @if (form.controls.surname.invalid && form.controls.surname.touched) {
-        <span class="field-error">Inserisci il cognome.</span>
-      }
-    </div>
+      <div class="event-admin-fields">
+        <div class="form-field">
+          <label for="person-name">Nome</label>
+          <input class="search-control" id="person-name" type="text" formControlName="name" required autofocus/>
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="field-error">Inserisci il nome.</span>
+          }
+        </div>
 
-    <div class="form-field">
-      <label for="person-type">Tipologia</label>
-      <select class="search-control" id="person-type" formControlName="type" required>
-        <option [ngValue]="null"></option>
-        @for (type of personTypes; track type) {
-          <option [ngValue]="type">{{ type }}</option>
-        }
-      </select>
-      @if (form.controls.type.invalid && form.controls.type.touched) {
-        <span class="field-error">Seleziona la tipologia.</span>
-      }
-    </div>
+        <div class="form-field">
+          <label for="person-surname">Cognome</label>
+          <input class="search-control" id="person-surname" type="text" formControlName="surname" required />
+          @if (form.controls.surname.invalid && form.controls.surname.touched) {
+            <span class="field-error">Inserisci il cognome.</span>
+          }
+        </div>
 
-    <div class="form-field">
-      <label for="person-profession">Professione <span>(opzionale)</span></label>
-      <input class="search-control" id="person-profession" type="text" formControlName="profession" />
-    </div>
+        <div class="form-field">
+          <label for="person-type">Tipologia</label>
+          <select class="search-control" id="person-type" formControlName="type" required>
+            <option [ngValue]="null"></option>
+            @for (type of personTypes; track type) {
+              <option [ngValue]="type">{{ type }}</option>
+            }
+          </select>
+          @if (form.controls.type.invalid && form.controls.type.touched) {
+            <span class="field-error">Seleziona la tipologia.</span>
+          }
+        </div>
 
-    <div class="form-field">
-      <label for="person-initials">Iniziali <span>(opzionale)</span></label>
-      <input class="search-control" id="person-initials" type="text" formControlName="initials" />
-    </div>
+        <div class="form-field">
+          <label for="person-profession">Professione <span>(opzionale)</span></label>
+          <input class="search-control" id="person-profession" type="text" formControlName="profession" />
+        </div>
 
-    @if (error()) {
-      <p class="field-error">{{ error() }}</p>
-    }
+        <div class="form-field">
+          <label for="person-initials">Iniziali <span>(opzionale)</span></label>
+          <input size="5" class="search-control" id="person-initials" type="text" formControlName="initials" />
+        </div>
 
-    <footer class="person-dialog-footer">
-      <button type="button" (click)="close()">Annulla</button>
-      <button type="submit" class="person-dialog-confirm" [disabled]="isSaving()">
-        {{ isSaving() ? 'Salvataggio...' : 'Crea persona' }}
-      </button>
-    </footer>
-  </form>
+      </div>
+      
+      <footer class="actions-panel">
+        <button type="button" 
+          class="secondary-button" 
+          (click)="close()">Annulla</button>
+        <button type="submit" 
+          class="action-button" 
+          [disabled]="isSaving()">
+          {{ isSaving() ? 'Salvataggio...' : 'Crea persona' }}
+        </button>
+      </footer>
+    </form>
+
+  </section>
 </div>

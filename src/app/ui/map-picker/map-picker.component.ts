@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, input, output, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, input, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 
 import type { Schema } from '../../../../amplify/data/resource';
@@ -103,6 +103,11 @@ export class MapPickerComponent implements OnInit {
     }
     const bounds = this.mapInstance?.getBounds()
     if (bounds) this.picked.emit(this.geoService.toCoordinates(bounds))
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.close()
   }
 
   close(): void {

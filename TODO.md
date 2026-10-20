@@ -1,12 +1,16 @@
-NEXT: 0.1.0
+TODO: 0.1.0
 -----------
-- trash home section altogether
-- Persons, MapPicker: unify all popups style and behaviour (almost there)
-- add confirm popups instead of plain javascript (use &lt;dialog&gt;?)
+- trash home section altogether &check;
+- Persons, MapPicker: unify all popups style and behaviour (almost there) &check;
+- Event mask: add remove position button
+- Person filter: improve person selection
 - Event list: group events by date (suppress hour), keeping facts as preminent; show relevance for all
 - add chat (also with AI bot!)
+- improve AI generation (give DB access)
 - improve resource: add sources and related events to Event
-- log changes
+- contact form & mail
+- log changes and send by mail
+- add confirm popups instead of plain javascript (use &lt;dialog&gt;?)
 
 TODO: 0.0.6
 -----------

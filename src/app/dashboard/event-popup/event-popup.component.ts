@@ -23,7 +23,7 @@ const client = generateClient<Schema>();
 export class EventPopupComponent {
 
   private userService = inject(UserProfileService)
-  private main = inject(MainComponent)
+  main = inject(MainComponent)
 
   readonly submitError = signal('')
   readonly generating = signal(false)
@@ -51,7 +51,7 @@ export class EventPopupComponent {
   event = input.required<Event>()
   closed = output<void>()
   saved = output<void>()
-  help = false
+
   maskTouched = false
 
   isEditor = computed(() => {
@@ -94,7 +94,7 @@ export class EventPopupComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.close()
+    this.close(true)
   }
 
   close(disabledOnEdit = false) {

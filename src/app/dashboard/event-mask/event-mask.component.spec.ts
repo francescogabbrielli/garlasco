@@ -51,7 +51,7 @@ describe('EventMaskComponent', () => {
   it('should provide the current position as initial position of the picker', () => {
     expect(component.pickerInitialPosition()).toBeNull();
 
-    component.eventForm.controls.start.patchValue({ latitude: 44, longitude: 8, radius: 50 });
+    component.eventForm.controls.start.patchValue({ latitude: "44.00000", longitude: "8.000000", radius: "50" });
     component.requestPosition('start');
 
     expect(component.pickerInitialPosition()).toEqual({ latitude: 44, longitude: 8, radius: 50 });
