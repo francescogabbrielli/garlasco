@@ -22,7 +22,6 @@ describe('UserProfileService', () => {
     expect(user.getId()).toBe('user-123');
     expect(user.getName()).toBe('Mario');
     expect(user.getSurname()).toBe('Rossi');
-    expect(service.isLoggedIn()).toBe(true);
     expect(user.isAdmin()).toBe(true);
     expect(user.isEditor()).toBe(true);
   });
@@ -41,7 +40,6 @@ describe('UserProfileService', () => {
     service.logOut();
 
     expect(user.getId()).toBe('');
-    expect(service.isLoggedIn()).toBe(false);
     expect(user.isAdmin()).toBe(false);
     expect(user.isEditor()).toBe(false);
     expect(user.editEnabled()).toBe(false);

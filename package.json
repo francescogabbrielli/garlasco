@@ -4,9 +4,9 @@
   "author": {
     "name": "Francesco Gabbrielli"
   },
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Sistema integrato e normalizzato di ricerca/indagine",
-  "lastUpdate": "2026-10-18",
+  "lastUpdate": "2026-10-20",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",

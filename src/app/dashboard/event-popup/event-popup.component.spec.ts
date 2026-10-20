@@ -1,4 +1,6 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MainComponent } from '../../main/main.component';
 
 import { EventPopupComponent } from './event-popup.component';
 import { UserData, UserProfileService } from '../../user-profile.service';
@@ -49,7 +51,10 @@ describe('EventPopupComponent', () => {
   }
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [EventPopupComponent] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [EventPopupComponent],
+      providers: [{ provide: MainComponent, useValue: { isLoading: signal(false) } }]
+    }).compileComponents();
   });
 
   it('should show read-only details to non editors', () => {

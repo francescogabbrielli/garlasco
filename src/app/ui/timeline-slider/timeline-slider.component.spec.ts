@@ -17,6 +17,7 @@ describe('TimelineSliderComponent', () => {
     fixture.componentRef.setInput('initialMax', new Date(2024, 1, 1));
     fixture.componentRef.setInput('minimum', new Date(2024, 0, 1));
     fixture.componentRef.setInput('maximum', new Date(2024, 1, 1));
+    fixture.componentRef.setInput('active', true)
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -27,17 +28,21 @@ describe('TimelineSliderComponent', () => {
   });
 
   it('preserves valid zero-valued date inputs', () => {
-    fixture.componentRef.setInput('initialFrom', new Date(0));
-    fixture.componentRef.setInput('initialTo', new Date(0));
-    fixture.componentRef.setInput('initialMin', new Date(0));
-    fixture.componentRef.setInput('initialMax', new Date(2 * component.ONE_DAY));
-    fixture.componentRef.setInput('minimum', new Date(-2 * component.ONE_DAY));
-    fixture.componentRef.setInput('maximum', new Date(2 * component.ONE_DAY));
-    fixture.detectChanges();
+    const zeroFixture = TestBed.createComponent(TimelineSliderComponent);
+    const zeroComponent = zeroFixture.componentInstance;
+    zeroFixture.componentRef.setInput('initialFrom', new Date(0));
+    zeroFixture.componentRef.setInput('initialTo', new Date(0));
+    zeroFixture.componentRef.setInput('initialMin', new Date(0));
+    zeroFixture.componentRef.setInput('initialMax', new Date(2 * zeroComponent.ONE_DAY));
+    zeroFixture.componentRef.setInput('minimum', new Date(-2 * zeroComponent.ONE_DAY));
+    zeroFixture.componentRef.setInput('maximum', new Date(2 * zeroComponent.ONE_DAY));
+    zeroFixture.componentRef.setInput('active', true);
+    zeroFixture.detectChanges();
 
-    expect(component.minTimestamp).toBe(0);
-    expect(component.maxTimestamp).toBe(0);
-    expect(component.currentAbsoluteMin).toBe(0);
+    expect(zeroComponent.minTimestamp).toBe(0);
+    expect(zeroComponent.maxTimestamp).toBe(0);
+    expect(zeroComponent.currentAbsoluteMin).toBe(0);
+    expect(zeroComponent.currentAbsoluteMax).toBe(2 * zeroComponent.ONE_DAY);
   });
 
   it('keeps Ctrl+wheel zoom within the available date range', () => {

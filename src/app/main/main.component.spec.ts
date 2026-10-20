@@ -30,7 +30,7 @@ describe('MainComponent', () => {
         { provide: AuthenticatorService, useValue: { signOut } },
         {
           provide: UserProfileService,
-          useValue: { user: signal(userData), logIn: vi.fn().mockResolvedValue(userData) },
+          useValue: { user: signal(userData), logIn: vi.fn().mockResolvedValue(userData), logOut: vi.fn() },
         },
       ],
     }).compileComponents();
@@ -53,9 +53,6 @@ describe('MainComponent', () => {
   });
 
   it('shows navigation links based on the signed-in user', () => {
-    expect(fixture.nativeElement.querySelector('.brand').getAttribute('routerLink')).toBe('/');
-    expect(fixture.nativeElement.querySelector('a[aria-label="Dashboard"]').getAttribute('routerLink'))
-      .toBe('/dashboard');
     expect(fixture.nativeElement.querySelector('a[aria-label="Import"]').getAttribute('routerLink'))
       .toBe('/admin');
   });

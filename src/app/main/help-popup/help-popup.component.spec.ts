@@ -17,6 +17,8 @@ describe('HelpPopupComponent', () => {
 
     fixture = TestBed.createComponent(HelpPopupComponent);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('page', 'test');
+    fixture.componentRef.setInput('title', 'Test');
     fixture.detectChanges();
   });
 

@@ -1,4 +1,6 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MainComponent } from '../main/main.component';
 
 import { DashboardComponent } from './dashboard.component';
 
@@ -10,7 +12,8 @@ describe('DashboardComponent', () => {
     localStorage.setItem('dashboard_filters', '{}');
 
     await TestBed.configureTestingModule({
-      imports: [DashboardComponent]
+      imports: [DashboardComponent],
+      providers: [{ provide: MainComponent, useValue: { help: signal(null), isLoading: signal(false) } }]
     })
     .compileComponents();
 

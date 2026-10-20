@@ -32,8 +32,8 @@
       class="context-button"
       [class.active]="userProfile.user().editEnabled()"
       [attr.aria-pressed]="userProfile.user().editEnabled()"
-      aria-label="Modifica {{ userProfile.user().editEnabled() ? 'abilitata!' : '' }}"
-      title="Modifica {{ userProfile.user().editEnabled() ? 'abilitata!' : '' }}"
+      aria-label="Modifica{{ userProfile.user().editEnabled() ? ' abilitata!' : '' }}"
+      title="Modifica{{ userProfile.user().editEnabled() ? ' abilitata!' : '' }}"
       (click)="toggleEdit()"
     >
       ✐
