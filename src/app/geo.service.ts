@@ -78,10 +78,20 @@ export class GeoService {
   }
 
   computeGeoHash(coords:Coordinates): string {
+    //migliori risultati con misure empiriche...
+    let len = 0 
+    if (coords.radius < 250) len = 6
+    else if (coords.radius < 500) len = 5
+    else if (coords.radius < 1000) len = 4
+    else if (coords.radius < 2500) len = 3
+    else if (coords.radius < 10000) len = 2
+    else if (coords.radius < 50000) len = 1
+    
     return geohash.encode(
       coords.latitude, 
       coords.longitude, 
-      6-Math.floor(Math.log10(Math.max(coords.radius, 1)))
+      len
+      //Math.max(6, 1.33 * Math.log10(Math.PI * EARTH_RADIUS_METERS/Math.max(coords.radius, 1)))
     )
   }
 
