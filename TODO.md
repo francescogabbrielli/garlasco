@@ -12,7 +12,7 @@ TODO: 0.0.6
 -----------
 - make time/map filter optional (or advanced search tools) &check;
 - check map filter interference on results &check;
-- check more events loading ...
+- check & improve more events loading &check;
 - add loading for help files and AI hints &check;
 - popup should display over topbar &check;
 - minor backend fixes &check;

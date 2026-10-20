@@ -1,4 +1,4 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, inject, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common'
 import { Schema } from '../../../../amplify/data/resource';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component'
@@ -26,8 +26,11 @@ class EventLine {
 })
 export class EventListComponent {
 
+  private host = inject<ElementRef<HTMLElement>>(ElementRef)
+
   items = input<Event[]>([])
   highlightedId = input<string | null>(null)
+  hasMore = input<boolean>(false)
   scrolledToBottom = output<void>()
   eventHover = output<string | null>()
   eventClick = output<Event>()
@@ -48,6 +51,21 @@ export class EventListComponent {
 
   }, [new EventLine()] as EventLine[]))
 
+  // On narrow screens the list is full height and an outer container/page scrolls instead:
+  // detect when the end of the list reaches the bottom of the viewport.
+  private onOuterScroll = (event: globalThis.Event) => {
+    const list = this.host.nativeElement.querySelector('.event-list') as HTMLElement | null
+    if (!list || event.target === list || list.scrollHeight > list.clientHeight + 1)
+      return
+    if (list.getBoundingClientRect().bottom - window.innerHeight <= 50)
+      this.scrolledToBottom.emit()
+  }
+
+  constructor() {
+    document.addEventListener('scroll', this.onOuterScroll, true)
+    inject(DestroyRef).onDestroy(() => document.removeEventListener('scroll', this.onOuterScroll, true))
+  }
+
   onListScroll(event: globalThis.Event): void {
     const list = event.target as HTMLElement | null
     if (list && list.scrollHeight - list.scrollTop - list.clientHeight <= 50) {
@@ -55,4 +73,5 @@ export class EventListComponent {
       this.scrolledToBottom.emit()
     }
   }
+
 }

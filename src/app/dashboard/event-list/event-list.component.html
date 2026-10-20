@@ -48,6 +48,9 @@
                     </li>
                 }
             </ol>
-        </div>
+            @if (hasMore()) {
+                <button (click)="scrolledToBottom.emit()">Caricamento di altri eventi...</button>
+            }
+        </div>  
     }
 </section>

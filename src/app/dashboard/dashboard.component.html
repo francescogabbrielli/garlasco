@@ -78,9 +78,11 @@
     <app-event-list 
       [items]="events()"
       [highlightedId]="hoveredEventId()"
+      [hasMore]="this.dataService.hasMore()"
       (eventHover)="hoveredEventId.set($event)"
       (eventClick)="openedEvent.set($event)"
-      (scrolledToBottom)="onScrollBottom()">
+      (scrolledToBottom)="onScrollBottom()"
+      >
     </app-event-list>
   </section>  
 

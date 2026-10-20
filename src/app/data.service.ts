@@ -124,7 +124,7 @@ export class DataService {
             eventGeoHash: { beginsWith: filter.geoHash } 
           } : undefined,
           selectionSet: ['event.*'],
-          limit: 20,
+          limit: 10,
           nextToken: tokenForPerson || undefined // Usiamo il token se esiste
         }
       ).then((res: any) => ({ ...res, personId: id }));
