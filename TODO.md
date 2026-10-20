@@ -2,7 +2,7 @@ NEXT: 0.1.0
 -----------
 - trash home section altogether
 - Persons, MapPicker: unify all popups style and behaviour (almost there)
-- add confirm popups instead of plain javascript
+- add confirm popups instead of plain javascript (use &lt;dialog&gt;?)
 - Event list: group events by date (suppress hour), keeping facts as preminent; show relevance for all
 - add chat (also with AI bot!)
 - improve resource: add sources and related events to Event
@@ -12,9 +12,10 @@ TODO: 0.0.6
 -----------
 - make time/map filter optional (or advanced search tools) &check;
 - check map filter interference on results 
-- check more events loading
+- check more events loading ...
 - add loading for help files and AI hints &check;
 - popup should display over topbar &check;
+- minor backend fixes &check;
 
 TODO: 0.0.5
 -----------
