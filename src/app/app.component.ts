@@ -5,7 +5,6 @@ import outputs from '../../amplify_outputs.json'
 
 import {
   AmplifyAuthenticatorModule,
-  AuthenticatorService,
   translations,
 } from '@aws-amplify/ui-angular'
 
@@ -49,11 +48,6 @@ export class AppComponent {
       },
     },
     signUp: {
-      email: {
-        label: 'Email',
-        placeholder: 'Inserisci la tua email',
-        order: 0,
-      },
       given_name: {
         label: 'Nome',
         placeholder: 'Inserisci il tuo nome',
@@ -64,16 +58,21 @@ export class AppComponent {
         placeholder: 'Inserisci il tuo cognome',
         order: 2,
       },
+      email: {
+        label: 'Email',
+        placeholder: 'Inserisci la tua email',
+        order: 3,
+      },
       password: {
         label: 'Password',
         placeholder: 'Inserisci la tua password',
-        order: 3,
+        order: 4,
       },
       confirm_password: {
         label: 'Conferma password',
         placeholder: 'Conferma la tua password',
-        order: 4,
-      },
+        order: 5,
+      }
     },
   }
 
@@ -92,4 +91,8 @@ export class AppComponent {
     Amplify.configure(outputs)
   }
 
+  // Controlla se la rotta attuale è pubblica
+  isPublicRoute(): boolean {
+    return this.router.url.includes('privacy-policy');
+  }
 }

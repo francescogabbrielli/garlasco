@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informativa sulla Privacy - {{ title() }}</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Informativa sulla Privacy (Privacy Policy)</h1>
+        <div class="meta-info">
+            <p><strong>Sito web:</strong> I fatti di Garlasco<br>
+            <strong>Ultimo aggiornamento:</strong> 21 Ottobre 2026</p>
+        </div>
+
+        <p>La presente Informativa descrive le modalità di gestione del sito <strong>"I fatti di Garlasco"</strong> in riferimento al trattamento dei dati personali degli utenti che lo consultano, si registrano o interagiscono con esso, ai sensi del Regolamento Generale sulla Protezione dei Dati (UE 2016/679 - GDPR) e della normativa nazionale vigente.</p>
+
+        <h2>1. Titolare del Trattamento dei Dati</h2>
+        <p>Il Titolare del trattamento dei dati personali raccolti tramite questo sito è:</p>
+        <ul>
+            <li><strong>Titolare / Gestore:</strong> {{ owner() }}</li>
+            <li><strong>Email di contatto Privacy:</strong> <a href="mailto:{{ email() }}">{{ email() }}</a></li>
+        </ul>
+
+        <h2>2. Natura del Progetto</h2>
+        <p><strong>"I fatti di Garlasco"</strong> è un archivio e database informativo che racchiude, ordina e sintetizza fatti ed elementi di pubblico dominio legati alle vicende giudiziarie di Garlasco. Tutte le informazioni presenti sul sito sono reperite da fonti pubbliche, mass media, atti giudiziari accessibili e materiale non coperto da segreto istruttorio o da diritti riservati.</p>
+
+        <h2>3. Tipologia di Dati Personali Raccolti</h2>
+        <p>Il sito raccoglie ed elabora unicamente i dati forniti volontariamente dall'utente per la creazione dell'account e l'accesso alle funzionalità riservate:</p>
+        <ol>
+            <li><strong>Dati di registrazione e autenticazione:</strong> Indirizzo, Nome, Cognome, Email, Password (memorizzata in modo crittografato) e identificativi tecnici di sessione.</li>
+            <li><strong>Dati inviati tramite Form di Richiesta Ruolo:</strong> Informazioni eventualmente inserite nel modulo di richiesta (es. motivazione della richiesta, qualifica).</li>
+            <li><strong>Dati tecnici di navigazione:</strong> Indirizzo IP e log di sistema usati esclusivamente per garantire la sicurezza del servizio.</li>
+        </ol>
+
+        <h2>4. Finalità e Basi Giuridiche del Trattamento</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Finalità del trattamento</th>
+                    <th>Base Giuridica (GDPR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Gestione dell'account:</strong> Consentire la registrazione, la verifica dell'identità e l'accesso all'area riservata.</td>
+                    <td>Esecuzione di un contratto / Misure precontrattuali (Art. 6.1.b GDPR)</td>
+                </tr>
+                <tr>
+                    <td><strong>Gestione delle richieste di ruolo:</strong> Valutare e approvare la richiesta inviata dall'utente per l'assegnazione dei permessi.</td>
+                    <td>Esecuzione del servizio richiesto (Art. 6.1.b GDPR)</td>
+                </tr>
+                <tr>
+                    <td><strong>Sicurezza e prevenzione abusi:</strong> Protezione del sito da accessi non autorizzati o attacchi informatici.</td>
+                    <td>Legittimo interesse del Titolare (Art. 6.1.f GDPR)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>5. Modalità di Trattamento e Conservazione</h2>
+        <p>I dati personali sono trattati con strumenti automatizzati ed informatici con idonee misure di sicurezza. L'infrastruttura backend e di autenticazione utilizza i servizi cloud sicuri di Amazon Web Services (AWS / Cognito), con conservazione dei dati in conformità alle normative europee.</p>
+
+        <h2>6. Periodo di Conservazione dei Dati</h2>
+        <p>I dati dell'account sono conservati finché l'account rimane attivo. In caso di richiesta di cancellazione, i dati verranno eliminati entro 30 giorni, salvo diversi obblighi di legge.</p>
+
+        <h2>7. Cookie e Strumenti di Tracciamento</h2>
+        <p>Il sito fa uso esclusivo di <strong>cookie tecnici e token di sessione</strong> necessari per mantenere attiva la sessione dell'utente e gestirne l'autenticazione. Non viene fatto uso di cookie di profilazione o strumenti di tracciamento pubblicitario di terze parti.</p>
+
+        <h2>8. Diritti dell'Interessato</h2>
+        <p>Ai sensi degli artt. 15-22 del GDPR, l'utente ha il diritto di accedere, rettificare, richiedere la cancellazione o la portabilità dei propri dati inviando una comunicazione all'indirizzo email indicato al punto 1.</p>
+    </div>
+</body>
+</html>

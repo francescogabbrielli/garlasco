@@ -1,12 +1,58 @@
-<amplify-authenticator
-  [signUpAttributes]="signUpAttributes"
-  [formFields]="formFields"
->
-  <ng-template
-    amplifySlot="authenticated"
-    let-user="user"
-    let-signOut="signOut"
+@if (isPublicRoute()) {
+  <!-- Se la rotta è pubblica (es. /privacy-policy), mostra direttamente il componente -->
+  <router-outlet />
+} @else {
+  <!-- Altrimenti, richiedi l'autenticazione tramite Amplify -->
+  <amplify-authenticator
+    [signUpAttributes]="signUpAttributes"
+    [formFields]="formFields"
   >
-    <router-outlet />
-  </ng-template>
-</amplify-authenticator>
+    <!-- Slot personalizzato per i campi di registrazione -->
+    <ng-template amplifySlot="sign-up-form-fields">
+      
+      <!-- Questo renderizza automaticamente given_name, family_name, email, password ecc. -->
+      <amplify-sign-up-form-fields></amplify-sign-up-form-fields>
+
+      <!-- La tua checkbox HTML nativa, pienamente supportata da Angular -->
+      <div class="privacy-container" style="margin-top: 15px; margin-bottom: 15px;">
+        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
+          <input 
+            type="checkbox" 
+            name="custom:privacyAccepted" 
+            value="true"
+            required
+            style="margin-top: 4px;"
+          />
+          <span>
+            Accetto l'informativa sulla Privacy (vedi sotto) *
+          </span>
+        </label>
+      </div>
+
+    </ng-template>  
+
+    <!-- Link nel footer dell'Authenticator per accedere alla privacy policy -->
+    <ng-template amplifySlot="footer">
+      <div style="text-align: center; padding: 16px; font-size: 0.85rem;">
+        <a 
+          href="/privacy-policy" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style="color: #0070f3; text-decoration: underline;"
+        >
+          Informativa sulla Privacy
+        </a>
+      </div>
+    </ng-template>
+
+    <!-- Contenuto accessibile solo se autenticati -->
+    <ng-template
+      amplifySlot="authenticated"
+      let-user="user"
+      let-signOut="signOut"
+    >
+      <router-outlet />
+    </ng-template>
+
+  </amplify-authenticator>
+}

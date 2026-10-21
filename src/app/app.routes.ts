@@ -40,4 +40,18 @@ export const routes: Routes = [
 			},
 		],
 	},
+	{
+		path: 'welcome',
+		loadComponent: () =>
+			import('./welcome/welcome.component').then(
+				({ WelcomeComponent }) => WelcomeComponent
+			)
+	},
+	{
+		path: 'privacy-policy',
+		loadComponent: () =>
+			import('./privacy-policy/privacy-policy.component').then(
+				({ PrivacyPolicyComponent }) => PrivacyPolicyComponent
+			)
+	}
 ]
