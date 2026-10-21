@@ -64,12 +64,10 @@ body {
     transition: border-color 0.25s;
     color: white;
   }
-  button:hover {
-    border-color: #646cff;
-  }
+  
   button:focus,
   button:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
+    outline: 2px auto -webkit-focus-ring-color;
   }
 
   button.clear-control { 
@@ -418,23 +416,6 @@ body {
       background: #dadbf9;
     }
 
-  .coordinate-fields {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.75rem;
-    }
-
-  .coordinate-fields input[readonly] {
-      background: rgba(34, 31, 43, 0.05);
-      color: rgba(34, 31, 43, 0.78);    
-      text-align: right;
-    }
-
-  .coordinate-fields .search-control {
-      padding-right: 0.25rem;
-      padding-left: 0.25rem;
-    }
-
   .field-error, .form-alert {
       color: #a32929;
       font-size: 0.75rem;
@@ -469,8 +450,8 @@ body {
     }
 
   button.danger-button {
-      border: 1px solid #a32929;
-      background: #a32929;
+      border: 1px solid #ca2f2f;
+      background: #ca2f2f;
     }
 
   button.secondary-button {

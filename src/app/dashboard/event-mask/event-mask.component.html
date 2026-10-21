@@ -145,6 +145,10 @@
             <label for="start-radius">Raggio <span>(m)</span></label>
             <input class="search-control" id="start-radius" type="text" inputmode="decimal" formControlName="radius" readonly />
             </div>
+            <button type="button" class="danger-button"
+              title="Cancella posizione"
+              aria-label="Cancella posizione"
+              (click)="cancelPosition('start')">×</button>
         </div>
         </fieldset>
 
@@ -178,6 +182,10 @@
             <label for="end-radius">Raggio <span>(m)</span></label>
             <input class="search-control" id="end-radius" type="text" inputmode="decimal" formControlName="radius" readonly />
             </div>
+            <button type="button" class="danger-button"
+              title="Cancella posizione"
+              aria-label="Cancella posizione"
+              (click)="cancelPosition('end')">×</button>
         </div>
         </fieldset>
 

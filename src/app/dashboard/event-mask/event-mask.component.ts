@@ -476,6 +476,15 @@ export class EventMaskComponent {
     this.pickerTarget.set(null)
   }
 
+  cancelPosition(target: 'start' | 'end'): void {
+    this.eventForm.controls[target].patchValue({
+      latitude: null,
+      longitude: null,
+      radius: null,
+    })
+    this.eventForm.controls[target].markAsDirty()
+  }
+
   closePicker(): void {
     this.pickerTarget.set(null)
   }
