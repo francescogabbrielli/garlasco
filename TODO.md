@@ -2,18 +2,22 @@ TODO: 0.1.0
 -----------
 - trash home section altogether &check;
 - Persons, MapPicker: unify all popups style and behaviour (almost there) &check;
-- Event mask: add position remove button &check;
-- Import: add delete all data button (active after full download)
-- add privacy policy in about and authenticator
+- Event mask: 
+    - add position remove button &check;
+    - manage form modified status (also in Person mask)
 - Person filter: improve person selection (add type multichoice; show selected people)
 - Event list: group events by date (suppress hour), keeping facts as preminent; show relevance for all
-- add chat (also with AI bot!)
-- improve AI generation (give DB access)
-- improve resource: add sources and related events to Event
-- contact form & mail (espcially for requesting a role) in main menu
-- log changes and send by mail
+- Import: add delete all data button (active after full download) &check;
 - add confirm popups instead of plain javascript (use &lt;dialog&gt;?)
-- add default landing page for users with no role and request role "Member" for all other pages
+- Login and roles management:
+    - add privacy policy in about and authenticator
+    - add default landing page for users with no role and request role "Member" for all other pages
+    - contact form & mail (espcially for requesting a role) in main menu
+- Backend:
+    - add chat (also with AI bot!)
+    - improve AI generation (give DB access)
+    - improve resource: add sources and related events to Event
+    - log changes and send by mail
 
 
 TODO: 0.0.6

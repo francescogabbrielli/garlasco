@@ -11,6 +11,11 @@
                 class="action-button"
                 (click)="exportEvents()"
                 >Esporta eventi</button>
+            <button type="button" 
+                class="danger-button"
+                [disabled]="!canDelete()"
+                (click)="deleteAll()"
+                >Cancella tutto</button>
         </div>
     </div>
     

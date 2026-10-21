@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { generateClient } from 'aws-amplify/data'
 
 import type { Schema } from '../../../../amplify/data/resource'
@@ -15,6 +15,8 @@ type Person = Schema['Person']['type']
   styleUrl: './export.component.css',
 })
 export class ExportComponent {
+
+  exported = signal([false, false])
 
   async exportPeople(): Promise<void> {
     try {
@@ -39,6 +41,7 @@ export class ExportComponent {
       }))
 
       this.download(records, 'people.json')
+      this.exported.set([true, this.exported()[1]])
     } catch (error) {
       console.error('Errore durante l\'esportazione delle persone:', error)
       alert('Errore durante l\'esportazione delle persone.')
@@ -95,6 +98,7 @@ export class ExportComponent {
       }))
 
       this.download(records, 'events.json')
+      this.exported.set([this.exported()[0], true])
     } catch (error) {
       console.error('Errore durante l\'esportazione degli eventi:', error)
       alert('Errore durante l\'esportazione degli eventi.')
@@ -109,6 +113,31 @@ export class ExportComponent {
     link.download = filename
     link.click()
     URL.revokeObjectURL(url)
+  }
+
+  canDelete(): boolean {
+    return this.exported().every((value) => value)
+  }
+
+  async deleteAll(): Promise<void> {
+    if (confirm('Tutto scaricato. Adesso cancelliamo i dati.')) {
+      try {
+        await this.deleteAllFrom(client.models.EventPerson)
+        await this.deleteAllFrom(client.models.Event)
+        await this.deleteAllFrom(client.models.Person)      
+        this.exported.set([false, false])
+      } catch (error) {
+        console.error('Errore durante la cancellazione dei dati:', error)
+        alert('Errore durante la cancellazione dei dati.')
+      }
+    }
+  }
+
+  private async deleteAllFrom(model: any): Promise<void> {
+    const{ data: items } = await model.list()
+      await Promise.all(
+        items.map((item:any) => model.delete({ id: item.id }))
+      );
   }
 
 }
