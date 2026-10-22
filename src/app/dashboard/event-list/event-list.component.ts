@@ -6,15 +6,15 @@ import { TickbarComponent } from '../../ui/tickbar/tickbar.component'
 type Event = Schema['Event']['type']
 
 class EventLine {
-  fact?: Event
-  documents: Event[]
-  communications: Event[]
-  constructor() {
-    this.documents = []
-    this.communications = []
+  date: Date | null = null
+  facts: Event[] = []
+  documents: Event[] = []
+  communications: Event[] = []
+  constructor(date: Date | null = null) {
+    this.date = date
   }
   isEmpty() {
-    return !this.fact && !this.documents.length && !this.communications.length
+    return !this.facts.length && !this.documents.length && !this.communications.length
   }
 }
 
@@ -37,13 +37,16 @@ export class EventListComponent {
 
   // accumulator shows a single line for each fact, compressing communications and documents into the same line
   displayedItems = computed(() => this.items().reduce((acc, item, i, arr) => {
-    const currentLine = acc[acc.length - 1]
-    
-    if (item.type === "Fatto") {
-      currentLine.fact = item
-      acc.push(new EventLine())
+    let currentLine = acc[acc.length - 1]
+
+    if (!currentLine.date) currentLine.date = new Date(item.start_date)
+    else if (currentLine.date.toDateString() !== new Date(item.start_date).toDateString()) {
+      currentLine = new EventLine(new Date(item.start_date))
+      acc.push(currentLine)
     }
-    else if (["Sentenza", "Indagine"].includes(item.type)) currentLine.documents.push(item)
+    
+    if (item.type === "Fatto") currentLine.facts.push(item)
+    else if (["Sentenza", "Indagine", "Testimonianza"].includes(item.type)) currentLine.documents.push(item)
     else if (["Comunicazione", "Intercettazione"].includes(item.type)) currentLine.communications.push(item)
     if (arr.length - 1 === i && currentLine.isEmpty()) acc.splice(acc.length - 1, 1)
     

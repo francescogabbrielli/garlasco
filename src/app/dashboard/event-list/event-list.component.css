@@ -18,9 +18,9 @@
 
 .event-item {
     display: grid;
-    grid-template-columns: 5.4rem minmax(12rem, 2fr) minmax(9rem, 1fr) minmax(9rem, 1fr) 5rem;
-    gap: 1.15rem;
-    padding: 1.15rem 0;
+    grid-template-columns: 5.4rem minmax(12rem, 2fr) minmax(9rem, 1fr) minmax(9rem, 1fr);
+    gap: 1.0rem;
+    padding: 0.5rem 0;
     border-bottom: 1px solid #dce1e0;
     background: transparent;
 }
@@ -41,8 +41,20 @@
     cursor: pointer;
 }
 
+.event-fact {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: larger;
+    :hover {
+        text-decoration: none;
+    }
+}
+
+
 .event-related-list .clickable {
     cursor: pointer;
+    display: flex;    
+    gap: .35rem;
+    align-items: center;
 }
 
 .event-related-list .clickable:hover {
@@ -50,7 +62,7 @@
     text-decoration: underline;
 }
 
-.event-list .event-item.highlighted {
+.event-list li.highlighted {
     background: #e3f3ed;
 }
 
@@ -97,8 +109,6 @@
 }
 
 .reliability {
-    display: flex;
-    align-items: flex-start;
     color: #75827e;
     font-size: .68rem;
 }

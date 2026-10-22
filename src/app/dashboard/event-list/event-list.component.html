@@ -8,43 +8,57 @@
         <div class="event-table">
             <div class="event-item event-column-headings">
                 <span></span>
-                <span>Fatto</span>
+                <span>Fatti</span>
                 <span>Comunicazioni</span>
                 <span>Documenti</span>
-                <span>Rilevanza</span>
             </div>
             <ol class="event-list" (scroll)="onListScroll($event)">
-                @for (line of displayedItems(); track line.fact?.id || 'last') {
-                    <li class="event-item"
-                        [class.highlighted]="!!line.fact && line.fact.id === highlightedId()"
-                        (mouseenter)="eventHover.emit(line.fact?.id ?? null)"
-                        (mouseleave)="eventHover.emit(null)"
-                        (click)="line.fact && eventClick.emit(line.fact)">
-                        <time class="event-time" [attr.datetime]="line.fact?.start_date">
-                            <span>{{ line.fact?.start_date | date:'dd' }}</span>
-                            <span>{{ line.fact?.start_date | date:'MMM yyyy':'':'it' }}</span>
-                            <span>{{ line.fact?.start_date | date:'HH:mm' }}</span>
+                @for (line of displayedItems(); track line.date || 'last') {
+                    <li class="event-item">
+                        <time class="event-time" [attr.datetime]="line.date">
+                            <span>{{ line.date | date:'dd' }}</span>
+                            <span>{{ line.date | date:'MMM yyyy':'':'it' }}</span>
                         </time>
-                        <article class="event-content">
-                            <h3>{{ line.fact?.name }}</h3>
-                        </article>
+                        <ul class="event-related-list" aria-label="Fatti">
+                            @for (fact of line.facts; track fact.id) {
+                                <li class="clickable event-fact" 
+                                    [class.highlighted]="!!fact && fact.id === highlightedId()"
+                                    (mouseenter)="eventHover.emit(fact.id)"
+                                    (mouseleave)="eventHover.emit(null)"
+                                    (click)="$event.stopPropagation(); eventClick.emit(fact)">
+                                    <span>{{ fact.name }}</span>
+                                    <span class="reliability">
+                                        <app-tickbar [level]="fact.relevance"></app-tickbar>
+                                    </span>
+                                </li>
+                            } @empty {
+                                <li class="empty-related">—</li>
+                            }
+                        </ul>
                         <ul class="event-related-list" aria-label="Comunicazioni">
                             @for (communication of line.communications; track communication.id) {
-                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(communication)">{{ communication.name }}</li>
+                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(communication)">
+                                    <span>{{ communication.name }}</span>
+                                    <span class="reliability">
+                                        <app-tickbar [level]="communication.relevance"></app-tickbar>
+                                    </span>
+                                </li>
                             } @empty {
                                 <li class="empty-related">—</li>
                             }
                         </ul>
                         <ul class="event-related-list" aria-label="Documenti">
                             @for (document of line.documents; track document.id) {
-                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(document)">{{ document.name }}</li>
+                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(document)">
+                                    <span>{{ document.name }}</span>
+                                    <span class="reliability">
+                                        <app-tickbar [level]="document.relevance"></app-tickbar>
+                                    </span>
+                                </li>
                             } @empty {
                                 <li class="empty-related">—</li>
                             }
                         </ul>
-                        <span class="reliability">
-                            <app-tickbar [level]="line.fact?.relevance || 0"></app-tickbar>
-                        </span>
                     </li>
                 }
             </ol>

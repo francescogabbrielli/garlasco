@@ -36,7 +36,7 @@
             type="button" 
             aria-label="Chiudi" 
             title="Chiudi" 
-            (click)="close()">×</button>
+            (click)="close()">&times;</button>
       </div>
     </header>
 
@@ -73,16 +73,24 @@
 
       <dt>Posizione{{ event().end_position ? ' di partenza' : '' }}</dt>
       <dd>
-        {{ event().start_position.latitude | number: '1.5-5' }},
-        {{ event().start_position.longitude | number: '1.5-5' }}
+        {{ event().start_position.latitude | number: '1.6-6' }},
+        {{ event().start_position.longitude | number: '1.6-6' }}
         (raggio {{ event().start_position.radius | number: '1.0-0' }} m)
+        <button class="clear-control" 
+          title="Mostra mappa"
+          aria-label="Mostra mappa"
+          (click)="mapOpen(event().start_position)">&nbsp;🗺&nbsp;</button>
       </dd>
 
       @if (event().end_position; as end) {
         <dt>Posizione di arrivo</dt>
         <dd>
-          {{ end.latitude | number: '1.5-5' }}, {{ end.longitude | number: '1.5-5' }}
+          {{ end.latitude | number: '1.6-6' }}, {{ end.longitude | number: '1.6-6' }}
           (raggio {{ end.radius | number: '1.0-0' }} m)
+          <button class="clear-control" 
+            title="Mostra mappa"
+            aria-label="Mostra mappa"
+            (click)="mapOpen(end)">&nbsp;🗺&nbsp;</button>
         </dd>
       }
 
@@ -104,3 +112,26 @@
     }
   </section>
 </div>
+
+<dialog
+  #mapDialog
+  aria-labelledby="map-preview-title"
+  (click)="mapClose()"
+  (close)="mapLocation.set(null)"
+>
+  <section class="preview">
+    @if (mapLocation() && isMapReady()) {
+      @defer (on viewport) {
+        <google-map
+          width="100%"
+          height="100%"
+          [mapId]="mapId"
+          [options]="mapOptions"
+          (mapInitialized)="mapReady($event)"
+        />
+      } @placeholder {
+        <div>Caricamento mappa...</div>
+      }
+    }
+  </section>
+</dialog>

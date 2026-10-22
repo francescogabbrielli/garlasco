@@ -6,15 +6,20 @@ TODO: 0.1.0
     - add position remove button &check;
     - manage form modified status (also in Person mask)
 - Person filter: improve person selection (add type multichoice; show selected people)
-- Event list: group events by date (suppress hour), keeping facts as preminent; show relevance for all
+- Event list: 
+    - group events by date (suppress hour), keeping facts as preminent &check;
+    - show relevance for all &check;
+    - show map preview in non edit mode &check;
 - Import: add delete all data button (active after full download) &check;
-- add confirm popups instead of plain javascript (use &lt;dialog&gt;?)
+- add confirm popups instead of plain javascript (use &lt;dialog&gt;?) &cross; (maybe next)
 - Login and roles management:
     - add privacy policy in about and authenticator &check;
     - add default landing page for users with no role and request role "Member" for all other pages &check;
     - contact form & mail (espcially for requesting a role) in main menu ...
+    - review routes ...
 - Backend:
-    - improve AI generation (give DB access)
+    - create sendMail and trigger functions &check;
+    - improve AI generation (give DB access) &cross; (maybe next)
     - improve resource: add sources and related events to Event
     - log changes and send by mail
 - add chat (also with AI bot!) &cross; (maybe next)
@@ -34,7 +39,7 @@ TODO: 0.0.5
 - fix topbar glitches & layout / show more text if there is room &check;
 - fix glitches in the autocomplete &check;
 - check export / import consistency &check;
-- make time/map filter optional? &cross; (maybe next)
+- make time/map filter optional? &cross; (done in 0.0.6)
 - add AI hints &check;
 - still user displays error after delayed login &check;
 

@@ -1,14 +1,22 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, HostListener, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { MainComponent } from '../../main/main.component';
+import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 import { generateClient } from 'aws-amplify/api';
 
 import { Schema } from '../../../../amplify/data/resource';
+
 import { UserProfileService } from '../../user-profile.service';
+import { GeoService } from '../../geo.service';
+import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
+
 import { EventMaskComponent } from '../event-mask/event-mask.component';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 
+import { DEFAULT_COORDINATES } from '../../app.constants';
+
+type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
 type Person = Schema['Person']['type']
 
@@ -16,13 +24,16 @@ const client = generateClient<Schema>();
 
 @Component({
   selector: 'app-event-popup',
-  imports: [DatePipe, DecimalPipe, TickbarComponent, PersonMarkerComponent, EventMaskComponent],
+  imports: [DatePipe, DecimalPipe, TickbarComponent, PersonMarkerComponent, EventMaskComponent, GoogleMap, MapAdvancedMarker],
   templateUrl: './event-popup.component.html',
   styleUrl: './event-popup.component.css',
 })
-export class EventPopupComponent {
+export class EventPopupComponent implements OnInit {
 
   private userService = inject(UserProfileService)
+  private geoService = inject(GeoService)
+  private mapsLoader = inject(GoogleMapsLoaderService)
+
   main = inject(MainComponent)
 
   readonly submitError = signal('')
@@ -51,6 +62,8 @@ export class EventPopupComponent {
   event = input.required<Event>()
   closed = output<void>()
   saved = output<void>()
+
+  
 
   maskTouched = false
 
@@ -94,6 +107,10 @@ export class EventPopupComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.mapLocation()) {
+      this.mapClose()
+      return
+    }
     this.close(true)
   }
 
@@ -104,6 +121,55 @@ export class EventPopupComponent {
     //TODO: maskTouched is not the best option, put another one
     if (!this.maskTouched || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
       this.closed.emit()
+  }
+
+  @ViewChild('mapDialog', { static: true })
+  private mapDialog!: ElementRef<HTMLDialogElement>;
+
+  async ngOnInit() {
+    try {
+      await this.mapsLoader.load()
+      this.isMapReady.set(true)
+    } catch {
+      //this.mapError.set('Impossibile caricare Google Maps.')
+    }
+  }
+  
+  isMapReady = signal(false)
+
+  mapLocation = signal<Coordinates | null>(null) // null means no map is visible
+
+  mapId = window.__appConfig?.googleMapsMapId ?? 'DEMO_MAP_ID'
+  mapOptions: google.maps.MapOptions = {
+    isFractionalZoomEnabled: true,
+    renderingType: 'VECTOR' as google.maps.RenderingType,
+    center: { lat: DEFAULT_COORDINATES.latitude, lng: DEFAULT_COORDINATES.longitude },
+    zoom: 15,
+    disableDefaultUI: true,
+    disableDoubleClickZoom: true,
+    keyboardShortcuts: false,
+    clickableIcons: false,
+  }
+
+  mapOpen(which: Coordinates) {
+    this.mapLocation.set(which)
+    this.mapDialog.nativeElement.showModal()
+  }
+
+  mapClose() {
+    this.mapDialog.nativeElement.close()
+  }
+
+  mapReady(map: google.maps.Map) {
+    const p = this.mapLocation()
+    if (!p) return
+    if (p.radius > 0) {
+      map.fitBounds(this.geoService.toBounds(p), 0)
+    } else {
+      map.setCenter({ lat: p.latitude, lng: p.longitude })
+      map.setZoom(16)
+    }
+
   }
 
 }
