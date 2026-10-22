@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-privacy-policy',
@@ -8,6 +9,8 @@ import { Component, OnInit, signal } from '@angular/core';
 })
 export class PrivacyPolicyComponent implements OnInit {
 
+  titleService = inject(Title)
+
   owner = signal('')
   email = signal('')
   title = signal('')
@@ -16,7 +19,8 @@ export class PrivacyPolicyComponent implements OnInit {
     import('../../../package.json').then(p => {
       this.owner.set(p.author.name)
       this.email.set(p.author.email)
-      this.title.set(p.name)
+      this.title.set(p.displayName)
+      this.titleService.setTitle(p.displayName + ' - Informativa sulla Privacy')
     })
   }
 

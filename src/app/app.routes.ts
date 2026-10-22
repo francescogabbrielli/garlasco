@@ -1,13 +1,17 @@
 import { Routes } from '@angular/router'
 import { inject } from '@angular/core'
-import { Router } from '@angular/router'
 import { UserProfileService } from './user-profile.service'
 
 const adminAccessGuard = async () => {
 	const userService = inject(UserProfileService)
-	const router = inject(Router)
 	const user = await userService.logIn()
-	return user.isAdmin() || router.parseUrl('/')
+	return user.isAdmin()
+};
+
+const memberAccessGuard = async () => {
+	const userService = inject(UserProfileService)
+	const user = await userService.logIn()
+	return user.isMember()
 };
 
 export const routes: Routes = [
@@ -20,11 +24,14 @@ export const routes: Routes = [
 		children: [
 			{
 				path: '',
-				redirectTo: 'dashboard',
-				pathMatch: 'full',
+				loadComponent: () =>
+					import('./main/welcome/welcome.component').then(
+						({ WelcomeComponent }) => WelcomeComponent
+					)
 			},
 			{
 				path: 'dashboard',
+				canActivate: [memberAccessGuard],
 				loadComponent: () =>
 					import('./dashboard/dashboard.component').then(
 						({ DashboardComponent }) => DashboardComponent
@@ -41,17 +48,14 @@ export const routes: Routes = [
 		],
 	},
 	{
-		path: 'welcome',
-		loadComponent: () =>
-			import('./welcome/welcome.component').then(
-				({ WelcomeComponent }) => WelcomeComponent
-			)
-	},
-	{
 		path: 'privacy-policy',
 		loadComponent: () =>
 			import('./privacy-policy/privacy-policy.component').then(
 				({ PrivacyPolicyComponent }) => PrivacyPolicyComponent
 			)
-	}
+	},
+	{
+		path: '**',
+		redirectTo: 'assets/landing.html',
+	},
 ]

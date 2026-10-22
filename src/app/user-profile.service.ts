@@ -2,9 +2,11 @@ import { effect, Injectable, signal } from '@angular/core'
 import { fetchUserAttributes, fetchAuthSession, UserAttributeKey } from 'aws-amplify/auth'
 
 export class UserData {
+
   attributes: Partial<Record<UserAttributeKey, string>> = {}
   groups: string[] = []
-  // whether the user has switched on editing (only meaningful for editors)
+
+  // whether the user has switched on editing
   editEnabled = signal(false)
 
   constructor(attributes: Partial<Record<UserAttributeKey, string>> = {}, groups: string[] = []) {
@@ -13,14 +15,12 @@ export class UserData {
     this.editEnabled.set(JSON.parse(localStorage.getItem('editEnabled') || 'false'))
   }
 
-  clear() {
-    this.attributes = {}
-    this.groups = []
-    this.editEnabled.set(false)
-  }
-
   getId(): string {
     return this.attributes['sub'] ?? ''
+  }
+
+  getEmail(): string {
+    return this.attributes['email'] ?? ''
   }
 
   getName(): string {
@@ -37,6 +37,10 @@ export class UserData {
 
   isEditor(): boolean {
     return this.groups.some(group => group === 'Admin' || group === 'Editor')
+  }
+
+  isMember(): boolean {
+    return this.groups.some(group => group === 'Admin' || group === 'Editor' || group === 'Member')
   }
 
 }
@@ -64,6 +68,8 @@ export class UserProfileService {
     if (this.user().getId())
       return this.user()
 
+    //console.log('Fetching user attributes and auth session...')
+
     let attributes: Partial<Record<UserAttributeKey, string>> = {}
     let authSession: any
 
@@ -79,7 +85,7 @@ export class UserProfileService {
   }
 
   logOut(): void {
-    this.user().clear()
+    this.user.set(new UserData())
   }
 
 }

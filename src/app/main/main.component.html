@@ -5,6 +5,7 @@
   <p class="brand">I fatti di Garlasco</p>
 
   <nav class="menu" aria-label="Menu principale">
+    @if (user().isMember()) {
       <a
         class="main-link"
         routerLink="/dashboard"
@@ -15,7 +16,8 @@
         <span aria-hidden="true">▦</span>
         <span class="main-link-label">Dashboard</span>
       </a>
-    @if (isAdmin()) {
+    }
+    @if (user().isAdmin()) {
       <a
         class="main-link"
         routerLink="/admin"
@@ -28,24 +30,26 @@
       </a>
     }
     <span class="toolbar-separator" role="separator" aria-orientation="vertical"></span>
-    <button type="button"
-      class="context-button"
-      [class.active]="userProfile.user().editEnabled()"
-      [attr.aria-pressed]="userProfile.user().editEnabled()"
-      aria-label="Modifica{{ userProfile.user().editEnabled() ? ' abilitata!' : '' }}"
-      title="Modifica{{ userProfile.user().editEnabled() ? ' abilitata!' : '' }}"
-      (click)="toggleEdit()"
-    >
-      ✐
-    </button>
-    <button type="button"
-      class="context-button"
-      aria-label="Aiuto"
-      title="Aiuto"
-      (click)="help.set({page: 'main', title: 'Pagina principale'})"
-    >
-      ?
-    </button>
+    @if (user().isMember()) {
+      <button type="button"
+        class="context-button"
+        [class.active]="user().editEnabled()"
+        [attr.aria-pressed]="user().editEnabled()"
+        aria-label="Modifica{{ user().editEnabled() ? ' abilitata!' : '' }}"
+        title="Modifica{{ user().editEnabled() ? ' abilitata!' : '' }}"
+        (click)="toggleEdit()"
+      >
+        ✐
+      </button>
+      <button type="button"
+        class="context-button"
+        aria-label="Aiuto"
+        title="Aiuto"
+        (click)="help.set({page: 'main', title: 'Pagina principale'})"
+      >
+        ?
+      </button>
+    }
     <div class="user-menu">
       <button
         class="user-label"
@@ -54,16 +58,21 @@
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ name() }}
+        {{ user().getSurname() }} {{ user().getName() }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">
-
+          <button id="contact_button" type="button" 
+            role="menuitem" 
+            (click)="this.contacts.set(true)">
+            <span aria-hidden="true">📝</span>
+            Form di contatto
+          </button>
           <hr role="separator" />
           <button id="about_button" type="button" 
             role="menuitem" 
             (click)="this.openAboutDialog()">
-            <span aria-hidden="true">ℹ</span>
+            <span aria-hidden="true">🧬</span>
             Informazioni
           </button>
           <hr role="separator" />
@@ -116,7 +125,8 @@
       <!-- pick the version from package.json -->
       <p class="version">versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
       <small class="author">{{ appAuthor() }} + AI (Copilot, Claude, Gemini, ChatGPT) @ 2026</small>
-    
+      <a [style.textAlign]="'right'" href="/privacy-policy" target="privacy">Privacy Policy</a>
+
     </section>
   </div>
 } 
@@ -129,6 +139,14 @@
     ></app-help-popup>
 }
 
+@if (contacts()) {
+  <app-contact-form 
+    [user]="user()"
+    (close)="contacts.set(false)"
+    ></app-contact-form>
+}
+
+<!-- Caricamento principale (blocca tutto) -->
 @if (isLoading()) {
   <div class="loading-backdrop">
     <img src="assets/loading.gif" alt="Caricamento in corso..." />

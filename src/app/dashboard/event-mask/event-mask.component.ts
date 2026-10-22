@@ -414,9 +414,9 @@ export class EventMaskComponent {
 
       this.saved.emit()
 
-    // } catch (error) {
-      // const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
-      // this.submitError.set(message);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
+      this.submitError.set(message);
     } finally {
       this.isSaving.set(false);
     }

@@ -1,0 +1,65 @@
+<div class="dialog-backdrop" (click)="close.emit()">
+    <section class="dialog help-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"
+        (click)="$event.stopPropagation()">
+        <header>
+            <div>
+                <p class="eyebrow">Contatti</p>
+                <h1 id="about-title">Form di richiesta</h1>
+            </div>
+            <div class="context-controls">
+                <button class="dialog-close" 
+                    type="button" 
+                    aria-label="Chiudi form" 
+                    title="Chiudi form" 
+                    (click)="close.emit()">
+                    ×
+                </button>
+            </div>
+        </header>
+
+        @if (sendError()) {
+          <span class="field-error">{{ sendError() }}</span>
+        }
+
+        <div class="dialog-scrollable">
+            <form class="event-form" [formGroup]="contactForm" (ngSubmit)="submitEvent()" novalidate>
+                
+                <p>Inviato come: <strong>{{ user()?.getEmail() }}</strong></p>
+                
+                <div class="form-field">
+                    <label for="event-type">Motivo</label>
+                    <select class="search-control" id="event-type" formControlName="reason" required>
+                    <option [ngValue]="null"></option>
+                    @for (reason of reasons; track reason) {
+                        <option [ngValue]="reason">{{ reason }}</option>
+                    }
+                    </select>
+                    @if (contactForm.controls.reason.invalid && (contactForm.controls.reason.touched || contactForm.controls.reason.dirty)) {
+                    <span class="field-error">Seleziona il motivo della richiesta.</span>
+                    }
+                </div>
+
+                <div class="form-field form-field-wide">
+                <label for="event-description">Messaggio</label>
+                <textarea class="search-control" id="event-description" rows="4" formControlName="message" required></textarea>
+                @if (contactForm.controls.message.invalid && (contactForm.controls.message.touched || contactForm.controls.message.dirty)) {
+                    <span class="field-error">Inserisci una descrizione.</span>
+                }
+                </div>
+                
+                <div class="actions-panel">
+                    <button class="action-button" type="submit" [disabled]="!user() || isSending()">
+                    @if (isSending()) {
+                        <span aria-hidden="true">⏳</span>
+                        Invio in corso...
+                    } @else {
+                        <span aria-hidden="true">➤</span>
+                        'Invia richiesta'
+                    }
+                    </button>
+                </div>                
+            </form>
+        </div>
+    
+    </section>
+</div>

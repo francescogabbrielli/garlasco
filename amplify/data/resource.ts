@@ -1,6 +1,7 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 import { EVENT_TYPES, PERSON_TYPES } from './enums';
 import { generateEventFn } from '../functions/generate-event/resource';
+import { sendEmailFn } from '../functions/send-email/resource';
 
 const Coordinates = a.customType({
   latitude: a.float().required(),
@@ -64,7 +65,7 @@ const GeneratedEvent = a.customType({
   description: a.string().required(),
   start_date: a.string().required(),
   start_position: a.ref('Coordinates').required(),
-});
+})
 
 const generateEvent = a.query()
   .arguments({
@@ -72,17 +73,39 @@ const generateEvent = a.query()
   })
   .returns(a.ref('GeneratedEvent'))
   .handler(a.handler.function(generateEventFn))
-  .authorization((allow) => allow.authenticated());
+  .authorization((allow) => allow.authenticated())
+
+const EmailResponse = a.customType({
+  success: a.boolean(),
+  message: a.string(),
+})
+
+const sendEmail = a
+    .query()
+    .arguments({
+      to: a.string().required(),
+      replyTo: a.string(),
+      subject: a.string().required(),
+      message: a.string().required(),
+    })
+    .returns(a.ref('EmailResponse'))
+    .authorization((allow) => [allow.authenticated()]) // O allow.guest() se consentito
+    .handler(a.handler.function(sendEmailFn))
 
 const schema = a.schema({
+  
   Coordinates,
   EventType,
   PersonType,
   Person,
   Event,
   EventPerson,
+
   GeneratedEvent,
   generateEvent,
+
+  EmailResponse,
+  sendEmail
 });
 
 export type Schema = ClientSchema<typeof schema>;

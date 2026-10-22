@@ -4,6 +4,7 @@ import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/u
 
 import { UserProfileService } from '../user-profile.service';
 import { HelpPopupComponent } from './help-popup/help-popup.component';
+import { ContactFormComponent } from './contact-form/contact-form.component';
 
 @Component({
   selector: 'app-main',
@@ -13,7 +14,8 @@ import { HelpPopupComponent } from './help-popup/help-popup.component';
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
-    HelpPopupComponent
+    HelpPopupComponent,
+    ContactFormComponent
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',
@@ -28,28 +30,17 @@ export class MainComponent {
 
   authenticator = inject(AuthenticatorService)
   userProfile = inject(UserProfileService)
-  help = signal<{page: string, title: string}>({page: '', title: ''})
 
   isAboutDialogOpen = false
   isUserMenuOpen = false
   isAdminVisible = false
-  isAdmin = signal(false)
-  isEditor = signal(false)
-  ownerId = signal('')
-  name = signal('--- Caricamento ---')
 
+  help = signal<{page: string, title: string}>({page: '', title: ''})
+  contacts = signal(false)
+
+  user = computed(() => this.userProfile.user())
   isLoading = signal(false)
   
-  constructor() {
-    effect(() => {
-      const user = this.userProfile.user()
-      this.isAdmin.set(user.isAdmin())
-      this.isEditor.set(user.isEditor())
-      this.ownerId.set(user.getId())
-      this.name.set(user.getName() + ' ' + user.getSurname())
-    })
-  }
-
   ngOnInit(): void {
     import('../../../package.json').then((p) => {
       this.version.set(p.version)

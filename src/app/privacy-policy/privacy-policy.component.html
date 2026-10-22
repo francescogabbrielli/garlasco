@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Informativa sulla Privacy - {{ title() }}</title>
-</head>
-<body>
+
     <div class="container">
         <h1>Informativa sulla Privacy (Privacy Policy)</h1>
         <div class="meta-info">
-            <p><strong>Sito web:</strong> I fatti di Garlasco<br>
+            <p><strong>Sito web:</strong> {{ title() }}<br>
             <strong>Ultimo aggiornamento:</strong> 21 Ottobre 2026</p>
         </div>
 
@@ -18,12 +11,12 @@
         <h2>1. Titolare del Trattamento dei Dati</h2>
         <p>Il Titolare del trattamento dei dati personali raccolti tramite questo sito è:</p>
         <ul>
-            <li><strong>Titolare / Gestore:</strong> {{ owner() }}</li>
-            <li><strong>Email di contatto Privacy:</strong> <a href="mailto:{{ email() }}">{{ email() }}</a></li>
+            <li><strong>Titolare / Gestore:</strong>&nbsp;{{ owner() }}</li>
+            <li><strong>Email di contatto Privacy:</strong>&nbsp;<a href="mailto:{{ email() }}">{{ email() }}</a></li>
         </ul>
 
         <h2>2. Natura del Progetto</h2>
-        <p><strong>"I fatti di Garlasco"</strong> è un archivio e database informativo che racchiude, ordina e sintetizza fatti ed elementi di pubblico dominio legati alle vicende giudiziarie di Garlasco. Tutte le informazioni presenti sul sito sono reperite da fonti pubbliche, mass media, atti giudiziari accessibili e materiale non coperto da segreto istruttorio o da diritti riservati.</p>
+        <p><strong>"{{ title() }}"</strong> è un archivio e database informativo che racchiude, ordina e sintetizza fatti ed elementi di pubblico dominio legati alle vicende giudiziarie di Garlasco. Tutte le informazioni presenti sul sito sono reperite da fonti pubbliche, mass media, atti giudiziari accessibili e materiale non coperto da segreto istruttorio o da diritti riservati.</p>
 
         <h2>3. Tipologia di Dati Personali Raccolti</h2>
         <p>Il sito raccoglie ed elabora unicamente i dati forniti volontariamente dall'utente per la creazione dell'account e l'accesso alle funzionalità riservate:</p>
@@ -69,5 +62,3 @@
         <h2>8. Diritti dell'Interessato</h2>
         <p>Ai sensi degli artt. 15-22 del GDPR, l'utente ha il diritto di accedere, rettificare, richiedere la cancellazione o la portabilità dei propri dati inviando una comunicazione all'indirizzo email indicato al punto 1.</p>
     </div>
-</body>
-</html>
