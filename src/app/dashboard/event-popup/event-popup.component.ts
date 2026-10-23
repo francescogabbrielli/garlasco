@@ -1,7 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { MainComponent } from '../../main/main.component';
-import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
+import { GoogleMap } from '@angular/google-maps';
 import { generateClient } from 'aws-amplify/api';
 
 import { Schema } from '../../../../amplify/data/resource';
@@ -24,7 +24,7 @@ const client = generateClient<Schema>();
 
 @Component({
   selector: 'app-event-popup',
-  imports: [DatePipe, DecimalPipe, TickbarComponent, PersonMarkerComponent, EventMaskComponent, GoogleMap, MapAdvancedMarker],
+  imports: [DatePipe, DecimalPipe, TickbarComponent, PersonMarkerComponent, EventMaskComponent, GoogleMap],
   templateUrl: './event-popup.component.html',
   styleUrl: './event-popup.component.css',
 })

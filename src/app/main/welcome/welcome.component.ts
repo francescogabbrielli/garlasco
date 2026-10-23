@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
+import { Router } from '@angular/router';
+import { UserProfileService } from '../../user-profile.service';
 
 @Component({
   selector: 'app-welcome',
@@ -8,4 +10,14 @@ import { Component } from '@angular/core';
 })
 export class WelcomeComponent {
 
+  userService = inject(UserProfileService)
+  router = inject(Router)
+
+  constructor() {
+    effect(() => {
+      if (this.userService.user().isMember()) {
+        this.router.navigate(['/dashboard']);
+      }
+    })
+  }
 }

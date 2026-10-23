@@ -77,6 +77,7 @@
         {{ event().start_position.longitude | number: '1.6-6' }}
         (raggio {{ event().start_position.radius | number: '1.0-0' }} m)
         <button class="clear-control" 
+          [style.fontSize]="'larger'"
           title="Mostra mappa"
           aria-label="Mostra mappa"
           (click)="mapOpen(event().start_position)">&nbsp;🗺&nbsp;</button>
@@ -88,6 +89,7 @@
           {{ end.latitude | number: '1.6-6' }}, {{ end.longitude | number: '1.6-6' }}
           (raggio {{ end.radius | number: '1.0-0' }} m)
           <button class="clear-control" 
+            [style.fontSize]="'larger'"
             title="Mostra mappa"
             aria-label="Mostra mappa"
             (click)="mapOpen(end)">&nbsp;🗺&nbsp;</button>

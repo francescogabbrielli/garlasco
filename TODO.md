@@ -16,7 +16,7 @@ TODO: 0.1.0
     - add privacy policy in about and authenticator &check;
     - add default landing page for users with no role and request role "Member" for all other pages &check;
     - contact form & mail (espcially for requesting a role) in main menu ...
-    - review routes ...
+    - review routes &check;
 - Backend:
     - create sendMail and trigger functions &check;
     - improve AI generation (give DB access) &cross; (maybe next)
