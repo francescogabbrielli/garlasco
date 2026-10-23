@@ -1,7 +1,9 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, OnInit, output, signal } from '@angular/core';
 
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 import { Schema } from '../../../../amplify/data/resource';
+
+import { PERSON_TYPES } from '../../../../amplify/data/enums';
 
 type Person = Schema['Person']['type']
 
@@ -11,14 +13,22 @@ type Person = Schema['Person']['type']
   templateUrl: './person-filter.component.html',
   styleUrl: './person-filter.component.css',
 })
-export class PersonFilterComponent {
+export class PersonFilterComponent implements OnInit {
   people = input<Person[]>([])
   loading = input(false)
   error = input('')
   selectedIds = input<string[]>([])
   selectionChange = output<string[]>()
 
-  filteredPeople = computed(() => this.people().filter(p => p.type === "Protagonista" || p.type === "Testimone")) // TODO: add filters for other types if needed
+  personTypes = PERSON_TYPES
+  selectedTypes = signal<number[]>([])
+  showTypes = signal(false)
+  filteredPeople = computed(() => this.people().filter(person => this.selectedTypes().includes(this.personTypes.indexOf(person.type))))
+  selectedPeople = computed(() => this.people().filter(p => this.selectedIds().includes(p.id)))
+
+  ngOnInit(): void {
+    this.selectedTypes.set(JSON.parse(localStorage.getItem('personFilter.selectedTypes') || '[0, 4]'))
+  }
 
   toggle(personId: string): void {
     this.selectionChange.emit(
@@ -28,7 +38,17 @@ export class PersonFilterComponent {
     )
   }
 
+  selectType(index: number): void {
+    this.selectedTypes.set(
+      this.selectedTypes().includes(index)
+        ? this.selectedTypes().filter(i => i !== index)
+        : [...this.selectedTypes(), index]
+    )
+    localStorage.setItem('personFilter.selectedTypes', JSON.stringify(this.selectedTypes().join(',')))
+  }
+
   clear(): void {
     this.selectionChange.emit([])
   }
+
 }

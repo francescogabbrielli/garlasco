@@ -103,6 +103,10 @@ body {
     text-decoration: none;
   }
 
+  input {
+    accent-color: #7551c2;
+  }
+
   app-root {
       display: block;
       min-height: 100vh;
@@ -278,6 +282,15 @@ body {
     margin: 0 0 1.6rem; 
   }
 
+  .control-section {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid #dce1e0;
+  }
+
+  .control-error {
+    color: #a33c32;
+  }
+  
   .section-heading { 
     display: flex; 
     align-items: flex-start; 
@@ -301,12 +314,18 @@ body {
     box-shadow: 0 5px 18px rgba(25, 49, 44, .05);
   }
 
-  .event-form {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #167c72;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+  }  
 
   .form-field {
       display: flex;
@@ -450,8 +469,8 @@ body {
     }
 
   button.danger-button {
-      border: 1px solid #ca2f2f;
-      background: #ca2f2f;
+      border: 1px solid #b33030;
+      background: #b33030;
     }
 
   button.secondary-button {
@@ -482,10 +501,6 @@ body {
         padding: 1.25rem;
       }
 
-      .event-form {
-        grid-template-columns: 1fr;
-      }
-
       .form-field-wide,
       .actions-panel,
       .position-section {
@@ -503,15 +518,4 @@ body {
       .help-dialog {
         padding: 1.25rem;
       }
-    }
-
-    footer {
-      display: flex;
-      font-style: italic;
-      font-size: 0.875rem;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: #f5f5f5;
-      border-top: 1px solid #e0e0e0;
     }

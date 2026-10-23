@@ -5,7 +5,7 @@ TODO: 0.1.0
 - Event mask: 
     - add position remove button &check;
     - manage form modified status (also in Person mask)
-- Person filter: improve person selection (add type multichoice; show selected people)
+- Person filter: improve person selection (add type multichoice; show selected people) &check;
 - Event list: 
     - group events by date (suppress hour), keeping facts as preminent &check;
     - show relevance for all &check;

@@ -1,6 +1,6 @@
     <section class="control-section" aria-labelledby="person-selection">
         
-      <div class="section-heading">
+      <header class="section-heading">
         <div>
           <h3 id="person-selection" class="filter-title">Persone</h3>
           <p>Seleziona una o più persone</p>
@@ -8,7 +8,35 @@
         @if (selectedIds().length) {
           <button class="clear-control" type="button" (click)="clear()">Azzera</button>
         }
-      </div>
+      </header>
+
+      <!-- Scegli le tipologie di persone -->
+      <button class="clear-control"
+        aria-controls="person-types-filter"
+        [attr.aria-expanded]="showTypes()"
+        (click)="showTypes.set(!showTypes())">
+        Tipologie
+      </button>
+
+      <div class="person-types-filter" id="person-types-filter">
+      <ul>
+        @if (showTypes()) {
+          @for (type of personTypes; track type) {
+            <li>
+              <label for="type_{{type}}">
+                <input id="type_{{type}}" type="checkbox" 
+                  [value]="$index"
+                  [checked]="selectedTypes().includes($index)" 
+                  (change)="selectType($index)"
+                  />
+                {{ type }}
+              </label>
+            </li>
+          }
+        }
+        </ul>
+      </div>  
+
       @if (loading()) {
         <p class="control-message" aria-live="polite">Caricamento persone…</p>
       } @else if (error()) {
@@ -30,4 +58,13 @@
       } @else {
         <p class="control-message">Nessuna persona disponibile.</p>
       }
+
+      <!-- selected persons as badges -->
+       @if (selectedIds().length) {
+         <div class="selected-actors">
+           @for (person of selectedPeople(); track person.id) {
+             <span class="badge">{{ person.name }} {{ person.surname }}</span>
+           }
+         </div>
+       }
     </section>

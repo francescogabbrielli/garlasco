@@ -1,6 +1,52 @@
-    :host { display: block; min-width: 0; }
-    .control-section { padding: 1.1rem 0; border-bottom: 1px solid #dce1e0; }
-    .actor-list { display: flex; flex-wrap: wrap; gap: .55rem; }
-    .actor-option { display: block; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; font: inherit; }
-    .actor-option:focus-visible { outline: 2px solid #167c72; outline-offset: 2px; }
-    .control-error { color: #a33c32; }
+    :host {
+        display: block;
+        min-width: 0;
+    }
+
+    .actor-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+    }
+
+    .actor-option {
+        display: block;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: none;
+        cursor: pointer;
+        font: inherit;
+    }
+
+    .actor-option:focus-visible {
+        outline: 2px solid #167c72;
+        outline-offset: 2px;
+    }
+
+    .person-types-filter {
+        border-top: 1px solid #dce1e0;
+    }
+
+    .person-types-filter ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: .05rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        li {
+            font-size: smaller;
+        }
+        margin-bottom: .5rem;
+        border-bottom: 1px solid #dce1e0;
+    }
+
+    .selected-actors {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .2rem;
+        margin-top: .5rem;
+        padding: 5px 0px;
+    }
