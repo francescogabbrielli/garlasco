@@ -44,7 +44,7 @@ export class PersonFilterComponent implements OnInit {
         ? this.selectedTypes().filter(i => i !== index)
         : [...this.selectedTypes(), index]
     )
-    localStorage.setItem('personFilter.selectedTypes', JSON.stringify(this.selectedTypes().join(',')))
+    localStorage.setItem('personFilter.selectedTypes', JSON.stringify(this.selectedTypes()))
   }
 
   clear(): void {

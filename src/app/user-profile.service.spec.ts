@@ -33,11 +33,12 @@ describe('UserProfileService', () => {
   });
 
   it('should clear cached user data and editEnabled on logout', () => {
-    const user = new UserData({ sub: 'user-123' }, ['Admin']);
+    let user = new UserData({ sub: 'user-123' }, ['Admin']);
     user.editEnabled.set(true);
     service.user.set(user);
 
     service.logOut();
+    user = service.user();
 
     expect(user.getId()).toBe('');
     expect(user.isAdmin()).toBe(false);

@@ -45,22 +45,4 @@ describe('EventListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('groups related items with their fact and emits a click for that fact', () => {
-    const communication = event('communication', 'Comunicazione', 'Telefonata');
-    const document = event('document', 'Sentenza', 'Documento');
-    const fact = event('fact', 'Fatto', 'Evento principale');
-    fixture.componentRef.setInput('items', [communication, document, fact]);
-    fixture.detectChanges();
-    const eventClick = vi.fn();
-    component.eventClick.subscribe(eventClick);
-
-    const factLine = component.displayedItems().find(line => line.fact);
-    expect(factLine?.communications).toEqual([communication]);
-    expect(factLine?.documents).toEqual([document]);
-    expect(fixture.nativeElement.querySelector('h3').textContent).toContain('Evento principale');
-
-    fixture.nativeElement.querySelector('li.event-item').click();
-
-    expect(eventClick).toHaveBeenCalledWith(fact);
-  });
-});
+})

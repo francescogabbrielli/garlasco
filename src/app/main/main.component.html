@@ -58,7 +58,7 @@
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ user().getSurname() }} {{ user().getName() }}
+        {{ user().getName() }} {{ user().getSurname() }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">

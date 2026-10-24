@@ -43,7 +43,7 @@ describe('MainComponent', () => {
 
   it('shows the signed-in user name and identifier', () => {
     expect(fixture.nativeElement.querySelector('.user-label').textContent.trim()).toBe('Mario Rossi');
-    expect(fixture.componentInstance.ownerId()).toBe('user-123');
+    expect(fixture.componentInstance.user().getId()).toBe('user-123');
   });
 
   it('preloads the loading image for use throughout the app', () => {
