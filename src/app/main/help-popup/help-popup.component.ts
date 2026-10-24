@@ -35,8 +35,8 @@ export class HelpPopupComponent {
             this.content.set(html)
             this.isLoading.set(false)
           },
-          error: () => {
-            this.content.set('<p>Help not available.</p>')
+          error: (err) => {
+            this.content.set(`<p>Aiuto non disponibile (${err.message}).</p>`)
             this.isLoading.set(false)
           }
         })

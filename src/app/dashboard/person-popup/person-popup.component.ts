@@ -51,7 +51,7 @@ export class PersonDialogComponent implements OnInit {
         surname: surname.trim(),
         type: type!,
         profession: profession.trim() || undefined,
-        initials: initials?.trim() || `${name.trim()[0] ? name.trim()[0] + '.' : ''}${surname.trim().substring(0, 2) + '.'}`.toUpperCase(),
+        initials: initials?.trim() || `${name.trim()[0] ? name.trim()[0] : ''}${surname.trim().substring(0, 1)}${surname.trim().substring(1, 3) + '.'}`.toLowerCase(),
       })
       if (!data) throw new Error(errors?.[0]?.message ?? 'Creazione non riuscita')
       this.created.emit(data)
