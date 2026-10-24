@@ -19,13 +19,13 @@
                             <span>{{ line.date | date:'dd' }}</span>
                             <span>{{ line.date | date:'MMM yyyy':'':'it' }}</span>
                         </time>
-                        <ul class="event-related-list" aria-label="Fatti">
+                        <ul class="event-related-list" aria-label="Fatti" (click)="line.facts.length==1 && onClick($event, line.facts[0])">
                             @for (fact of line.facts; track fact.id) {
                                 <li class="clickable event-fact" 
                                     [class.highlighted]="!!fact && fact.id === highlightedId()"
                                     (mouseenter)="eventHover.emit(fact.id)"
                                     (mouseleave)="eventHover.emit(null)"
-                                    (click)="$event.stopPropagation(); eventClick.emit(fact)">
+                                    (click)="onClick($event, fact)">
                                     <span>{{ fact.name }}</span>
                                     <span class="reliability">
                                         <app-tickbar [level]="fact.relevance"></app-tickbar>
@@ -37,7 +37,7 @@
                         </ul>
                         <ul class="event-related-list" aria-label="Comunicazioni">
                             @for (communication of line.communications; track communication.id) {
-                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(communication)">
+                                <li class="clickable" (click)="onClick($event, communication)">
                                     <span>{{ communication.name }}</span>
                                     <span class="reliability">
                                         <app-tickbar [level]="communication.relevance"></app-tickbar>
@@ -49,7 +49,7 @@
                         </ul>
                         <ul class="event-related-list" aria-label="Documenti">
                             @for (document of line.documents; track document.id) {
-                                <li class="clickable" (click)="$event.stopPropagation(); eventClick.emit(document)">
+                                <li class="clickable" (click)="onClick($event, document)">
                                     <span>{{ document.name }}</span>
                                     <span class="reliability">
                                         <app-tickbar [level]="document.relevance"></app-tickbar>

@@ -77,4 +77,9 @@ export class EventListComponent {
     }
   }
 
+  onClick(e: globalThis.Event, event: Event): void {
+    e.stopPropagation()
+    this.eventClick.emit(event)
+  }
+
 }

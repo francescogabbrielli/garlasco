@@ -4,7 +4,7 @@ TODO: 0.1.0
 - Persons, MapPicker: unify all popups style and behaviour (almost there) &check;
 - Event mask: 
     - add position remove button &check;
-    - manage form modified status (also in Person mask)
+    - manage form modified status (also in Person mask) &check;
 - Person filter: improve person selection (add type multichoice; show selected people) &check;
 - Event list: 
     - group events by date (suppress hour), keeping facts as preminent &check;

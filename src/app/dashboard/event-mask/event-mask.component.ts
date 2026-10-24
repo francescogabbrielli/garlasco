@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { FormControl, FormGroup, PristineChangeEvent, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
 
@@ -12,6 +12,8 @@ import type { Schema } from '../../../../amplify/data/resource'
 
 import { MapPickerComponent } from '../../ui/map-picker/map-picker.component'
 import { PersonDialogComponent } from '../person-popup/person-popup.component'
+import { toSignal } from '@angular/core/rxjs-interop'
+import { distinctUntilChanged, filter, map } from 'rxjs'
 
 type EventModel = Schema['Event']['type']
 type EventType = Schema['Event']['type']['type']
@@ -35,10 +37,13 @@ const client = generateClient<Schema>()
 })
 export class EventMaskComponent {
 
+  private readonly COORDS_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
+
   people = input<Person[]>([])
   event = input<EventModel | null>(null)
   saved = output<void>()
   personCreated = output<Person>()
+  modified = output<boolean>()
 
   // people created from this mask, merged with the ones received as input
   private createdPeople = signal<Person[]>([])
@@ -49,18 +54,15 @@ export class EventMaskComponent {
   readonly personDialogOpen = signal(false)
   private personDialogRowId: number | null = null
 
-  private COORDS_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
-
-  isHelpDialogOpen = input(false)
-  isFormTouched = model(false)
+  dialogOpen = output<boolean>()
 
   constructor() {
     effect(() => {
       // re-run once the people list is available so actor names can be resolved
       if (this.people().length === 0) return
-      this.loadEvent()
-      this.eventForm.events.subscribe((event) => this.isFormTouched.set(event.source.touched))
+      this.loadEvent()      
     })
+    effect(() => this.modified.emit(this.isModified()))
   }
 
   private toLocalInput(iso: string | null | undefined): string {
@@ -106,6 +108,8 @@ export class EventMaskComponent {
         role: a.role,
       }))
     }
+
+    this.eventForm.markAsPristine()
   }
 
   private existingActorIds: string[] = []
@@ -159,6 +163,12 @@ export class EventMaskComponent {
     }),
   })
 
+  isModified = toSignal(this.eventForm.events.pipe(
+      filter((event) => event instanceof PristineChangeEvent),
+      map(event => !event.pristine),
+      distinctUntilChanged()
+    ), {initialValue: this.eventForm.dirty})
+
   isAdmin = () => this.userService.user().isAdmin()
 
   filteredPeople(actor: SelectedActor): Person[] {
@@ -209,6 +219,7 @@ export class EventMaskComponent {
         : actor,
     )
     this.actorSelectionError = false
+    this.modified.emit(true)
   }
 
   removeActor(rowId: number): void {
@@ -217,6 +228,7 @@ export class EventMaskComponent {
     this.selectedActors = this.selectedActors.filter((actor) => actor.rowId !== rowId)
     this.actorSelectionError = false
     this.actorRoleError = false
+    this.modified.emit(true)
   }
 
   personName(personId: string): string {
@@ -248,7 +260,6 @@ export class EventMaskComponent {
       },
     })
     this.eventForm.markAsTouched()
-    this.isFormTouched.set(true)
   }
 
   onPersonOptionSelected(rowId: number, value: Person | string): void {
@@ -265,11 +276,13 @@ export class EventMaskComponent {
   openPersonDialog(rowId: number): void {
     this.personDialogRowId = rowId
     this.personDialogOpen.set(true)
+    this.dialogOpen.emit(true)
   }
 
   closePersonDialog(): void {
     this.personDialogOpen.set(false)
     this.personDialogRowId = null
+    this.dialogOpen.emit(false)
   }
 
   onPersonCreated(person: Person): void {
@@ -452,6 +465,7 @@ export class EventMaskComponent {
 
   requestPosition(target: 'start' | 'end'): void {
     this.pickerTarget.set(target)
+    this.dialogOpen.emit(true)
   }
 
   pickerInitialPosition(): Coordinates | null {
@@ -474,6 +488,8 @@ export class EventMaskComponent {
       this.eventForm.controls[target].markAsDirty()
     }
     this.pickerTarget.set(null)
+    this.modified.emit(true)
+    this.dialogOpen.emit(false)
   }
 
   cancelPosition(target: 'start' | 'end'): void {
@@ -483,14 +499,17 @@ export class EventMaskComponent {
       radius: null,
     })
     this.eventForm.controls[target].markAsDirty()
+    this.modified.emit(true)
   }
 
   closePicker(): void {
     this.pickerTarget.set(null)
+    this.dialogOpen.emit(false)
   }
 
   // Trucco per chiudere il pannello dell'autocomplete dopo che l'input perde il focus
   closeAutocomplete(trigger: MatAutocompleteTrigger): void {
     setTimeout(() => trigger.closePanel(), 250)
   }
+  
 }

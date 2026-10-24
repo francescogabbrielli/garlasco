@@ -20,6 +20,12 @@ body {
     margin: 0; 
     color: #1d3332; 
     font: 500 2rem/1.1 Georgia, 'Times New Roman', serif; 
+    small {
+      vertical-align: super;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #c25172;
+    }
   }
 
   h2 {

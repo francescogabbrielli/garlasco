@@ -63,9 +63,8 @@ export class EventPopupComponent implements OnInit {
   closed = output<void>()
   saved = output<void>()
 
-  
-
-  maskTouched = false
+  maskTouched = signal(false)
+  dialogOpen = signal(false)
 
   isEditor = computed(() => {
     const edit = this.userService.user().editEnabled()
@@ -116,12 +115,15 @@ export class EventPopupComponent implements OnInit {
 
   close(disabledOnEdit = false) {
     // Quando l'utente può modificare, non chiude!
-    if (disabledOnEdit && this.userService.user().editEnabled()) 
+    if ((disabledOnEdit && this.userService.user().editEnabled()) && (this.maskTouched() || this.dialogOpen()))
       return
-    //TODO: maskTouched is not the best option, put another one
-    if (!this.maskTouched || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
+
+    if (!this.maskTouched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
       this.closed.emit()
   }
+
+
+  /*********************** MAP PREVIEW  *************************/
 
   @ViewChild('mapDialog', { static: true })
   private mapDialog!: ElementRef<HTMLDialogElement>;

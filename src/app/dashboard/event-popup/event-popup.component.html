@@ -1,4 +1,5 @@
 <div class="dialog-backdrop" (click)="close(true)">
+  
   <section 
     class="dialog" 
     role="dialog" 
@@ -6,11 +7,14 @@
     aria-labelledby="event-popup-title"
     (click)="$event.stopPropagation()"
   >
-    <header class="dialog-heading">
+    <header>
 
       <div>
         <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Creazione') : event().type }}</p>
-        <h1 id="event-popup-title">{{ isEditor() ? 'Evento' : event().name }}</h1>
+        <h1 id="event-popup-title">
+          {{ isEditor() ? 'Evento' : event().name }}
+          @if (maskTouched()) { <small>*</small> }
+        </h1>
       </div>
 
       <div class="context-controls">
@@ -29,7 +33,7 @@
             type="button"
             aria-label="Apri aiuto"
             title="Apri aiuto"
-            (click)="main.help.set({page: 'dashboard/event-mask', 'title': 'Gestione eventi'})">?</button>
+            (click)="main.help.set({page: `dashboard/event-mask${event().id ? '' : '-new'}`, 'title': event().id ? 'Modifica evento' : 'Creazione nuovo evento'})">?</button>
           }
           <button 
             class="dialog-close" 
@@ -51,8 +55,9 @@
           <app-event-mask id="event-mask" 
             [event]="event()" 
             [people]="people()"
-            [(isFormTouched)]="maskTouched"
             [(submitError)]="submitError"
+            (dialogOpen)="dialogOpen.set($event)"
+            (modified)="maskTouched.set($event)"
             (saved)="saved.emit(); closed.emit()" ></app-event-mask>
         </div>  
       } @placeholder {

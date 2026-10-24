@@ -86,6 +86,7 @@
                         [value]="actor.role"
                         [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
                         (input)="updateActorRole(actor.rowId, $event)"
+                        (change)="modified.emit(true)"
                         required
                     />
                     @if (actorRoleError && !actor.role.trim()) {
