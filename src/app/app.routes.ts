@@ -49,6 +49,14 @@ export const routes: Routes = [
 					)
 			},
 			{
+				path: 'analysis',
+				canActivate: [memberAccessGuard],
+				loadComponent: () =>
+					import('./analysis/analysis.component').then(
+						({ AnalysisComponent }) => AnalysisComponent
+					)
+			},			
+			{
 				path: 'admin',
 				canActivate: [adminAccessGuard],
 				loadComponent: () =>
