@@ -1,78 +1,10 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
-import { EVENT_TYPES, PERSON_TYPES } from './enums';
+import { Coordinates, EventType, PersonType, Person, Event, EventPerson, EventRelated } from './models';
 import { generateEventFn } from '../functions/generate-event/resource';
 import { sendEmailFn } from '../functions/send-email/resource';
+import { searchWebFn } from '../functions/search-web/resource';
+import { analyst, detective, researcher } from './bots-defs';
 
-const Coordinates = a.customType({
-  latitude: a.float().required(),
-  longitude: a.float().required(),
-  radius: a.float().required(),
-});
-
-const EventType = a.enum(EVENT_TYPES);
-
-const PersonType = a.enum(PERSON_TYPES);
-
-const Person = a.model({
-  name: a.string().required(),
-  surname: a.string().required(),
-  type: a.ref('PersonType').required(),
-  profession: a.string(),
-  initials: a.string().required(),
-  events: a.hasMany('EventPerson', 'personId'),
-})
-  .authorization((allow) => [allow.publicApiKey()]);
-
-
-const Event = a.model({
-  owner: a.id().required(), //Cognito ID
-  type: a.ref('EventType').required(),
-  name: a.string().required(),
-  description: a.string().required(),
-  start_date: a.datetime().required(),
-  end_date: a.datetime(),
-  start_position: a.ref('Coordinates').required(),
-  end_position: a.ref('Coordinates'),
-  geoHash: a.string().required(),
-  actors: a.hasMany('EventPerson', 'eventId'),
-  reliability: a.integer(),
-  relevance: a.integer().required().default(0),
-  sources: a.string().array(),
-  relatesTo: a.hasMany('EventRelated', 'relatesToId'),
-  relatedBy: a.hasMany('EventRelated', 'relatedById'),
-})
-  .authorization((allow) => [allow.publicApiKey()]);
-
-const EventRelated = a.model({
-  relatesToId: a.id().required(),
-  relatedById: a.id().required(),
-  relationship: a.string().required(),
-  relatesTo: a.belongsTo('Event', 'relatesToId'),
-  relatedBy: a.belongsTo('Event', 'relatedById'),
-
-  sourceName: a.string().required(),
-  targetName: a.string().required(),
-
-})
-  .authorization((allow) => [allow.publicApiKey()]);
-  
-const EventPerson = a.model({
-  eventId: a.id().required(),
-  personId: a.id().required(),
-  role: a.string().required(), //transform to enum? (e.g. 'actor', 'director', 'producer', etc.)
-  
-  event: a.belongsTo('Event', 'eventId'),
-  person: a.belongsTo('Person', 'personId'),
-
-  eventName: a.string(),
-  eventStartDate: a.datetime(),
-  eventGeoHash: a.string()
-
-})
-  .secondaryIndexes((index) => [
-    index('personId').sortKeys(['eventStartDate']).name('personIdStartDate-index')
-  ])
-  .authorization((allow) => [allow.publicApiKey()]);
 
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
@@ -105,8 +37,28 @@ const sendEmail = a
       message: a.string().required(),
     })
     .returns(a.ref('EmailResponse'))
-    .authorization((allow) => [allow.authenticated()]) // O allow.guest() se consentito
+    .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(sendEmailFn))
+
+const WebSearchResult = a.customType({
+    title: a.string().required(),
+    url: a.string().required(),
+    content: a.string().required()
+  })
+
+const WebSearchResponse = a.customType({
+    query: a.string().required(),
+    results: a.ref('WebSearchResult').array().required()
+  })
+
+const searchWeb = a.query()
+    .arguments({
+      query: a.string().required(),
+      maxResults: a.integer()
+    })
+    .returns(a.ref('WebSearchResponse'))
+    .handler(a.handler.function(searchWebFn))
+    .authorization(allow => allow.authenticated())
 
 const schema = a.schema({
   
@@ -122,7 +74,15 @@ const schema = a.schema({
   generateEvent,
 
   EmailResponse,
-  sendEmail
+  sendEmail,
+  
+  WebSearchResult,
+  WebSearchResponse,
+  searchWeb,
+
+  analyst,
+  researcher,
+  detective
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -130,7 +90,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
+    defaultAuthorizationMode: 'userPool',
     apiKeyAuthorizationMode: {
       expiresInDays: 30,
     },

@@ -47,7 +47,7 @@ export class EventPopupComponent implements OnInit {
     this.submitError.set('')
     try {
       this.main.isLoading.set(true)
-      const { data, errors } = await client.queries.generateEvent({ description }, { authMode: 'userPool' })
+      const { data, errors } = await client.queries.generateEvent({ description })
       console.error("AI ERROR?", errors)
       if (errors?.length || !data) throw new Error(errors?.[0]?.message ?? 'Nessun risultato')
       this.mask()?.applyGenerated(data)

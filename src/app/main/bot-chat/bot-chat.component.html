@@ -1,0 +1,100 @@
+<button
+  #launcher
+  type="button"
+  class="chat-launcher"
+  aria-controls="bot-chat"
+  [attr.aria-expanded]="opened()"
+  (click)="opened.set(!opened()); opened() && botSelect.focus()"
+>
+  {{ opened() ? 'Chiudi chat' : 'Apri chat' }}
+</button>
+
+<section
+  id="bot-chat"
+  class="chat-window"
+  role="region"
+  aria-label="Chat con assistenti"
+  [class.is-open]="opened()"
+  [attr.inert]="opened() ? null : ''"
+  [attr.aria-hidden]="!opened()"
+  (keydown.escape)="opened.set(false); launcher.focus()"
+>
+  <header class="chat-header">
+    <div>
+      <strong>Assistente AI</strong>
+      <small>{{ bot()?.capabilities }}</small>
+    </div>
+
+    <button
+      type="button"
+      aria-label="Chiudi chat"
+      (click)="opened.set(false); launcher.focus()"
+    >
+      ✕
+    </button>
+  </header>
+
+  <div class="bot-selector">
+    <label for="chat-bot">Bot</label>
+
+    <select
+      #botSelect
+      id="chat-bot"
+      [ngModel]="botId()"
+      (ngModelChange)="botId.set($event)"
+    >
+      @for (bot of bots; track bot.name) {
+        <option [value]="bot.definition">
+          {{ bot.name }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="messages" role="log" aria-label="Messaggi">
+    @if (!session().messages.length) {
+      <p class="empty">
+        Inizia una conversazione con {{ bot()?.name }}.
+      </p>
+    }
+
+    @for (message of session().messages; track message.id) {
+      <article
+        class="message"
+        [class.user]="message.role === 'user'"
+      >
+        <small>
+          {{ message.role === 'user' ? 'Tu' : bot()?.name }}
+        </small>
+        <div>{{ message.text }}</div>
+      </article>
+    }
+
+    @if (session().busy) {
+      <p class="status" role="status">Elaborazione in corso<img src="assets/loading.gif" alt="Caricamento in corso" width="48px"></p>
+    }
+  </div>
+
+  @if (session().error) {
+    <p class="error" role="alert">{{ session().error }}</p>
+  }
+
+  <form class="composer" (ngSubmit)="invia()">
+    <textarea
+      name="message"
+      aria-label="Messaggio"
+      placeholder="Scrivi una domanda…"
+      rows="2"
+      [ngModel]="testo()"
+      (ngModelChange)="testo.set($event)"
+      [disabled]="session().busy"
+    ></textarea>
+
+    <button
+      type="submit"
+      [disabled]="!testo().trim() || session().busy"
+    >
+      Invia
+    </button>
+  </form>
+</section>

@@ -146,6 +146,12 @@
     ></app-contact-form>
 }
 
+@if (user().isMember()) {
+  @defer (on idle) {
+    <app-bot-chat></app-bot-chat>
+  }
+}
+
 <!-- Caricamento principale (blocca tutto) -->
 @if (isLoading()) {
   <div class="loading-backdrop">

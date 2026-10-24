@@ -22,7 +22,7 @@ TODO: 0.1.0
     - improve AI generation (give DB access) &cross; (maybe next)
     - improve resource: add sources and related events to Event &check;
     - log changes and send by mail &cross; (maybe next)
-- add chat (also with AI bot!) ...
+- add chat with AI bots &check;
 
 
 TODO: 0.0.6

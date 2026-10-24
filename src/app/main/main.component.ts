@@ -5,6 +5,7 @@ import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/u
 import { UserProfileService } from '../user-profile.service';
 import { HelpPopupComponent } from './help-popup/help-popup.component';
 import { ContactFormComponent } from './contact-form/contact-form.component';
+import { BotChatComponent } from './bot-chat/bot-chat.component';
 
 @Component({
   selector: 'app-main',
@@ -15,7 +16,8 @@ import { ContactFormComponent } from './contact-form/contact-form.component';
     RouterLinkActive,
     RouterOutlet,
     HelpPopupComponent,
-    ContactFormComponent
+    ContactFormComponent,
+    BotChatComponent
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',

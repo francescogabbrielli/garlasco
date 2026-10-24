@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { UserProfileService } from '../../user-profile.service';
 import { Router } from '@angular/router';
 
@@ -8,18 +8,17 @@ import { Router } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   userService = inject(UserProfileService)
   router = inject(Router)
 
-  constructor() {
-    effect(() => {
-      if (this.userService.user().isMember()) {
-        this.router.navigate(['/dashboard']);
-      } else {
-        this.router.navigate(['/welcome']);
-      }
-    })
+  async ngOnInit() {
+    const user = await this.userService.logIn()
+    if (user.isMember()) {
+      this.router.navigate(['/dashboard']);
+    } else {
+      this.router.navigate(['/welcome']);
+    }
   }
 
 }

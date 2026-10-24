@@ -53,7 +53,7 @@ export class DataService {
    */
   readonly getEvents = toSignal(
     this.filterSubject.pipe(
-      debounceTime(800),
+      debounceTime(750),
       tap(() => {
         this.isLoading.set(true);
         // Ogni volta che i filtri cambiano, AZZERIAMO la memoria per ripartire da capo

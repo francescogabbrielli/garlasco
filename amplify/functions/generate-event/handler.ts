@@ -62,7 +62,7 @@ async function search(query: string): Promise<TavilyResult[]> {
 
 export const handler = async (event: { arguments: { description: string } }) => {
   const description = event.arguments.description;
-  const results = await search(`Garlasco ${description}`);
+  const results = await search(`${description}`);
   const sources = results
     .map((r, i) => `[${i + 1}] ${r.title} (${r.url})\n${r.content}`)
     .join('\n\n');

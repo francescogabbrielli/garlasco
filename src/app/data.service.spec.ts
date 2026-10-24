@@ -59,7 +59,7 @@ describe('DataService', () => {
 
   it('clears the loading state after an empty filter result', async () => {
     service.setFilters([], from, to, coordinates);
-    await vi.advanceTimersByTimeAsync(800);
+    await vi.advanceTimersByTimeAsync(750);
 
     expect(service.isLoading()).toBe(false);
     expect(service.getEvents()).toEqual([]);
