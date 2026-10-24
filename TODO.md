@@ -20,9 +20,9 @@ TODO: 0.1.0
 - Backend:
     - create sendMail and trigger functions &check;
     - improve AI generation (give DB access) &cross; (maybe next)
-    - improve resource: add sources and related events to Event
-    - log changes and send by mail
-- add chat (also with AI bot!) &cross; (maybe next)
+    - improve resource: add sources and related events to Event &check;
+    - log changes and send by mail &cross; (maybe next)
+- add chat (also with AI bot!) ...
 
 
 TODO: 0.0.6

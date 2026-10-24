@@ -25,7 +25,7 @@ const Person = a.model({
 
 
 const Event = a.model({
-  owner: a.id().required(),
+  owner: a.id().required(), //Cognito ID
   type: a.ref('EventType').required(),
   name: a.string().required(),
   description: a.string().required(),
@@ -37,9 +37,25 @@ const Event = a.model({
   actors: a.hasMany('EventPerson', 'eventId'),
   reliability: a.integer(),
   relevance: a.integer().required().default(0),
+  sources: a.string().array(),
+  relatesTo: a.hasMany('EventRelated', 'relatesToId'),
+  relatedBy: a.hasMany('EventRelated', 'relatedById'),
 })
   .authorization((allow) => [allow.publicApiKey()]);
 
+const EventRelated = a.model({
+  relatesToId: a.id().required(),
+  relatedById: a.id().required(),
+  relationship: a.string().required(),
+  relatesTo: a.belongsTo('Event', 'relatesToId'),
+  relatedBy: a.belongsTo('Event', 'relatedById'),
+
+  sourceName: a.string().required(),
+  targetName: a.string().required(),
+
+})
+  .authorization((allow) => [allow.publicApiKey()]);
+  
 const EventPerson = a.model({
   eventId: a.id().required(),
   personId: a.id().required(),
@@ -100,7 +116,8 @@ const schema = a.schema({
   Person,
   Event,
   EventPerson,
-
+  EventRelated,
+  
   GeneratedEvent,
   generateEvent,
 
