@@ -1,5 +1,10 @@
-import { effect, Injectable, signal } from '@angular/core'
+import { Injectable, signal, effect } from '@angular/core';
+import { GraphQLFormattedError } from 'graphql';
 import { fetchUserAttributes, fetchAuthSession, UserAttributeKey } from 'aws-amplify/auth'
+import { generateClient } from 'aws-amplify/data'
+import { Schema } from '../../amplify/data/resource'
+
+const client = generateClient<Schema>()
 
 export class UserData {
 
@@ -86,6 +91,14 @@ export class UserProfileService {
 
   logOut(): void {
     this.user.set(new UserData())
+  }
+
+  async sendEmail(subject: string, message:string): Promise<{ data: any, errors?: GraphQLFormattedError[] }> {
+    return client.queries.sendEmail({
+      to: this.user().getEmail(),
+      subject,
+      message
+    })
   }
 
 }

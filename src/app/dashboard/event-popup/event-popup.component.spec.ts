@@ -5,19 +5,11 @@ import { MainComponent } from '../../main/main.component';
 import { EventPopupComponent } from './event-popup.component';
 import { UserData, UserProfileService } from '../../user-profile.service';
 
-vi.mock('aws-amplify/api', () => ({
+vi.mock('aws-amplify/data', () => ({
   generateClient: () => ({
     models: {
       Event: { get: vi.fn().mockResolvedValue({ data: { actors: [] } }) },
       Person: { list: vi.fn().mockResolvedValue({ data: [] }) },
-      EventPerson: { list: vi.fn().mockResolvedValue({ data: [] }) },
-    },
-  }),
-}));
-
-vi.mock('aws-amplify/data', () => ({
-  generateClient: () => ({
-    models: {
       EventPerson: { list: vi.fn().mockResolvedValue({ data: [] }) },
     },
   }),

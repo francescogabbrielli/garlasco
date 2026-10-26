@@ -4,7 +4,7 @@ import { from, Subject, of, merge, BehaviorSubject } from 'rxjs';
 import { map, debounceTime, switchMap, tap, catchError, exhaustMap, finalize } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { generateClient } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/data';
 
 import { Schema } from '../../amplify/data/resource';
 import { GeoService } from './geo.service';

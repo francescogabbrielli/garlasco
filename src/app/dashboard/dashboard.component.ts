@@ -4,7 +4,7 @@ import { GeoService } from '../geo.service';
 
 import { DEFAULT_COORDINATES } from '../app.constants';
 import { Schema } from '../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/data';
 
 import { PersonFilterComponent } from './person-filter/person-filter.component';
 import { EventListComponent } from './event-list/event-list.component';

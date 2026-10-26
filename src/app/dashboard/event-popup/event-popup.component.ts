@@ -2,7 +2,7 @@ import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { MainComponent } from '../../main/main.component';
 import { GoogleMap } from '@angular/google-maps';
-import { generateClient } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/data';
 
 import { Schema } from '../../../../amplify/data/resource';
 

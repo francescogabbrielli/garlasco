@@ -1,12 +1,7 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Schema } from '../../../../amplify/data/resource';
-import { generateClient } from 'aws-amplify/api';
-import { UserData } from '../../user-profile.service';
-
-const client = generateClient<Schema>();
-
-type EmailResponse = Schema['EmailResponse']['type']
+import { UserProfileService, UserData } from '../../user-profile.service';
 
 @Component({
   selector: 'app-contact-form',
@@ -15,6 +10,8 @@ type EmailResponse = Schema['EmailResponse']['type']
   styleUrl: './contact-form.component.css',
 })
 export class ContactFormComponent {
+
+  private readonly userService = inject(UserProfileService)
 
   user = input<UserData>()
 
@@ -34,8 +31,10 @@ export class ContactFormComponent {
   async submitEvent(): Promise<void> {
 
     const user = this.user()
-    if (!user)
+    if (!user || this.userService.user().getId() !== user.getId()) {
+      this.sendError.set('Utente non autorizzato a inviare il form!')
       return
+    }
 
     if (this.contactForm.invalid) {
       this.sendError.set('Completa tutti i campi obbligatori prima di inviare il form.')
@@ -47,25 +46,27 @@ export class ContactFormComponent {
 
     try {
 
-      const { data, errors } = await client.queries.sendEmail({
-        to: user.getEmail(),
-        replyTo: "francescogabbrielli@gmail.com",
-        subject: this.contactForm.value.reason ?? 'Errore: motivo vuoto',
-        message: this.contactForm.value.message ?? 'Errore: messaggio vuoto'
-      })
+      const formValues = this.contactForm.getRawValue()
+      const { data, errors } = await this.userService.sendEmail(formValues.reason, formValues.message)
 
-      this.sendError.set('')
+      if (!data || errors?.[0]) {
+        // DEBUG: console.error('Error sending email:', errors)
+        const message = errors?.[0]?.message ?? 'Errore durante l’invio del form (nessun dettaglio disponibile)'
+        throw new Error(message)
+      }
+
       this.sent.emit()
-
-      console.log('Email sent successfully:', data)
+      // DEBUG: console.log('Email sent successfully:', data)
 
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Errore durante l’invio del form'
-      console.error('Error sending email:', error)
+
+      const message = 'Errore server durante l’invio del form [' + (error instanceof Error ? error.message : 'errore sconosciuto') + ']'
       this.sendError.set(message)
+      // DEBUG: console.error('Error caught in submitEvent:', error)
+
     } finally {
       this.isSending.set(false)
-    }    
+    }
   }
 
 }
