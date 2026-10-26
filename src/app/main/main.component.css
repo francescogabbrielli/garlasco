@@ -120,6 +120,7 @@ button.main-link {
     color: #7551c2;
 }
 
+/* TODO: Unify CSS for all menu + buttons */
 .user-dropdown {
     position: absolute;
     top: calc(100% + 0.75rem);

@@ -1,25 +1,17 @@
-import {
-  Component,
-  OnDestroy,
-  computed,
-  signal
-} from '@angular/core';
+import { OnDestroy, computed, signal, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { generateClient } from 'aws-amplify/data';
 
 import { bots } from '../../../../amplify/data/bots';
 import type { Schema } from '../../../../amplify/data/resource';
+import { MainComponent } from '../main.component';
 
-type Conversation = Schema['analyst']['type']
-type StreamEvent = Schema['analyst']['streamEventType']
+import { CHAT_CLIENT } from './chat-client';
 
-interface ChatMessage {
-  id: string
-  role: 'user' | 'assistant'
-  text: string
-}
+type BotId = (typeof bots)[number]['definition'];
 
-type BotId = 'analyst' | 'researcher' | 'detective'
+type Conversation = Schema[BotId]['type'];
+type StreamEvent = Schema[BotId]['streamEventType'];
 
 interface BotSession {
   conversation?: Conversation;
@@ -29,114 +21,155 @@ interface BotSession {
   error: string;
 }
 
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  text: string
+}
+
+const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
+
 @Component({
   selector: 'app-bot-chat',
   standalone: true,
   imports: [FormsModule],
   templateUrl: './bot-chat.component.html',
-  styleUrl: './bot-chat.component.scss'
+  styleUrl: './bot-chat.component.css'
 })
 export class BotChatComponent implements OnDestroy {
-  private readonly client = generateClient<Schema>()
+
+  private readonly client = inject(CHAT_CLIENT)
 
   readonly opened = signal(false)
-  readonly botId = signal<BotId>('analyst')
-  readonly testo = signal('')
+  readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
+  readonly text = signal('')
 
-  private readonly sessions = signal<Record<BotId, BotSession>>({
-    analyst: { messages: [], busy: false, error: '' },
-    researcher: { messages: [], busy: false, error: '' },
-    detective: { messages: [], busy: false, error: '' }
-  })
+  private readonly sessions = signal<Record<string, BotSession>>(
+    bots
+      .map(bot => [bot.definition, EMPTY_SESSION] as const)
+      .reduce((acc, [key, value]) => {
+        acc[key as string] = value;
+        return acc;
+      }, {} as Record<string, BotSession>))
 
-  readonly session = computed(() => this.sessions()[this.botId()]);
+  readonly session = computed(() => this.sessions()[this.botId()] ?? EMPTY_SESSION)
   readonly bots = bots
-  readonly bot = computed(
-    () => bots.find(bot => bot.definition == this.botId())
-  );
+  readonly bot = computed(() => bots.find(bot => bot.definition == this.botId()))
+  readonly isBotSelected = (b: typeof bots[number]) => b.definition === this.botId()
 
   // I frammenti possono arrivare fuori ordine o essere duplicati.
   private readonly chunks = new Map<string, Map<number, Map<number, string>>>();
-  private destroyed = false;
+  private destroyed = false;  
+
+  main = inject(MainComponent)
+
+  isBotMenuOpen = signal(false)
+
+  toggleBotSelect(): void {
+    this.isBotMenuOpen.set(!this.isBotMenuOpen())
+  }
+
+  selectBot(id: BotId): void {
+    this.botId.set(id)
+    this.isBotMenuOpen.set(false)
+  }  
+
+  private createSession(): BotSession {
+    return {
+      messages: [],
+      busy: false,
+      error: ''
+    }
+  }
 
   private updateSession(id: BotId, patch: Partial<BotSession>): void {
     this.sessions.update(sessions => ({
       ...sessions,
-      [id]: { ...sessions[id], ...patch }
-    }));
+      [id]: {
+        ...(sessions[id] ?? this.createSession()),
+        ...patch
+      }
+    }))
   }
 
-  async invia(): Promise<void> {
+  async send(): Promise<void> {
     const id = this.botId();
-    const text = this.testo().trim();
+    const text = this.text().trim();
+    const session = this.sessions()[id] ?? this.createSession()
 
-    if (!text || this.sessions()[id].busy) return;
+    if (!text || session.busy) return
 
-    this.testo.set('');
-    this.updateSession(id, { busy: true, error: '' });
+    this.text.set('');
 
     const localId = crypto.randomUUID();
 
     this.updateSession(id, {
+      busy: true,
+      error: '',
       messages: [
-        ...this.sessions()[id].messages,
+        ...session.messages,
         { id: localId, role: 'user', text }
       ]
-    });
+    })
 
     try {
-      let conversation = this.sessions()[id].conversation;
+
+      let conversation = session.conversation
 
       if (!conversation) {
+
         const { data, errors } =
-          await this.client.conversations[id].create();
+          await this.client.conversations[id].create()
 
-        if (errors?.length) {
-          throw new Error(errors.map(error => error.message).join('\n'));
-        }
-        if (!data) throw new Error('Impossibile creare la conversazione.');
-        if (this.destroyed) return;
+        if (errors?.length) throw new Error(errors.map(error => error.message).join('\n'))
+        if (!data) throw new Error('Impossibile creare la conversazione.')
+        if (this.destroyed) return
 
-        conversation = data;
+        conversation = data
 
         const subscription = conversation.onStreamEvent({
           next: event => this.onStream(id, event),
-          error: (e) => {
+          error: e => {
             console.error('Errore nello streaming del messaggio.', e)
+            const message =
+                e instanceof Error
+                  ? e.message
+                  : e?.errors?.map(error => error.message).join(' - ')
             this.updateSession(id, {
               busy: false,
-              error: 'Errore [' + e?.errors.map(error => error.message).join(' - ') + ']'
-            });
+              error: 'Errore [' + message + ']'
+            })
           }
-        });
+        })
 
-        this.updateSession(id, { conversation, subscription });
+        this.updateSession(id, { conversation, subscription })
+        
       }
 
       const { errors } = await conversation.sendMessage({
         content: [{ text }]
-      });
+      })
 
       if (errors?.length) {
-        throw new Error(errors.map(error => error.message).join('\n'));
+        throw new Error(errors.map(error => error.message).join('\n'))
       }
 
       // busy viene azzerato al termine dello streaming.
     } catch (error) {
-      if (this.destroyed) return;
+      if (this.destroyed) return
 
       this.updateSession(id, {
         busy: false,
         error: error instanceof Error ? error.message : 'Invio non riuscito.'
-      });
+      })
     }
   }
 
   private onStream(botId: BotId, event: StreamEvent): void {
-    if (this.destroyed) return;
+    if (this.destroyed) return
 
-    const messageId = `assistant:${event.associatedUserMessageId}`;
-    const key = `${botId}:${messageId}`;
+    const messageId = `assistant:${event.associatedUserMessageId}`
+    const key = `${botId}:${messageId}`
 
 if (
   'text' in event &&
@@ -144,21 +177,21 @@ if (
   typeof event.contentBlockIndex === 'number' &&
   typeof event.contentBlockDeltaIndex === 'number'
 ) {
-      let blocks = this.chunks.get(key);
+      let blocks = this.chunks.get(key)
 
       if (!blocks) {
-        blocks = new Map();
-        this.chunks.set(key, blocks);
+        blocks = new Map()
+        this.chunks.set(key, blocks)
       }
 
-      let deltas = blocks.get(event.contentBlockIndex);
+      let deltas = blocks.get(event.contentBlockIndex)
 
       if (!deltas) {
-        deltas = new Map();
-        blocks.set(event.contentBlockIndex, deltas);
+        deltas = new Map()
+        blocks.set(event.contentBlockIndex, deltas)
       }
 
-      deltas.set(event.contentBlockDeltaIndex, event.text);
+      deltas.set(event.contentBlockDeltaIndex, event.text)
 
       const text = [...blocks.entries()]
         .sort(([a], [b]) => a - b)
@@ -168,10 +201,10 @@ if (
             .map(([, value]) => value)
             .join('')
         )
-        .join('\n\n');
+        .join('\n\n')
 
-      const messages = this.sessions()[botId].messages;
-      const exists = messages.some(message => message.id === messageId);
+      const messages = this.sessions()[botId].messages
+      const exists = messages.some(message => message.id === messageId)
 
       this.updateSession(botId, {
         messages: exists
@@ -179,21 +212,22 @@ if (
               message.id === messageId ? { ...message, text } : message
             )
           : [...messages, { id: messageId, role: 'assistant', text }]
-      });
+      })
     }
 
     if ('stopReason' in event) {
-      this.updateSession(botId, { busy: false });
+      this.updateSession(botId, { busy: false })
     }
   }
 
   ngOnDestroy(): void {
-    this.destroyed = true;
+    this.destroyed = true
 
     Object.values(this.sessions()).forEach(session =>
       session.subscription?.unsubscribe()
-    );
+    )
 
-    this.chunks.clear();
+    this.chunks.clear()
   }
+
 }

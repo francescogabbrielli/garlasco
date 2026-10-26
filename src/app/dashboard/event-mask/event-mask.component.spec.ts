@@ -33,9 +33,9 @@ describe('EventMaskComponent', () => {
     component.onPositionPicked({ latitude: 45, longitude: 9, radius: 120 });
 
     expect(component.eventForm.controls.start.getRawValue()).toMatchObject({
-      latitude: 45,
-      longitude: 9,
-      radius: 120,
+      latitude: "45.000000",
+      longitude: "9.000000",
+      radius: "120",
     });
     expect(component.pickerTarget()).toBeNull();
   });
@@ -51,7 +51,7 @@ describe('EventMaskComponent', () => {
   it('should provide the current position as initial position of the picker', () => {
     expect(component.pickerInitialPosition()).toBeNull();
 
-    component.eventForm.controls.start.patchValue({ latitude: "44.00000", longitude: "8.000000", radius: "50" });
+    component.eventForm.controls.start.patchValue({ latitude: "44.000000", longitude: "8.000000", radius: "50" });
     component.requestPosition('start');
 
     expect(component.pickerInitialPosition()).toEqual({ latitude: 44, longitude: 8, radius: 50 });

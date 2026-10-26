@@ -1,3 +1,8 @@
+NEXT: 0.1.1
+-----------
+- fix & generalise esc key precedence
+- check CSS alignment for context-buttons (especially x). Uniform all CSS.
+
 TODO: 0.1.0
 -----------
 - trash home section altogether &check;

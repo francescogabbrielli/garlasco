@@ -4,7 +4,7 @@
   class="chat-launcher"
   aria-controls="bot-chat"
   [attr.aria-expanded]="opened()"
-  (click)="opened.set(!opened()); opened() && botSelect.focus()"
+  (click)="opened.set(!opened())"
 >
   {{ opened() ? 'Chiudi chat' : 'Apri chat' }}
 </button>
@@ -17,39 +17,64 @@
   [class.is-open]="opened()"
   [attr.inert]="opened() ? null : ''"
   [attr.aria-hidden]="!opened()"
-  (keydown.escape)="opened.set(false); launcher.focus()"
+  (click)="isBotMenuOpen.set(false)"
 >
   <header class="chat-header">
     <div>
-      <strong>Assistente AI</strong>
-      <small>{{ bot()?.capabilities }}</small>
+      <p class="eyebrow">Assistente IA</p>
+      <h1>{{ bot()?.name }}</h1>
+      <p class="bot-capabilities">{{ bot()?.capabilities }}</p>
     </div>
 
-    <button
-      type="button"
-      aria-label="Chiudi chat"
-      (click)="opened.set(false); launcher.focus()"
-    >
-      ✕
-    </button>
+    <div>
+      
+      <div class="context-controls">
+        <button type="button"
+          class="context-button"
+          aria-label="Seleziona bot"
+          title="Seleziona bot"
+          [attr.aria-expanded]="isBotMenuOpen()"
+          aria-haspopup="menu"
+          (keydown.escape)="$event.stopPropagation(); isBotMenuOpen.set(false)"
+          (click)="$event.stopPropagation(); toggleBotSelect()"
+        >🤖</button>
+        <div class="bot-dropdown" role="menu"
+          [class.is-open]="isBotMenuOpen()"
+          [attr.inert]="isBotMenuOpen() ? null : ''"
+          [attr.aria-hidden]="!isBotMenuOpen()"
+        >
+          @for (b of bots; track b.definition) {
+            <button
+              [id]="'btn-' + b.definition"
+              role="menuitem"
+              type="button"
+              [class.is-selected]="isBotSelected(b)"
+              [attr.aria-current]="isBotSelected(b) ? 'true' : null"
+              [attr.aria-selected]="isBotSelected(b) ? 'true' : 'false'"
+              (click)="isBotSelected(b) ? null : selectBot(b.definition)"
+            >
+              {{ b.name }}
+            </button>
+          }
+        </div>
+        <button
+          class="context-button"
+          type="button"
+          aria-label="Apri aiuto"
+          title="Apri aiuto"
+          (click)="main.help.set({page:'ai', 'title': 'Chat con assistente IA' })"
+        >?</button>
+        <button class="dialog-close"
+          type="button"
+          aria-label="Chiudi chat"
+          title="Chiudi chat"
+          (click)="opened.set(false); launcher.focus()"
+        >&times;</button>
+      </div>
+      
+    </div>
+
   </header>
-
-  <div class="bot-selector">
-    <label for="chat-bot">Bot</label>
-
-    <select
-      #botSelect
-      id="chat-bot"
-      [ngModel]="botId()"
-      (ngModelChange)="botId.set($event)"
-    >
-      @for (bot of bots; track bot.name) {
-        <option [value]="bot.definition">
-          {{ bot.name }}
-        </option>
-      }
-    </select>
-  </div>
 
   <div class="messages" role="log" aria-label="Messaggi">
     @if (!session().messages.length) {
@@ -79,20 +104,21 @@
     <p class="error" role="alert">{{ session().error }}</p>
   }
 
-  <form class="composer" (ngSubmit)="invia()">
-    <textarea
+  <form class="composer" (ngSubmit)="send()">
+    <input
       name="message"
       aria-label="Messaggio"
       placeholder="Scrivi una domanda…"
-      rows="2"
-      [ngModel]="testo()"
-      (ngModelChange)="testo.set($event)"
+      class="search-control"
+      [ngModel]="text()"
+      (ngModelChange)="text.set($event)"
       [disabled]="session().busy"
-    ></textarea>
+    >
 
     <button
       type="submit"
-      [disabled]="!testo().trim() || session().busy"
+      class="action-button"
+      [disabled]="!text().trim() || session().busy"
     >
       Invia
     </button>

@@ -1,31 +1,12 @@
-:host {
-  --chat-color: #7551c2;
-}
-
-button,
-select,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: .55;
-  cursor: default;
-}
-
 .chat-launcher {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 1000;
+  z-index: 999;
   padding: 12px 20px;
+  background: #7551c2;
   border: 0;
   border-radius: 24px;
-  background: var(--chat-color);
   color: white;
   box-shadow: 0 4px 16px #0003;
 }
@@ -34,7 +15,7 @@ button:disabled {
   position: fixed;
   right: 24px;
   bottom: 84px;
-  z-index: 1000;
+  z-index: 900;
 
   display: flex;
   flex-direction: column;
@@ -42,10 +23,9 @@ button:disabled {
   height: min(600px, calc(100dvh - 112px));
 
   overflow: hidden;
-  border: 1px solid #e5e1ed;
+  border: 2px groove rgba(34, 31, 43, 0.375);
   border-radius: 16px;
   background: white;
-  color: #292333;
   box-shadow: 0 12px 48px #0003;
 
   opacity: 0;
@@ -65,43 +45,66 @@ button:disabled {
   }
 }
 
+/* TODO: Unify CSS for all menu + buttons */
+.bot-dropdown {
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+  }
+  position: absolute;
+  top: 70px;
+  
+  z-index: 901;
+  padding: 0.35rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0.75rem 2rem rgba(34, 31, 43, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-16px) scale(.98);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    visibility 180ms;
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 0;
+    background: transparent;
+    color: rgba(34, 31, 43, 0.72);
+    padding: 0.25rem;
+    font: inherit;
+    text-align: left;
+    width: 100%;
+
+    &:hover {
+      border-color: transparent;
+      background: #dadbf9;
+      color: #221f2b;     
+    }
+  }
+}
+
+.bot-capabilities { 
+  margin: 0px; 
+  padding-left: 1rem;
+  border-top: 1px inset #eee;
+  border-bottom: 1px inset #eee;
+  color: #62706d; 
+  font-size: .9rem; 
+}
+
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  background: var(--chat-color);
-  color: white;
-
-  small {
-    display: block;
-    margin-top: 4px;
-    opacity: .85;
-  }
-
-  button {
-    border: 0;
-    padding: 8px;
-    background: transparent;
-    color: white;
-  }
-}
-
-.bot-selector {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
-
-  select {
-    flex: 1;
-    min-width: 0;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: white;
-  }
+  padding: 0.5rem 1rem;
+  background: #eee;
 }
 
 .messages {
@@ -132,7 +135,7 @@ button:disabled {
 
   &.user {
     margin-left: auto;
-    background: var(--chat-color);
+    background: #167c72;
     color: white;
   }
 }
@@ -168,12 +171,11 @@ button:disabled {
   }
 
   button {
-    padding: 0 16px;
-    border: 0;
-    border-radius: 8px;
-    background: var(--chat-color);
-    color: white;
+    min-height: 2.4rem;
+    padding: .45rem .75rem;
+    font-size: .8rem;
   }
+
 }
 
 @media (max-width: 480px) {

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, HostListener, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
@@ -92,5 +92,10 @@ export class MainComponent {
     const help = this.help()
     return help.page !== '' && help.title !== ''
   })
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeHelpPopup()
+  }
 
 }

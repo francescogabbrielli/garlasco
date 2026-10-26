@@ -1,7 +1,13 @@
+export interface BotDefinition {
+  definition: string;
+  name: string;
+  capabilities: string;
+  // Aggiungi gli altri campi presenti nel catalogo.
+}
 
 export const bots = [
     { 
-        name: 'Analista', 
+        name: 'Archivista', 
         capabilities: 'Analizza eventi nel database', 
         definition: 'analyst'
     },
@@ -15,4 +21,4 @@ export const bots = [
         capabilities: 'Analizza eventi e cerca riscontri sul web', 
         definition: 'detective'
     }
-]
+] as const satisfies readonly BotDefinition[]
