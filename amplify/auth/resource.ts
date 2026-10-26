@@ -25,5 +25,9 @@ export const auth = defineAuth({
       mutable: true,
       required: true,
     },
-  }
+    'custom:privacyAccepted': { 
+      dataType: 'String',
+      mutable: true,
+    }
+  },
 });

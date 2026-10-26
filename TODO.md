@@ -20,7 +20,7 @@ TODO: 0.1.0
 - Login and roles management:
     - add privacy policy in about and authenticator &check;
     - add default landing page for users with no role and request role "Member" for all other pages &check;
-    - contact form & mail (espcially for requesting a role) in main menu ...
+    - contact form & mail (espcially for requesting a role) in main menu &check;
     - review routes &check;
 - Backend:
     - create sendMail and trigger functions &check;

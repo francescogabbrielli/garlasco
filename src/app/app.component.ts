@@ -3,12 +3,9 @@ import { Router, RouterOutlet } from '@angular/router'
 import { Amplify } from 'aws-amplify'
 import outputs from '../../amplify_outputs.json'
 
-import {
-  AmplifyAuthenticatorModule,
-  translations,
-} from '@aws-amplify/ui-angular'
+import { AmplifyAuthenticatorModule, translations } from '@aws-amplify/ui-angular'
 
-import { Hub, I18n } from 'aws-amplify/utils'
+import { I18n } from 'aws-amplify/utils'
 
 import { UserProfileService } from './user-profile.service'
 
@@ -33,7 +30,7 @@ export class AppComponent {
   signUpAttributes: ('email' | 'given_name' | 'family_name')[] = [
     'email',
     'given_name',
-    'family_name',
+    'family_name'
   ]
 
   formFields = {
@@ -51,7 +48,7 @@ export class AppComponent {
       given_name: {
         label: 'Nome',
         placeholder: 'Inserisci il tuo nome',
-        order: 1,
+        order: 1
       },
       family_name: {
         label: 'Cognome',
@@ -85,3 +82,42 @@ export class AppComponent {
     return this.router.url.includes('privacy-policy');
   }
 }
+
+// TODO? Per una maggiore customizzazione: <amplify-authenticator [authServices]="authServices">
+
+// public authServices = {
+//   handleSignUp: async (formData: any) => {
+//     // 1. Inizializzazione sicura degli oggetti
+//     if (!formData.options) formData.options = {};
+//     if (!formData.options.userAttributes) formData.options.userAttributes = {};
+
+//     const attributes = formData.options.userAttributes;
+//     this.validationErrors = {};
+
+//     // 2. Validazione campo CUSTOM (Privacy)
+//     if (!attributes['custom:privacyAccepted']) {
+//       this.validationErrors['custom:privacyAccepted'] = 'Questo campo è obbligatorio per procedere.';
+//     }
+
+//     // 3. Validazione campi STANDARD (es. Given Name e Family Name)
+//     // Nota: I campi compilati dall'utente nel form nativo si trovano sotto 'attributes'
+//     if (!attributes['given_name'] || attributes['given_name'].trim() === '') {
+//       this.validationErrors['given_name'] = 'Il nome è obbligatorio.';
+//     }
+
+//     if (!attributes['family_name'] || attributes['family_name'].trim() === '') {
+//       this.validationErrors['family_name'] = 'Il cognome è obbligatorio.';
+//     }
+
+//     // 4. Se ci sono errori, blocca l'invio e mostrali a schermo
+//     if (Object.keys(this.validationErrors).length > 0) {
+//       return {
+//         validationErrors: this.validationErrors
+//       };
+//     }
+
+//     // 5. Se tutto è valido, imposta il flag del booleano e procedi
+//     attributes['custom:privacyAccepted'] = 'true';
+//     return formData;
+//   }
+// };
