@@ -1,7 +1,9 @@
-NEXT: 0.1.1
+TODO: 0.1.1
 -----------
 - fix & generalise esc key precedence
 - check CSS alignment for context-buttons (especially x). Uniform all CSS.
+- add source links to event mask
+- link events together (maybe next) &cross;
 
 TODO: 0.1.0
 -----------

@@ -5,9 +5,9 @@
     "name": "Francesco Gabbrielli",
     "email": "garlasco@mail.francescogabbrielli.it"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Sistema (sperimentale) integrato e normalizzato di ricerca/indagine. Lavori in corso",
-  "lastUpdate": "2026-10-25",
+  "lastUpdate": "2026-10-28",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",

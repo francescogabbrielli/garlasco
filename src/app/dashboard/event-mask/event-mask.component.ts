@@ -250,13 +250,13 @@ export class EventMaskComponent {
         date: this.toLocalInput(g.start_date),
         latitude: g.start_position?.latitude ? this.COORDS_FORMAT.format(g.start_position.latitude) : null,
         longitude: g.start_position?.longitude ? this.COORDS_FORMAT.format(g.start_position.longitude) : null,
-        radius: g.start_position?.radius ? String(g.start_position.radius) : null,
+        radius: String(g.start_position?.radius || 0),
       },
       end: {
         date: this.toLocalInput(g.end_date),
         latitude: g.end_position?.latitude ? this.COORDS_FORMAT.format(g.end_position.latitude) : null,
         longitude: g.end_position?.longitude ? this.COORDS_FORMAT.format(g.end_position.longitude) : null,
-        radius: g.end_position?.radius ? String(g.end_position.radius) :  null,
+        radius: g.end_position?.latitude ? String(g.end_position?.radius || 0) : null,
       },
     })
     this.eventForm.markAsTouched()
