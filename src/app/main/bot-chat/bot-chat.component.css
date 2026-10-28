@@ -87,6 +87,7 @@
       background: #dadbf9;
       color: #221f2b;     
     }
+
   }
 }
 
@@ -170,10 +171,8 @@
     border-radius: 8px;
   }
 
-  button {
-    min-height: 2.4rem;
-    padding: .45rem .75rem;
-    font-size: .8rem;
+  .action-button:disabled {
+    cursor: wait;
   }
 
 }

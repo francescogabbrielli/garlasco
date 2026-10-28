@@ -109,6 +109,8 @@ export class ImportComponent {
     this.isLoading.set(true);
     console.log(`Avvio importazione di ${dataset.length} elementi da textarea...`);
 
+    const ownerId = (await this.userProfile.logIn()).getId()
+
     let contatoreSuccessi = 0;
 
     try {
@@ -138,11 +140,9 @@ export class ImportComponent {
           continue;
         }
 
-        const ownerId = (await this.userProfile.logIn()).getId()
-
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
         const { data: createdEvent, errors: eventErrors } = await client.models.Event.create({
-          owner: ownerId,
+          owner: event.owner || ownerId,
           type: event.type,
           name: event.name,
           description: event.description,
@@ -153,6 +153,7 @@ export class ImportComponent {
           geoHash: this.mapsService.computeGeoHash(
             this.mapsService.computeCenterPosition(
               event.start_position, event.end_position)),
+          sources: event.sources,
           relevance: event.relevance || 0,
           reliability: event.reliability || 0
         });

@@ -67,9 +67,9 @@ export class EventPopupComponent implements OnInit {
   dialogOpen = signal(false)
 
   isEditor = computed(() => {
-    const edit = this.userService.user().editEnabled()
+    const edit = this.userService.user().isMember() && this.userService.user().editEnabled()
     const isEditor = this.userService.user().isEditor()
-    const isOwner = this.userService.user().isMember() && this.userService.user().getId() === this.event().owner
+    const isOwner = this.userService.user().getId() === this.event().owner
     const isNew = !this.event().id
     return edit && (isEditor || isOwner || isNew)
   })

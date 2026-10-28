@@ -91,6 +91,7 @@ export class UserProfileService {
 
   logOut(): void {
     this.user.set(new UserData())
+    localStorage.clear()
   }
 
   async sendEmail(subject: string, message:string): Promise<{ data: any, errors?: GraphQLFormattedError[] }> {

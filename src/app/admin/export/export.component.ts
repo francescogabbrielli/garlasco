@@ -85,6 +85,7 @@ export class ExportComponent {
       const actorsByEvent = await this.getActorsByEvent()
       const records = (await this.getEvents()).map((event) => ({
         ...(event.id ? { id: event.id } : {}),
+        owner: event.owner,
         name: event.name,
         type: event.type,
         description: event.description,
@@ -92,9 +93,10 @@ export class ExportComponent {
         start_position: event.start_position,
         ...(event.end_date ? { end_date: event.end_date } : {}),
         ...(event.end_position ? { end_position: event.end_position } : {}),
+        actors: actorsByEvent.get(event.id) ?? [],
+        sources: event.sources,
         relevance: event.relevance,
         reliability: event.reliability,
-        actors: actorsByEvent.get(event.id) ?? [],
       }))
 
       this.download(records, 'events.json')

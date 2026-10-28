@@ -1,14 +1,16 @@
-NEXT: 0.1.2
+TODO: 0.1.2
 -----------
 - fix & generalise esc key precedence
 - check CSS alignment for context-buttons (especially close and 
     actions-panel). Uniform all CSS.
 - set rate limits for AI usage
 - review chat chronology
+- review and stabilize code
+- review registration & emails &check;
 
 TODO: 0.1.1
 -----------
-- fix editing bug for event owner ...
+- fix editing bug for event owner &check;
 - add source links to event mask &check;
 - link events together (maybe next) &cross;
 
