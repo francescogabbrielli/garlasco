@@ -83,14 +83,15 @@ div.form-field.form-field-small > label {
       margin-top: 1.5rem;
   }
 
-.event-person-section {
+.multiple-values-section {
   grid-column: 1 / -1;
 }
 
+/*
 .event-person-section legend span {
   color: rgba(34, 31, 43, 0.58);
   font-weight: 400;
-}
+} */
 
 .actor-selection-heading {
   display: flex;

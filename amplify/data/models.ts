@@ -35,7 +35,7 @@ export const Event = a.model({
   actors: a.hasMany('EventPerson', 'eventId'),
   reliability: a.integer(),
   relevance: a.integer().required().default(0),
-  sources: a.string().array(),
+  sources: a.string().required().array(),
   relatesTo: a.hasMany('EventRelated', 'relatesToId'),
   relatedBy: a.hasMany('EventRelated', 'relatedById'),
 })

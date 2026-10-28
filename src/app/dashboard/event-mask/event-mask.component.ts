@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
+import { Component, computed, effect, ElementRef, inject, input, model, output, signal, ViewChild } from '@angular/core'
 import { FormControl, FormGroup, PristineChangeEvent, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { generateClient } from 'aws-amplify/data'
@@ -54,6 +54,8 @@ export class EventMaskComponent {
   readonly personDialogOpen = signal(false)
   private personDialogRowId: number | null = null
 
+  sources: string[] = []
+
   dialogOpen = output<boolean>()
 
   constructor() {
@@ -108,6 +110,8 @@ export class EventMaskComponent {
         role: a.role,
       }))
     }
+
+    this.sources = e.sources ?? []
 
     this.eventForm.markAsPristine()
   }
@@ -236,6 +240,35 @@ export class EventMaskComponent {
     return person ? `${person.name} ${person.surname}` : ''
   }
 
+  addSource(): void {
+    this.sources.push("")
+    this.cannotAddSource.set(true)
+  }
+
+  cannotAddSource = signal(false)
+  sourceError = -1
+  cannotAddTrigger = () => {
+      if (!this.sources.length) return false
+      if (this.sources.some((s) => s === '')) return true
+      if (this.sources.length > new Set(this.sources).size) return true
+      return false
+    }
+
+  updateSource(i:number, event: Event): void {
+    if (this.sources.length <= i) return
+    const target = event.target
+    if (!(target instanceof HTMLInputElement)) return
+    this.sources[i] = target.value
+    this.cannotAddSource.update(this.cannotAddTrigger)
+    this.modified.emit(true)
+  }
+
+  removeSource(i: number): void {
+    this.sources.splice(i, 1)
+    this.cannotAddSource.update(this.cannotAddTrigger)
+    this.modified.emit(true)
+  }
+
   applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'start_date' | 'end_date' | 'start_position' | 'end_position' | 'reliability' | 'relevance']?: EventModel[K] | null }): void {
     const clamp = (n: number | null | undefined, def: number) =>
       n && n >= 1 && n <= 4 ? n : def
@@ -302,18 +335,6 @@ export class EventMaskComponent {
     this.actorRoleError = false
   }
 
-  private logInvalidControls() {
-    const controls = this.eventForm.controls
-    Object.keys(controls).forEach(key => {
-      // Usiamo il casting "as keyof typeof controls" per rassicurare TypeScript
-      const control = controls[key as keyof typeof controls];
-      
-      if (control.invalid) {
-        console.log(`Campo invalido: ${key}`, control.errors);
-      }
-    })
-  }
-
   async submitEvent(): Promise<void> {
 
     this.eventForm.markAllAsTouched()
@@ -330,7 +351,6 @@ export class EventMaskComponent {
           ? 'Per attendibilità e rilevanza scegli un valore da 1 a 4.'
           : 'Completa tutti i campi obbligatori prima di salvare l’evento.',
       )
-      this.logInvalidControls()
       return
     }
 
@@ -348,6 +368,12 @@ export class EventMaskComponent {
     this.actorRoleError = this.selectedActors.some((actor) => !actor.role.trim())
     if (this.actorRoleError) {
       this.submitError.set('Indica il ruolo per ogni persona selezionata.')
+      return
+    }
+
+    this.sourceError = this.sources.findIndex((source) => !source.trim())
+    if (this.sourceError !== -1) {
+      this.submitError.set('Specifica la fonte per ogni riga.')
       return
     }
 
@@ -387,6 +413,7 @@ export class EventMaskComponent {
         end_position: endPosition,
         geoHash: this.geoService.computeGeoHash(
           this.geoService.computeCenterPosition(startPosition, endPosition)),
+        sources: this.sources,
         reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
         relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
       }

@@ -29,88 +29,88 @@
         }
         </div>
 
-        <fieldset class="position-section event-person-section form-field-wide">
-        <legend>Persone coinvolte</legend>
-        <div class="actor-selection-heading">
-            <p>Seleziona una persona e indica il ruolo; aggiungi una riga per ogni persona coinvolta.</p>
-            <button class="actor-add-control" type="button" (click)="addActor()"             [disabled]="!allPeople().length">
-                Aggiungi persona
-            </button>
-        </div>
-
-        @if (!allPeople().length) {
-            <p class="actor-control-message">Nessuna persona disponibile.</p>
-        }
-
-        <div class="selected-actors">
-            @for (actor of selectedActors; track actor.rowId) {
-            <div class="actor-person-role-row">
-                <div class="actor-person-role-fields">
-                <div class="form-field">
-                    <label [for]="'event-person-' + actor.rowId">Persona</label>
-                    <input type="text" required
-                        class="search-control"
-                        [id]="'event-person-' + actor.rowId"
-                        [matAutocomplete]="personAutocomplete"
-                        [value]="actor.personQuery"
-                        [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
-                        [disabled]="!allPeople().length"
-                        #trigger="matAutocompleteTrigger"
-                        (blur)="closeAutocomplete(trigger)"
-                        (input)="updateActorPersonQuery(actor.rowId, $event)"
-                    />
-                    <mat-autocomplete
-                        #personAutocomplete="matAutocomplete"
-                        panelClass="custom-autocomplete-panel"
-                        [displayWith]="displayPerson"
-                        (optionSelected)="onPersonOptionSelected(actor.rowId, $event.option.value)"
-                    >
-                    @if (isAdmin() && !actor.personQuery) {
-                        <mat-option [value]="newPersonOption" class="new-person-option">+ Nuova persona…</mat-option>
-                    }
-                    @for (person of filteredPeople(actor); track person.id) {
-                        <mat-option [value]="person">{{ person.name }} {{ person.surname }}</mat-option>
-                    }
-                    </mat-autocomplete>
-                    @if (actorSelectionError && !isActorPersonValid(actor)) {
-                    <span class="field-error">Seleziona una persona dall'elenco.</span>
-                    }
-                </div>
-
-                <div class="form-field">
-                    <label [for]="'event-person-role-' + actor.rowId">Ruolo</label>
-                    <input
-                        class="search-control"
-                        [id]="'event-person-role-' + actor.rowId"
-                        type="text"
-                        [value]="actor.role"
-                        [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
-                        (input)="updateActorRole(actor.rowId, $event)"
-                        (change)="modified.emit(true)"
-                        required
-                    />
-                    @if (actorRoleError && !actor.role.trim()) {
-                    <span class="field-error">Indica il ruolo della persona.</span>
-                    }
-                </div>
-                </div>
-
-                @if (selectedActors.length > 1) {
-                <button
-                    class="actor-remove-control"
-                    type="button"
-                    [attr.aria-label]="'Rimuovi riga persona ' + (actor.rowId + 1)"
-                    (click)="removeActor(actor.rowId)"
-                >
-                    Rimuovi
+        <fieldset class="fieldset-section multiple-values-section form-field-wide">
+            <legend>Persone coinvolte</legend>
+            <div class="actor-selection-heading">
+                <p>Seleziona una persona e indica il ruolo; aggiungi una riga per ogni persona coinvolta.</p>
+                <button class="actor-add-control" type="button" (click)="addActor()"             [disabled]="!allPeople().length">
+                    Aggiungi persona
                 </button>
+            </div>
+
+            @if (!allPeople().length) {
+                <p class="actor-control-message">Nessuna persona disponibile.</p>
+            }
+
+            <div class="selected-actors">
+                @for (actor of selectedActors; track actor.rowId) {
+                <div class="actor-person-role-row">
+                    <div class="actor-person-role-fields">
+                    <div class="form-field">
+                        <label [for]="'event-person-' + actor.rowId">Persona</label>
+                        <input type="text" required
+                            class="search-control"
+                            [id]="'event-person-' + actor.rowId"
+                            [matAutocomplete]="personAutocomplete"
+                            [value]="actor.personQuery"
+                            [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
+                            [disabled]="!allPeople().length"
+                            #trigger="matAutocompleteTrigger"
+                            (blur)="closeAutocomplete(trigger)"
+                            (input)="updateActorPersonQuery(actor.rowId, $event)"
+                        />
+                        <mat-autocomplete
+                            #personAutocomplete="matAutocomplete"
+                            panelClass="custom-autocomplete-panel"
+                            [displayWith]="displayPerson"
+                            (optionSelected)="onPersonOptionSelected(actor.rowId, $event.option.value)"
+                        >
+                        @if (isAdmin() && !actor.personQuery) {
+                            <mat-option [value]="newPersonOption" class="new-person-option">+ Nuova persona…</mat-option>
+                        }
+                        @for (person of filteredPeople(actor); track person.id) {
+                            <mat-option [value]="person">{{ person.name }} {{ person.surname }}</mat-option>
+                        }
+                        </mat-autocomplete>
+                        @if (actorSelectionError && !isActorPersonValid(actor)) {
+                        <span class="field-error">Seleziona una persona dall'elenco.</span>
+                        }
+                    </div>
+
+                    <div class="form-field">
+                        <label [for]="'event-person-role-' + actor.rowId">Ruolo</label>
+                        <input
+                            class="search-control"
+                            [id]="'event-person-role-' + actor.rowId"
+                            type="text"
+                            [value]="actor.role"
+                            [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
+                            (input)="updateActorRole(actor.rowId, $event)"
+                            (change)="modified.emit(true)"
+                            required
+                        />
+                        @if (actorRoleError && !actor.role.trim()) {
+                        <span class="field-error">Indica il ruolo della persona.</span>
+                        }
+                    </div>
+                    </div>
+
+                    @if (selectedActors.length > 1) {
+                    <button
+                        class="actor-remove-control"
+                        type="button"
+                        [attr.aria-label]="'Rimuovi riga persona ' + (actor.rowId + 1)"
+                        (click)="removeActor(actor.rowId)"
+                    >
+                        Rimuovi
+                    </button>
+                    }
+                </div>
                 }
             </div>
-            }
-        </div>
         </fieldset>
 
-        <fieldset class="position-section" formGroupName="start">
+        <fieldset class="fieldset-section" formGroupName="start">
 
         <legend>Inizio</legend>
 
@@ -153,7 +153,7 @@
         </div>
         </fieldset>
 
-        <fieldset class="position-section" formGroupName="end">
+        <fieldset class="fieldset-section" formGroupName="end">
         
         <legend>Fine</legend>
 
@@ -188,6 +188,41 @@
               aria-label="Cancella posizione"
               (click)="cancelPosition('end')">&times;</button>
         </div>
+        </fieldset>
+
+        <fieldset class="fieldset-section multiple-values-section form-field-wide">
+            <legend>Fonti</legend>
+            <div class="actor-selection-heading">
+                <p>Seleziona una o più fonti.</p>
+                <button id="add-source-button" class="clear-control" type="button" 
+                    (click)="addSource()"
+                    [disabled]="cannotAddSource()">
+                    Aggiungi fonte
+                </button>
+            </div>
+            <div>
+                @for (source of sources; track source; let i=$index) {
+                    <div class="form-field">
+                        <div>
+                            <label [for]="'event-source-' + i">Fonte {{i+1}}</label>
+                            <input class="search-control" type="text" required id="'event-source-' + {{i}}" [value]="source" (change)="updateSource(i, $event)">
+                        </div>
+                    </div>
+                        <button
+                            class="clear-control"
+                            type="button"
+                            [attr.aria-label]="'Rimuovi riga fonte ' + (i + 1)"
+                            (click)="removeSource(i)"
+                        >
+                            Rimuovi
+                        </button>
+
+                    @if (sourceError === i) {
+                        <span class="field-error">Specifica la fonte.</span>
+                    }
+                }
+            </div>
+
         </fieldset>
 
         @if (isAdmin()) {

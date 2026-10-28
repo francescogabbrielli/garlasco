@@ -348,7 +348,7 @@ body {
       grid-column: 1 / -1;
     }
 
-  .position-section {
+  .fieldset-section {
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -362,7 +362,7 @@ body {
 
   .form-field label,
   .field-group-label,
-  .position-section legend {
+  .fieldset-section legend {
       color: #221f2b;
       font-size: 0.82rem;
       font-weight: 700;
@@ -418,11 +418,11 @@ body {
       border-top: 1px solid rgba(34, 31, 43, 0.08);
     }
 
-  .position-section legend {
+  .fieldset-section legend {
       padding: 0 0.35rem;
     }
 
-  .position-section legend span {
+  .fieldset-section legend span {
       color: rgba(34, 31, 43, 0.58);
       font-weight: 400;
     }
@@ -485,8 +485,9 @@ body {
       color: #425650;
     }
 
-  .actions-panel button:disabled {
-    cursor: wait;
+  button:disabled {
+    cursor: not-allowed;
+    pointer-events: none;
     opacity: .6;
   }
 
@@ -509,7 +510,7 @@ body {
 
       .form-field-wide,
       .actions-panel,
-      .position-section {
+      .fieldset-section {
         grid-column: auto;
       }
 

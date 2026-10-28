@@ -1,9 +1,11 @@
 TODO: 0.1.1
 -----------
 - fix & generalise esc key precedence
-- check CSS alignment for context-buttons (especially x). Uniform all CSS.
-- add source links to event mask
+- check CSS alignment for context-buttons (especially close and actions-panel). Uniform all CSS.
+- add source links to event mask &check;
 - link events together (maybe next) &cross;
+- set rate limits for AI usage
+- review chat chronology
 
 TODO: 0.1.0
 -----------
