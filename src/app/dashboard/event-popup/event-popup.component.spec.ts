@@ -32,8 +32,8 @@ const EVENT = {
 describe('EventPopupComponent', () => {
   let fixture: ComponentFixture<EventPopupComponent>;
 
-  function create(groups: string[], editEnabled = false) {
-    const user = new UserData({ sub: 'u1' }, groups);
+  function create(groups: string[], editEnabled = false, sub = 'u1') {
+    const user = new UserData({ sub }, groups);
     user.editEnabled.set(editEnabled);
     TestBed.overrideProvider(UserProfileService, { useValue: { user: () => user } });
     fixture = TestBed.createComponent(EventPopupComponent);
@@ -51,30 +51,39 @@ describe('EventPopupComponent', () => {
 
   it('should show read-only details to non editors', () => {
     create([]);
-
     expect(fixture.nativeElement.querySelector('dl.event-fields')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('app-event-mask')).toBeNull();
   });
 
-  it('should allow an event owner to edit when editing is enabled', () => {
-    create(['Editor'], true);
-
+  it('should allow an event owner to edit when editing is enabled', async () => {
+    create(['Member'], true);
+    await fixture.whenStable();
     expect(fixture.componentInstance.isEditor()).toBe(true);
+    //expect(fixture.nativeElement.querySelector('app-event-mask')).not.toBeNull();
   });
 
   it('should show read-only details to editors who did not enable editing', () => {
     create(['Editor']);
-
     expect(fixture.nativeElement.querySelector('app-event-mask')).toBeNull();
+  });
+
+  it('should show read-only details to members are editing another user\'s event', () => {
+    create(['Member'], true, 'u2');
+    expect(fixture.componentInstance.isEditor()).toBe(false);
+    //expect(fixture.nativeElement.querySelector('app-event-mask')).not.toBeNull();
+  });
+
+  it('should allow editing to editors editing another user\'s event', () => {
+    create(['Editor'], true, 'u2');
+    expect(fixture.componentInstance.isEditor()).toBe(true);
+    //expect(fixture.nativeElement.querySelector('app-event-mask')).not.toBeNull();
   });
 
   it('should emit closed on escape', () => {
     create([]);
     const closed = vi.fn();
     fixture.componentInstance.closed.subscribe(closed);
-
     fixture.componentInstance.onEscape();
-
     expect(closed).toHaveBeenCalled();
   });
 });
