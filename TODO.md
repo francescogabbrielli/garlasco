@@ -1,11 +1,14 @@
-TODO: 0.1.2
------------
+NEXT
+----
 - fix & generalise esc key precedence
-- check CSS alignment for context-buttons (especially close and 
-    actions-panel). Uniform all CSS &check;
 - set rate limits for AI usage
 - review chat chronology
 - review and stabilize code
+
+TODO: 0.1.2
+-----------
+- check CSS alignment for context-buttons (especially close and 
+    actions-panel). Uniform all CSS &check;
 - review registration & emails &check;
 
 TODO: 0.1.1
