@@ -138,6 +138,7 @@ body {
       min-height: calc(100vh - 4rem);
       padding: 2rem 5vw;
     }
+    
 
   .context-controls {
       display: flex;
@@ -207,32 +208,6 @@ body {
       align-items: flex-start;
       justify-content: space-between;
       gap: 1rem;
-    }
-
-  .dialog-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-  .dialog-close {
-      display: grid;
-      width: 2.25rem;
-      height: 2.25rem;
-      padding: 0;
-      place-items: center;
-      border: 0;
-      border-radius: 50%;
-      background: transparent;
-      color: rgba(34, 31, 43, 0.72);
-      font-size: 1.6rem;
-      line-height: 1;
-    }
-
-  .dialog-close:hover {
-      border-color: transparent;
-      background: #dadbf9;
-      color: #7551c2;
     }
 
   .dialog-help {
@@ -387,7 +362,7 @@ body {
   .search-control {
       width: 100%;
       min-width: 0;
-      min-height: 2.55rem;
+      min-height: 2rem;
       box-sizing: border-box;
       padding: 0.5rem 0.6rem;
       border: 1px solid #cbd5d2;
@@ -491,7 +466,7 @@ body {
     opacity: .6;
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 576px) {
       .topbar {
         align-items: flex-start;
         flex-direction: column;
@@ -512,14 +487,6 @@ body {
       .actions-panel,
       .fieldset-section {
         grid-column: auto;
-      }
-
-      .coordinate-fields {
-        grid-template-columns: 1fr;
-      }
-
-      .coordinate-fields input {
-        width: 100%;
       }
 
       .help-dialog {

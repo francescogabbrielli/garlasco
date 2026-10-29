@@ -198,25 +198,25 @@
                     [disabled]="cannotAddSource()"
                 >Aggiungi fonte</button>
             </div>
-            <div>
+            <div class="source-list">
                 @for (source of sources; track source; let i=$index) {
-                    <div class="form-field">
-                        <div>
+                    <div class="source-row">
+                        <div class="form-field">
                             <label [for]="'event-source-' + i">Fonte {{i+1}}</label>
-                            <input class="search-control" type="text" required id="'event-source-' + {{i}}" [value]="source" (change)="updateSource(i, $event)">
+                            <input class="search-control" type="text" required [id]="'event-source-' + i" [value]="source" (change)="updateSource(i, $event)">
+                            @if (sourceError === i) {
+                                <span class="field-error">Specifica la fonte.</span>
+                            }
                         </div>
+                        <button
+                            class="clear-control"
+                            type="button"
+                            [attr.aria-label]="'Rimuovi riga fonte ' + (i + 1)"
+                            (click)="removeSource(i)"
+                        >
+                            Rimuovi
+                        </button>
                     </div>
-                    <button
-                        class="clear-control"
-                        type="button"
-                        [attr.aria-label]="'Rimuovi riga fonte ' + (i + 1)"
-                        (click)="removeSource(i)"
-                    >
-                        Rimuovi
-                    </button>
-                    @if (sourceError === i) {
-                        <span class="field-error">Specifica la fonte.</span>
-                    }
                 }
             </div>
         </fieldset>

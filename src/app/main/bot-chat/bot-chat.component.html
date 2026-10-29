@@ -64,12 +64,12 @@
           title="Apri aiuto"
           (click)="main.help.set({page:'ai', 'title': 'Chat con assistente IA' })"
         >?</button>
-        <button class="dialog-close"
-          type="button"
-          aria-label="Chiudi chat"
-          title="Chiudi chat"
-          (click)="opened.set(false); launcher.focus()"
-        >&times;</button>
+          <button 
+            class="context-button" 
+            type="button" 
+            aria-label="Chiudi" 
+            title="Chiudi" 
+            (click)="opened.set(false); launcher.focus()"><b>&times;</b></button>
       </div>
       
     </div>
