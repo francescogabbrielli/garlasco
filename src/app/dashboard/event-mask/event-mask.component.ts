@@ -269,7 +269,7 @@ export class EventMaskComponent {
     this.modified.emit(true)
   }
 
-  applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'start_date' | 'end_date' | 'start_position' | 'end_position' | 'reliability' | 'relevance']?: EventModel[K] | null }): void {
+  applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'start_date' | 'end_date' | 'start_position' | 'end_position' | 'reliability' | 'relevance' | 'sources']?: EventModel[K] | null }): void {
     const clamp = (n: number | null | undefined, def: number) =>
       n && n >= 1 && n <= 4 ? n : def
     const type = this.typeOptions.find(t => t === g.type) ?? null
@@ -290,8 +290,10 @@ export class EventMaskComponent {
         latitude: g.end_position?.latitude ? this.COORDS_FORMAT.format(g.end_position.latitude) : null,
         longitude: g.end_position?.longitude ? this.COORDS_FORMAT.format(g.end_position.longitude) : null,
         radius: g.end_position?.latitude ? String(g.end_position?.radius || 0) : null,
-      },
+      }
     })
+    this.sources = g.sources ?? []
+    this.modified.emit(true)
     this.eventForm.markAsTouched()
   }
 

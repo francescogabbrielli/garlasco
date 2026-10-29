@@ -14,7 +14,9 @@ const SYSTEM_PROMPT =
   'La start_date (e end_date) devono essere stringhe ISO 8601, timezone CET. Il type deve essere ESATTAMENTE (rispettando le maiuscole) uno dei seguenti tipi di evento: ' + EVENT_TYPES.join(', ') + '. ' +
   'In start_postition e end_position, latitude e longitude devono essere espresse in gradi decimali con sei cifre decimali; rappresentano o la location precisa o il centro approssimativo della località citata (normalmente Garlasco); ' +
   'radius è 0 se si tratta di una location precisa, altrimenti il raggio approssimativo in metri della località citata. ' +
-  'Se si tratta di una testimonianza (type "Testimonianza") o deposizione (type deve essere "Indagine") indica la data e il luogo della testimonianza e non dell\'evento testimoniato.';
+  'Se si tratta di una testimonianza (type "Testimonianza") o deposizione (type deve essere "Indagine") indica la data e il luogo della testimonianza e non dell\'evento testimoniato. ' +
+  'Inoltre, includi se possibile le fonti (sources) utilizzate per generare l\'evento, come URL dei siti web o video/podcast'
+  ;
 
 const coordinates = {
   type: 'object',
@@ -37,9 +39,10 @@ const EVENT_TOOL = {
         name: { type: 'string' },
         description: { type: 'string' },
         start_date: { type: 'string', description: 'ISO 8601 date-time' },
-        start_position: coordinates
+        start_position: coordinates,
+        sources: { type: 'array', items: { type: 'string' } }
       },
-      required: ['type', 'name', 'description', 'start_date', 'start_position'],
+      required: ['type', 'name', 'description', 'start_date', 'start_position', 'sources'],
     },
   },
 };
