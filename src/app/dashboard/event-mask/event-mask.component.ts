@@ -337,6 +337,18 @@ export class EventMaskComponent {
     this.actorRoleError = false
   }
 
+  onKeyDown(event: KeyboardEvent) {
+    // Verifica se è stato premuto il tasto Invio
+    if (event.key === 'Enter') {
+      const target = event.target as HTMLElement;
+
+      // Se l'utente NON si trova sopra il pulsante di submit, blocca l'evento
+      if (target.tagName !== 'BUTTON' && target.tagName !== 'TEXTAREA' && target.getAttribute('type') !== 'submit') {
+        event.preventDefault();
+      }
+    }
+  }    
+
   async submitEvent(): Promise<void> {
 
     this.eventForm.markAllAsTouched()

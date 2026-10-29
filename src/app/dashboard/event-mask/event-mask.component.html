@@ -1,5 +1,5 @@
 
-    <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" novalidate>
+    <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" (keydown)="onKeyDown($event)" novalidate>
         <div class="form-field">
             <label for="event-type">Tipologia</label>
             <select class="search-control" id="event-type" formControlName="type" required>
