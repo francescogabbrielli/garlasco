@@ -24,7 +24,8 @@ export class MapFilterComponent implements OnInit {
 
   mapOptions = input<google.maps.MapOptions>({ 
     isFractionalZoomEnabled: true, 
-    renderingType: 'VECTOR' as google.maps.RenderingType // Fractional zoom only works on vector maps
+    renderingType: 'VECTOR' as google.maps.RenderingType, // Fractional zoom only works on vector maps
+    //gestureHandling: 'cooperative'
   })
   
   // Riceve la lista dei marker reattivi filtrati dal componente padre

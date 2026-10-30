@@ -1,0 +1,3 @@
+google-map {
+  touch-action: none; /* Impedisce al browser di catturare i gesti sulla mappa per lo zoom di pagina */
+}

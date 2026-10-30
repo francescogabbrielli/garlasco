@@ -13,9 +13,9 @@ NEXT
 
 TODO: 0.1.3
 -----------
-- fix maps scrolling on mobile 
+- fix maps scrolling on mobile &check;
 - add timeline scrolling on mobile
-- add search address in map-picker
+- add search address in map-picker ...
 - relaod persons after person creation &check;
 - check mail settings for replies &check;
 

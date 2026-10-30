@@ -34,6 +34,7 @@ export class MapPickerComponent implements OnInit {
     center: { lat: DEFAULT_COORDINATES.latitude, lng: DEFAULT_COORDINATES.longitude },
     zoom: 15,
     clickableIcons: true,
+    // gestureHandling: 'cooperative'
   }
 
   readonly mapReady = signal(false)
