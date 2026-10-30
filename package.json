@@ -3,11 +3,11 @@
   "displayName": "I fatti di Garlasco",
   "author": {
     "name": "Francesco Gabbrielli",
-    "email": "garlasco@mail.francescogabbrielli.it"
+    "email": "garlasco@francescogabbrielli.it"
   },
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Sistema (sperimentale) integrato e normalizzato di ricerca/indagine. Lavori in corso",
-  "lastUpdate": "2026-10-29",
+  "lastUpdate": "2026-10-30",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",
