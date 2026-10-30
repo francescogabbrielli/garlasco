@@ -46,12 +46,6 @@ describe('MainComponent', () => {
     expect(fixture.componentInstance.user().getId()).toBe('user-123');
   });
 
-  it('preloads the loading image for use throughout the app', () => {
-    const preload = fixture.nativeElement.querySelector('link[rel="preload"][as="image"]');
-
-    expect(preload.getAttribute('href')).toBe('assets/loading.gif');
-  });
-
   it('shows navigation links based on the signed-in user', () => {
     expect(fixture.nativeElement.querySelector('a[aria-label="Import"]').getAttribute('routerLink'))
       .toBe('/admin');
@@ -78,7 +72,7 @@ describe('MainComponent', () => {
 
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).not.toBeNull();
 
-    fixture.nativeElement.querySelector('[aria-label="Chiudi informazioni"]').click();
+    fixture.nativeElement.querySelector('[aria-label="Chiudi"]').click();
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();

@@ -1,9 +1,10 @@
-NEXT
-----
+TODO: 0.1.3
+-----------
 - fix & generalise esc key precedence
 - set rate limits for AI usage
 - review chat chronology
 - review and stabilize code
+- relaod persons after person creation &check;
 
 TODO: 0.1.2
 -----------

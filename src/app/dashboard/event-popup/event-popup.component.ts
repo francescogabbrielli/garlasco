@@ -10,7 +10,7 @@ import { UserProfileService } from '../../user-profile.service';
 import { GeoService } from '../../geo.service';
 import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
 
-import { EventMaskComponent } from '../event-mask/event-mask.component';
+import { EventMaskComponent, EventMaskEvent } from '../event-mask/event-mask.component';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 
@@ -61,7 +61,7 @@ export class EventPopupComponent implements OnInit {
 
   event = input.required<Event>()
   closed = output<void>()
-  saved = output<void>()
+  saved = output<EventMaskEvent>()
 
   maskTouched = signal(false)
   dialogOpen = signal(false)

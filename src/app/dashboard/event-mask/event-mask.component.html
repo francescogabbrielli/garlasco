@@ -264,7 +264,7 @@
 
 
 @if (personDialogOpen()) {
-    <app-person-popup (created)="onPersonCreated($event)" (closed)="closePersonDialog()" />
+    <app-person-popup (created)="onPersonCreated($event)" (closed)="closePersonDialog()"/>
 }
 
 @if (pickerTarget(); as target) {

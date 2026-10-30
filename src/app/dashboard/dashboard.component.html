@@ -90,7 +90,7 @@
       <app-event-popup 
         [event]="opened"
         [people]="people()"
-        (saved)="triggerReload()"
+        (saved)="updatePeople($event); triggerReload()"
         (closed)="openedEvent.set(null)"></app-event-popup>
     }
 

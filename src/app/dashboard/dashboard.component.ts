@@ -15,6 +15,7 @@ import { UserProfileService } from '../user-profile.service';
 
 import { MainComponent } from '../main/main.component';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { EventMaskEvent } from './event-mask/event-mask.component';
 
 const client = generateClient<Schema>()
 
@@ -47,6 +48,8 @@ export class DashboardComponent implements OnInit {
   readonly MAX_DATE = new Date()
   readonly MIN_DATE = new Date(2007, 1, 1)
 
+  private readonly PEOPLE_SORTER = (a: Person, b: Person) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)
+
   private readonly STORAGE_FILTERS = 'dashboard_filters'
 
   // L'unico accumulatore locale per Mappa + Lista
@@ -54,6 +57,7 @@ export class DashboardComponent implements OnInit {
 
   // Solo fatti
   facts = computed<Event[]>(() => this.events().filter(e => e.type === "Fatto"))
+
 
   readonly defaultFilters:Filter = {
     personIds: [],
@@ -76,7 +80,7 @@ export class DashboardComponent implements OnInit {
 
   // People are loaded once here and shared with the filter and the map
   people = signal<Person[]>([])
-  peopleLoading = signal(true)
+  peopleLoading = signal(false)
   peopleError = signal('')
   selectedIds = signal<string[]>([])
   hoveredEventId = signal<string | null>(null)
@@ -93,9 +97,10 @@ export class DashboardComponent implements OnInit {
 
   private async loadPeople(): Promise<void> {
     try {
+      this.peopleLoading.set(true)
       const response = await client.models.Person.list()
       this.people.set(response.data
-        .sort((a, b) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)) 
+        .sort(this.PEOPLE_SORTER) 
         ?? [])
     } catch {
       this.peopleError.set('Impossibile caricare le persone.')
@@ -122,6 +127,13 @@ export class DashboardComponent implements OnInit {
       this.triggerReload()
     })
     
+  }
+
+  /** Refresh person's list if a new person has been created */
+  updatePeople(event: EventMaskEvent) {
+    if (event && event.personCreated.length) {
+      this.people.update((list: Person[]) => [...list, ...event.personCreated].sort(this.PEOPLE_SORTER))
+    }
   }
 
   triggerReload() {

@@ -466,7 +466,7 @@ body {
     opacity: .6;
   }
 
-  @media (max-width: 576px) {
+  @media (max-width: 600px) {
       .topbar {
         align-items: flex-start;
         flex-direction: column;

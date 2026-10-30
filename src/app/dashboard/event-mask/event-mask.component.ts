@@ -29,6 +29,10 @@ type SelectedActor = {
 
 const client = generateClient<Schema>()
 
+export interface EventMaskEvent {
+  personCreated: Person[]
+}
+
 @Component({
   selector: 'app-event-mask',
   imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent, PersonDialogComponent],
@@ -41,9 +45,10 @@ export class EventMaskComponent {
 
   people = input<Person[]>([])
   event = input<EventModel | null>(null)
-  saved = output<void>()
-  personCreated = output<Person>()
+  saved = output<EventMaskEvent>()
   modified = output<boolean>()
+
+  eventMaskEvent = computed(() => ({ personCreated: this.createdPeople() }))
 
   // people created from this mask, merged with the ones received as input
   private createdPeople = signal<Person[]>([])
@@ -62,7 +67,7 @@ export class EventMaskComponent {
     effect(() => {
       // re-run once the people list is available so actor names can be resolved
       if (this.people().length === 0) return
-      this.loadEvent()      
+      this.loadEvent() 
     })
     effect(() => this.modified.emit(this.isModified()))
   }
@@ -323,7 +328,6 @@ export class EventMaskComponent {
   onPersonCreated(person: Person): void {
     this.createdPeople.update(list => [...list, person])
     if (this.personDialogRowId !== null) this.selectActorPerson(this.personDialogRowId, person)
-    this.personCreated.emit(person)
     this.closePersonDialog()
   }
 
@@ -466,7 +470,7 @@ export class EventMaskComponent {
         }
       }
 
-      this.saved.emit()
+      this.saved.emit(this.eventMaskEvent())
 
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
@@ -496,7 +500,7 @@ export class EventMaskComponent {
       for (const id of this.existingActorIds) {
         await client.models.EventPerson.delete({ id })
       }
-      this.saved.emit()
+      this.saved.emit(this.eventMaskEvent())
     } finally {
       this.isSaving.set(false)
     }

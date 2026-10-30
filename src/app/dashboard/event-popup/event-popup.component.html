@@ -45,6 +45,7 @@
     </header>
 
     @if (isEditor()) {
+
       @defer (on viewport) {
 
         @if (submitError()) {
@@ -58,12 +59,14 @@
             [(submitError)]="submitError"
             (dialogOpen)="dialogOpen.set($event)"
             (modified)="maskTouched.set($event)"
-            (saved)="saved.emit(); closed.emit()" ></app-event-mask>
-        </div>  
+            (saved)="saved.emit($event); closed.emit()" ></app-event-mask>
+        </div>
       } @placeholder {
         <div>Loading Event Mask...</div>
       }
+
     } @else {
+      
     <dl class="event-fields">
       <dt>Descrizione</dt>
       <dd class="description">{{ event().description }}</dd>
