@@ -27,14 +27,14 @@ export async function sendEmail(to: string, replyTo: string | undefined, subject
 async function sendEmailInternal(to: string, replyTo: string | undefined, subject: string, body: string) {
 
     const pkg = await import("../../package.json")
-    const sender = `${pkg.displayName} <${pkg.author.email}>`
+    const sender = `${pkg.displayName} <${pkg.author.email.replace('@', '@mail.')}>`
 
     const command = new SendEmailCommand({
         Source: sender,
         Destination: {
             ToAddresses: [to],
         },
-        ReplyToAddresses: replyTo ? [replyTo] : undefined,
+        ReplyToAddresses: replyTo ? [replyTo] : [pkg.author.email],
         Message: {
             Subject: { Data: subject },
             Body: {

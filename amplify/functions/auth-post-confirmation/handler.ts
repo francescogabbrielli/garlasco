@@ -9,8 +9,11 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
         await sendEmail(
             event.request.userAttributes.email, 
             undefined, 
-            env.WELCOME_SUBJECT!, 
-            'Salve ' + event.request.userAttributes.given_name + '.\n\n' + env.WELCOME_MESSAGE,
+            env.WELCOME_SUBJECT!,
+            env.WELCOME_MESSAGE!
+                .replace('${given_name}', event.request.userAttributes.given_name)
+                .replace('${email}', event.request.userAttributes.email)
+                .replaceAll('${title}', 'I fatti di Garlasco'),
             {
                 mail: env.MAIL_ADMIN!,
                 operation: 'Richiesta nuova registrazione',

@@ -1,10 +1,23 @@
+NEXT (0.2)
+----------
+- create Hypothesis backend
+
+NEXT
+----
+- fix & generalise esc key precedence
+- AI usage:
+    - set rate limits
+    - manage remote errors
+- review chat chronology
+- review and stabilize code ...
+
 TODO: 0.1.3
 -----------
-- fix & generalise esc key precedence
-- set rate limits for AI usage
-- review chat chronology
-- review and stabilize code
+- fix maps scrolling on mobile 
+- add timeline scrolling on mobile
+- add search address in map-picker
 - relaod persons after person creation &check;
+- check mail settings for replies &check;
 
 TODO: 0.1.2
 -----------
