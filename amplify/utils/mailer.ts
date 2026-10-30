@@ -1,6 +1,5 @@
- import { SendEmailCommand } from "@aws-sdk/client-ses";
-import { SESClient } from "@aws-sdk/client-ses";
-import { env, send } from "process";
+import { SendEmailCommand, SESClient } from "@aws-sdk/client-ses";
+import { env } from "process";
 
 const sesClient = new SESClient({ region: env.AWS_REGION })
 
@@ -27,24 +26,37 @@ export async function sendEmail(to: string, replyTo: string | undefined, subject
 async function sendEmailInternal(to: string, replyTo: string | undefined, subject: string, body: string) {
 
     const pkg = await import("../../package.json")
-    const sender = `${pkg.displayName} <${pkg.author.email.replace('@', '@mail.')}>`
-
+    const email = `${pkg.displayName} <${pkg.author.email}>`
+    const isHTML = body.startsWith('<')
     const command = new SendEmailCommand({
-        Source: sender,
+        Source: email.replace('@', '@mail.'),
         Destination: {
             ToAddresses: [to],
         },
-        ReplyToAddresses: replyTo ? [replyTo] : [pkg.author.email],
+        ReplyToAddresses: replyTo ? [replyTo] : [email],
         Message: {
-            Subject: { Data: subject },
+            Subject: { 
+                Charset: "UTF-8",
+                Data: subject 
+            },
             Body: {
-                Html: body.startsWith('<') ? { Data: body } : undefined,
-                Text: !body.startsWith('<') ? { Data: body } : undefined,
+                Html: isHTML ? { 
+                    Charset: "UTF-8",
+                    Data: body 
+                } : undefined,
+                Text: !isHTML ? { 
+                    Charset: "UTF-8",
+                    Data: body 
+                } : {
+                    Charset: "UTF-8",
+                    //strip body of HTML tags for plain text version
+                    Data: body.replace(/<[^>]*>/g, '')
+                },
             },
         },
     })
 
-    console.log(`Invio email a ${to}: ${subject}`)
+    console.log(`Invio email`, command)
 
     return sesClient.send(command)
 

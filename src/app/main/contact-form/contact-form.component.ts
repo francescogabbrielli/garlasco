@@ -47,7 +47,7 @@ export class ContactFormComponent {
     try {
 
       const formValues = this.contactForm.getRawValue()
-      const { data, errors } = await this.userService.sendEmail(formValues.reason, formValues.message)
+      const { data, errors } = await this.userService.sendEmail(formValues.reason, formValues.message, "Contact Form")
 
       if (!data || errors?.[0]) {
         // DEBUG: console.error('Error sending email:', errors)

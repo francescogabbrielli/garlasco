@@ -35,6 +35,7 @@ const sendEmail = a
       replyTo: a.string(),
       subject: a.string().required(),
       message: a.string().required(),
+      operation: a.string()
     })
     .returns(a.ref('EmailResponse'))
     .authorization((allow) => [allow.authenticated()])

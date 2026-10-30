@@ -8,7 +8,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
         
         await sendEmail(
             event.request.userAttributes.email, 
-            undefined, 
+            undefined,
             env.WELCOME_SUBJECT!,
             env.WELCOME_MESSAGE!
                 .replace('${given_name}', event.request.userAttributes.given_name)

@@ -7,5 +7,5 @@ export const handler: Handler = async (event) => {
     operation: event.arguments.operation || 'Operazione non specificata',
     message: event.arguments.message
   })
-  return { success: true, message: (event.arguments.operation || 'Email') + ' inviata con successo a ' + event.arguments.to + ': ' + event.arguments.subject }
+  return { success: true, message: (event.arguments.operation || 'Mail') + ' inviata con successo a ' + event.arguments.to + ': ' + event.arguments.subject }
 }

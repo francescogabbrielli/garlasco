@@ -94,11 +94,12 @@ export class UserProfileService {
     localStorage.clear()
   }
 
-  async sendEmail(subject: string, message:string): Promise<{ data: any, errors?: GraphQLFormattedError[] }> {
+  async sendEmail(subject: string, message:string, operation: string | undefined = undefined): Promise<{ data: any, errors?: GraphQLFormattedError[] }> {
     return client.queries.sendEmail({
       to: this.user().getEmail(),
       subject,
-      message
+      message,
+      operation
     })
   }
 
