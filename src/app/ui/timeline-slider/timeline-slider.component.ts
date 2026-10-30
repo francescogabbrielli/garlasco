@@ -55,11 +55,42 @@ export class TimelineSliderComponent implements OnInit {
     this.generateTimeline()
   }
 
+  private updateViewRange(viewHalfWidth: number): void {
+    const viewCenter = (this.currentAbsoluteMin + this.currentAbsoluteMax) / 2;
+
+    const availableMin = this.minimum().getTime();
+    const availableMax = this.maximum().getTime();
+    const maxHalfWidth = Math.max(0, (availableMax - availableMin) / 2);
+    
+    viewHalfWidth = Math.min(viewHalfWidth, maxHalfWidth);
+    if (viewHalfWidth < this.ONE_DAY / 2) {
+      viewHalfWidth = Math.min(this.ONE_DAY / 2, maxHalfWidth);
+    }
+
+    let newAbsoluteMin = Math.round(viewCenter - viewHalfWidth);
+    let newAbsoluteMax = Math.round(viewCenter + viewHalfWidth);
+
+    if (newAbsoluteMin < availableMin) {
+      newAbsoluteMax += availableMin - newAbsoluteMin;
+      newAbsoluteMin = availableMin;
+    }
+    if (newAbsoluteMax > availableMax) {
+      newAbsoluteMin -= newAbsoluteMax - availableMax;
+      newAbsoluteMax = availableMax;
+    }
+
+    this.currentAbsoluteMin = newAbsoluteMin;
+    this.currentAbsoluteMax = newAbsoluteMax;
+
+    this.updateStep();
+    this.clampSelectedValues();
+    this.generateTimeline();
+  }
+
   onWheel(event: WheelEvent): void {
     if (!event.ctrlKey) return
     event.preventDefault()
-
-    const viewCenter = (this.minTimestamp + this.maxTimestamp) / 2;
+    
     let viewHalfWidth = Math.abs(this.currentAbsoluteMax - this.currentAbsoluteMin) / 2;
 
     if (event.deltaY > 0) {
@@ -68,30 +99,46 @@ export class TimelineSliderComponent implements OnInit {
       viewHalfWidth = viewHalfWidth * (1 - this.ZOOM_FACTOR); // Zoom In
     }
 
-    const availableMin = this.minimum().getTime()
-    const availableMax = this.maximum().getTime()
-    const maxHalfWidth = Math.max(0, (availableMax - availableMin) / 2)
-    viewHalfWidth = Math.min(viewHalfWidth, maxHalfWidth)
-    if (viewHalfWidth < this.ONE_DAY / 2)
-      viewHalfWidth = Math.min(this.ONE_DAY / 2, maxHalfWidth)
+    this.updateViewRange(viewHalfWidth)
+  }
 
-    let newAbsoluteMin = Math.round(viewCenter - viewHalfWidth)
-    let newAbsoluteMax = Math.round(viewCenter + viewHalfWidth)
-    if (newAbsoluteMin < availableMin) {
-      newAbsoluteMax += availableMin - newAbsoluteMin
-      newAbsoluteMin = availableMin
+  private initialTouchDistance: number = 0
+  private initialViewHalfWidth: number = 0
+
+  onTouchStart(event: TouchEvent): void {
+    if (event.touches.length === 2) {
+      event.preventDefault()
+      this.initialTouchDistance = this.getTouchDistance(event.touches[0], event.touches[1])
+      this.initialViewHalfWidth = Math.abs(this.currentAbsoluteMax - this.currentAbsoluteMin) / 2
     }
-    if (newAbsoluteMax > availableMax) {
-      newAbsoluteMin -= newAbsoluteMax - availableMax
-      newAbsoluteMax = availableMax
+  }
+
+  onTouchMove(event: TouchEvent): void {
+    if (event.touches.length === 2 && this.initialTouchDistance > 0) {
+      event.preventDefault()
+
+      const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1])
+      
+      // Calcoliamo il nuovo half-width basato sul rapporto rispetto all'inizio del pinch
+      const scale = this.initialTouchDistance / currentDistance
+      const viewHalfWidth = this.initialViewHalfWidth * scale
+
+      this.updateViewRange(viewHalfWidth)
     }
+  }
 
-    this.currentAbsoluteMin = newAbsoluteMin
-    this.currentAbsoluteMax = newAbsoluteMax
+  onTouchEnd(event: TouchEvent): void {
+    // Reset opzionale quando si sollevano le dita
+    if (event.touches.length < 2) {
+      this.initialTouchDistance = 0
+    }
+  }
 
-    this.updateStep()
-    this.clampSelectedValues()
-    this.generateTimeline() // Rigenera la timeline con i nuovi limiti zoomati
+  // Helper geometrico per la distanza tra due dita
+  private getTouchDistance(touch1: Touch, touch2: Touch): number {
+    const dx = touch2.clientX - touch1.clientX
+    const dy = touch2.clientY - touch1.clientY
+    return Math.sqrt(dx * dx + dy * dy)
   }
 
  /**

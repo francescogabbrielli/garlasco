@@ -20,7 +20,12 @@
     <span class="current-time-range">{{ getFormattedInterval() }}</span>
   </div>
   
-  <div class="slider-wrapper" (wheel)="onWheel($event)">
+  <div class="slider-wrapper" 
+    (wheel)="onWheel($event)"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+    >
 
     <!-- ASSE DEL TEMPO DINAMICO -->
     <div class="timeline-axis">
