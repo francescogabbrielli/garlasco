@@ -13,6 +13,7 @@ const GeneratedEvent = a.customType({
   description: a.string().required(),
   start_date: a.string().required(),
   start_position: a.ref('Coordinates').required(),
+  sources: a.string().required().array(),
 })
 
 const generateEvent = a.query()
