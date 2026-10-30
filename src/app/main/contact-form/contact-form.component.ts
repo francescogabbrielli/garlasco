@@ -1,7 +1,7 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Schema } from '../../../../amplify/data/resource';
 import { UserProfileService, UserData } from '../../user-profile.service';
+import { EscapeStack } from '../../escape-stack.service';
 
 @Component({
   selector: 'app-contact-form',
@@ -9,9 +9,11 @@ import { UserProfileService, UserData } from '../../user-profile.service';
   templateUrl: './contact-form.component.html',
   styleUrl: './contact-form.component.css',
 })
-export class ContactFormComponent {
+export class ContactFormComponent implements OnInit, OnDestroy {
 
   private readonly userService = inject(UserProfileService)
+
+  private readonly escapeStack = inject(EscapeStack)
 
   user = input<UserData>()
 
@@ -67,6 +69,16 @@ export class ContactFormComponent {
     } finally {
       this.isSending.set(false)
     }
+  }
+
+  private offEscape?: () => void
+
+  ngOnInit(): void {
+    this.offEscape = this.escapeStack.push(() => this.close.emit())
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
 
 }

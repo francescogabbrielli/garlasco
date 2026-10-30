@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit, ViewChild, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { MainComponent } from '../../main/main.component';
 import { GoogleMap } from '@angular/google-maps';
 import { generateClient } from 'aws-amplify/data';
@@ -7,6 +7,7 @@ import { generateClient } from 'aws-amplify/data';
 import { Schema } from '../../../../amplify/data/resource';
 
 import { UserProfileService } from '../../user-profile.service';
+import { EscapeStack } from '../../escape-stack.service';
 import { GeoService } from '../../geo.service';
 import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
 
@@ -28,11 +29,13 @@ const client = generateClient<Schema>();
   templateUrl: './event-popup.component.html',
   styleUrl: './event-popup.component.css',
 })
-export class EventPopupComponent implements OnInit {
+export class EventPopupComponent implements OnInit, OnDestroy {
 
   private userService = inject(UserProfileService)
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
+  private escapeStack = inject(EscapeStack)
+  private offEscape?: () => void
 
   main = inject(MainComponent)
 
@@ -105,7 +108,6 @@ export class EventPopupComponent implements OnInit {
     }
   }
 
-  @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.mapLocation()) {
       this.mapClose()
@@ -130,12 +132,17 @@ export class EventPopupComponent implements OnInit {
   private mapDialog!: ElementRef<HTMLDialogElement>;
 
   async ngOnInit() {
+    this.offEscape = this.escapeStack.push(() => this.onEscape())
     try {
       await this.mapsLoader.load()
       this.isMapReady.set(true)
     } catch {
       //this.mapError.set('Impossibile caricare Google Maps.')
     }
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
   
   isMapReady = signal(false)

@@ -72,7 +72,7 @@
         <div class="user-dropdown" role="menu">
           <button id="contact_button" type="button" 
             role="menuitem" 
-            (click)="this.contacts.set(true)">
+            (click)="this.openContactForm()">
             <span aria-hidden="true">📝</span>
             Form di contatto
           </button>
@@ -130,7 +130,7 @@
 
       <!-- pick the version from package.json -->
       <p class="version">versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
-      <small class="author">{{ appAuthor() }} + AI (Copilot, Claude, Gemini, ChatGPT) @ 2026</small>
+      <small class="author">{{ appAuthor() }} + AI (Copilot, Kiro, Gemini, ChatGPT) @ 2026</small>
       <a [style.textAlign]="'right'" href="/privacy-policy" target="privacy">Privacy Policy</a>
 
     </section>

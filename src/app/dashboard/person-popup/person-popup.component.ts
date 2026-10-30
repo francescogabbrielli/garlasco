@@ -1,8 +1,10 @@
-import { Component, HostListener, output, signal, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { generateClient } from 'aws-amplify/data';
 import { PERSON_TYPES } from '../../../../amplify/data/enums';
 import type { Schema } from '../../../../amplify/data/resource';
+
+import { EscapeStack } from '../../escape-stack.service';
 
 type Person = Schema['Person']['type']
 
@@ -14,7 +16,10 @@ const client = generateClient<Schema>()
   templateUrl: './person-popup.component.html',
   styleUrl: './person-popup.component.css',
 })
-export class PersonDialogComponent implements OnInit {
+export class PersonDialogComponent implements OnInit, OnDestroy {
+
+  private escapeStack = inject(EscapeStack)
+  private offEscape?: () => void
 
   created = output<Person>()
   closed = output<void>()
@@ -32,8 +37,13 @@ export class PersonDialogComponent implements OnInit {
   })
 
   ngOnInit(): void {
+    this.offEscape = this.escapeStack.push(() => this.onEscape())
     Array.from(document.getElementsByTagName('input'))
       .forEach((el:HTMLInputElement) => el.hasAttribute('autofocus') && el.focus())
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
 
   async submit(): Promise<void> {
@@ -62,7 +72,6 @@ export class PersonDialogComponent implements OnInit {
     }
   }
 
-  @HostListener('document:keydown.escape')
   onEscape(): void {
     this.close()
   }

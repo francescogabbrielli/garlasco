@@ -4,7 +4,7 @@ NEXT (0.2)
 
 NEXT
 ----
-- fix & generalise esc key precedence
+- fix & generalise esc key precedence &check;
 - AI usage:
     - set rate limits
     - manage remote errors
@@ -16,7 +16,7 @@ TODO: 0.1.3
 - fix maps scrolling on mobile &check;
 - add timeline scrolling on mobile &check;
 - add search address in map-picker &check;
-- relaod persons after person creation &check;
+- reload persons after person creation &check;
 - check mail settings for replies &check;
 
 TODO: 0.1.2

@@ -1,10 +1,11 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, input, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 
 import type { Schema } from '../../../../amplify/data/resource';
 
 import { GeoService } from '../../geo.service';
 import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
+import { EscapeStack } from '../../escape-stack.service';
 
 import { DEFAULT_COORDINATES } from '../../app.constants';
 
@@ -16,10 +17,12 @@ type Coordinates = Schema['Coordinates']['type']
   templateUrl: './map-picker.component.html',
   styleUrl: './map-picker.component.css',
 })
-export class MapPickerComponent implements OnInit {
+export class MapPickerComponent implements OnInit, OnDestroy {
 
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
+  private escapeStack = inject(EscapeStack)
+  private offEscape?: () => void
 
   title = input('Seleziona la posizione')
   initialPosition = input<Coordinates | null>(null)
@@ -48,12 +51,17 @@ export class MapPickerComponent implements OnInit {
   @ViewChild('mapSearchContainer', { static: true }) searchContainer!: ElementRef<HTMLDivElement>
 
   async ngOnInit() {
+    this.offEscape = this.escapeStack.push(() => this.onEscape())
     try {
       await this.mapsLoader.load()
       this.mapReady.set(true)
     } catch {
       this.mapError.set('Impossibile caricare Google Maps.')
     }
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
 
   async onMapReady(map: google.maps.Map): Promise<void> {
@@ -140,7 +148,6 @@ export class MapPickerComponent implements OnInit {
     if (bounds) this.picked.emit(this.geoService.toCoordinates(bounds))
   }
 
-  @HostListener('document:keydown.escape')
   onEscape(): void {
     this.close()
   }

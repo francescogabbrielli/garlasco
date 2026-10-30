@@ -1,4 +1,5 @@
 import { Component, computed, effect, HostListener, inject, signal } from '@angular/core';
+import { EscapeStack } from '../escape-stack.service';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
 
@@ -23,6 +24,8 @@ import { BotChatComponent } from './bot-chat/bot-chat.component';
   styleUrl: './main.component.css',
 })
 export class MainComponent {
+
+  escapeStack = inject(EscapeStack)
 
   version = signal('0.0.0')
   appAuthor = signal('')
@@ -75,6 +78,11 @@ export class MainComponent {
     }
   }
 
+  openContactForm(): void {
+    this.isUserMenuOpen = false
+    this.contacts.set(true)
+  }
+
   openAboutDialog(): void {
     this.isUserMenuOpen = false
     this.isAboutDialogOpen = true
@@ -95,7 +103,10 @@ export class MainComponent {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
-    this.closeHelpPopup()
+    if (this.escapeStack.isEmpty()) {
+      this.closeAboutDialog()
+      this.isUserMenuOpen = false   
+    }
   }
 
 }

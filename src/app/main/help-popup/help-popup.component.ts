@@ -1,5 +1,7 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+
+import { EscapeStack } from '../../escape-stack.service';
 
 @Component({
   selector: 'app-help-popup',
@@ -7,10 +9,12 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './help-popup.component.html',
   styleUrl: './help-popup.component.css',
 })
-export class HelpPopupComponent {
+export class HelpPopupComponent implements OnInit, OnDestroy {
 
   private http = inject(HttpClient)
-  
+  private escapeStack = inject(EscapeStack)
+  private offEscape?: () => void
+
   page = input.required<string>()
   title = input.required<string>()
   content = signal<string>('')
@@ -42,5 +46,13 @@ export class HelpPopupComponent {
         })
       onCleanup(() => sub.unsubscribe())
     })
+  }
+
+  ngOnInit(): void {
+    this.offEscape = this.escapeStack.push(() => this.close.emit())
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
 }
