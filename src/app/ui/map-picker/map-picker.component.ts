@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, inject, input, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 
 import type { Schema } from '../../../../amplify/data/resource';
@@ -45,6 +45,8 @@ export class MapPickerComponent implements OnInit {
 
   private mapInstance?: google.maps.Map
 
+  @ViewChild('mapSearchContainer', { static: true }) searchContainer!: ElementRef<HTMLDivElement>
+
   async ngOnInit() {
     try {
       await this.mapsLoader.load()
@@ -54,7 +56,37 @@ export class MapPickerComponent implements OnInit {
     }
   }
 
-  onMapReady(map: google.maps.Map): void {
+  async onMapReady(map: google.maps.Map): Promise<void> {
+
+    const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement()
+
+    // Inserisci il web component nel container HTML
+    this.searchContainer.nativeElement.appendChild(placeAutocomplete)
+
+    // Ascolta la selezione dell'indirizzo
+    placeAutocomplete.addEventListener('gmp-select', async (event: any) => {
+      const placePrediction = event.placePrediction
+      const place = placePrediction.toPlace()
+
+      // Recupera i dati geografici
+      await place.fetchFields({ fields: ['displayName', 'formattedAddress', 'location', 'viewport'] })
+
+      const location = place.location
+      if (location) {
+        const lat = location.lat();
+        const lng = location.lng();
+        // Muovi la mappa
+        map.panTo({ lat, lng });        
+        if (place.viewport) {
+          map.fitBounds(place.viewport);
+        }
+      }
+    })
+
+    map.addListener('bounds_changed', () => {
+      placeAutocomplete.locationBias = map.getBounds()?.toJSON() as google.maps.places.LocationBias
+    })    
+
     this.mapInstance = map
     const initial = this.initialPosition()
     if (!initial) return
@@ -65,6 +97,8 @@ export class MapPickerComponent implements OnInit {
       map.setZoom(16)
       this.selectedPoint.set({ lat: initial.latitude, lng: initial.longitude })
     }
+
+
   }
 
   async onMapClick(event: google.maps.MapMouseEvent | google.maps.IconMouseEvent): Promise<void> {

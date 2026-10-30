@@ -39,3 +39,14 @@ google-map {
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+.map-search-container {
+  min-width: 200px;
+  max-width: 500px;
+
+  gmp-place-autocomplete {
+    display: block;
+    width: 100% !important;
+  }
+
+}
