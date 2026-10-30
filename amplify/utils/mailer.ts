@@ -38,7 +38,8 @@ async function sendEmailInternal(to: string, replyTo: string | undefined, subjec
         Message: {
             Subject: { Data: subject },
             Body: {
-                Text: { Data: body },
+                Html: body.startsWith('<') ? { Data: body } : undefined,
+                Text: !body.startsWith('<') ? { Data: body } : undefined,
             },
         },
     })
