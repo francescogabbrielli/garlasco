@@ -104,20 +104,21 @@
         </dd>
       }
 
+      <dt>Persone</dt>
+      <dd>
+          <ul class="actors">
+            @for (p of actors(); track p.id) {
+              <li><span class="badge">{{ p.name }} {{p.surname}}</span></li>
+            }
+          </ul>
+      </dd>
+
       <dt>Rilevanza</dt>
       <dd><app-tickbar [level]="event().relevance"></app-tickbar></dd>
 
       <dt>Affidabilità</dt>
       <dd><app-tickbar [level]="event().reliability || 0"></app-tickbar></dd>
 
-      <dt>Persone</dt>
-      <dd>
-          <ul class="actors">
-            @for (p of actors(); track p.id) {
-              <li><app-person-marker [person]="p"></app-person-marker></li>
-            }
-          </ul>
-      </dd>
     </dl>
     }
   </section>

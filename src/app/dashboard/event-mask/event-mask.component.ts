@@ -1,9 +1,9 @@
 import { Component, computed, effect, ElementRef, inject, input, model, output, signal, ViewChild } from '@angular/core'
 import { FormControl, FormGroup, PristineChangeEvent, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
-import { generateClient } from 'aws-amplify/data'
 
 import { UserProfileService } from '../../user-profile.service'
+import { DataService, type SelectedActor } from '../../data.service'
 import { GeoService } from '../../geo.service'
 
 import { RELEVANCE_LABELS, RELIABILITY_LABELS, LABEL_MAP } from '../../app.constants'
@@ -20,15 +20,6 @@ type EventType = Schema['Event']['type']['type']
 type Person = Schema['Person']['type']
 type Coordinates = Schema['Coordinates']['type']
 
-type SelectedActor = { 
-  rowId: number;
-  personId: string;
-  personQuery: string;
-  role: string
-}
-
-const client = generateClient<Schema>()
-
 export interface EventMaskEvent {
   personCreated: Person[]
 }
@@ -42,6 +33,8 @@ export interface EventMaskEvent {
 export class EventMaskComponent {
 
   private readonly COORDS_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
+
+  private readonly dataService = inject(DataService)
 
   people = input<Person[]>([])
   event = input<EventModel | null>(null)
@@ -80,8 +73,9 @@ export class EventMaskComponent {
   }
 
   private async loadEvent(): Promise<void> {
-    const e = this.event()
-    if (!e?.id) return
+    const id = this.event()?.id
+    if (!id) return
+    const e = await this.dataService.loadEvent(id)
     this.eventForm.patchValue({
       owner: e.owner,
       type: e.type,
@@ -103,25 +97,25 @@ export class EventMaskComponent {
       },
     })
 
-    const { data } = await client.models.EventPerson.list({ filter: { eventId: { eq: e.id } } })
+    const { data }  = await e.actors()
     if (this.event()?.id !== e.id) return
-    this.existingActorIds = data.map(a => a.id)
+    this.loadedEventActors = data.map(a => a.id)
     if (data.length) {
       this.nextActorRowId = data.length
-      this.selectedActors = data.map((a, i) => ({
-        rowId: i,
-        personId: a.personId,
-        personQuery: this.personName(a.personId),
-        role: a.role,
-      }))
+      this.selectedActors = data
+        .map((a, i) => ({
+          rowId: i,
+          personId: a.personId,
+          personQuery: this.personName(a.personId),
+          role: a.role,
+        }))        
+        .sort((a, b) => this.personFullName(a.personId).localeCompare(this.personFullName(b.personId)))
     }
 
     this.sources = e.sources ?? []
 
     this.eventForm.markAsPristine()
   }
-
-  private existingActorIds: string[] = []
 
   userService = inject(UserProfileService)
   geoService = inject(GeoService)
@@ -138,6 +132,7 @@ export class EventMaskComponent {
   actorSelectionError = false
   actorRoleError = false
   private nextActorRowId = 1
+  private loadedEventActors: string[] = []
   readonly newPersonOption = '__new_person__'
   readonly displayPerson = (person: Person | string | null): string => {
     if (person === this.newPersonOption) return ''
@@ -244,6 +239,11 @@ export class EventMaskComponent {
     const person = this.allPeople().find((item) => item.id === personId)
     return person ? `${person.name} ${person.surname}` : ''
   }
+
+  personFullName(personId: string): string {
+    const person = this.allPeople().find((item) => item.id === personId)
+    return person ? `${person.surname} ${person.name}` : ''
+  } 
 
   addSource(): void {
     this.sources.push("")
@@ -355,6 +355,10 @@ export class EventMaskComponent {
 
   async submitEvent(): Promise<void> {
 
+    const user = this.userService.user()
+    if (!user)
+      return
+
     this.eventForm.markAllAsTouched()
     this.submitError.set('')
     this.actorSelectionError = this.selectedActors.length === 0
@@ -406,73 +410,49 @@ export class EventMaskComponent {
 
     this.isSaving.set(true)
 
+    const startPosition:Coordinates = {
+      latitude: Number(start.latitude),
+      longitude: Number(start.longitude),
+      radius: Number(start.radius),
+    }
+
+    const endPosition:Coordinates | null = end.latitude ? {
+      latitude: Number(end.latitude),
+      longitude: Number(end.longitude),
+      radius: Number(end.radius),
+    } : null
+
+    const payload = {
+      id: this.event()?.id,
+      owner: this.eventForm.controls.owner.value || user.getId(),
+      type,
+      name: this.eventForm.controls.name.value.trim(),
+      description: this.eventForm.controls.description.value.trim(),
+      start_date: new Date(start.date).toISOString(),
+      end_date: end.date ? new Date(end.date).toISOString() : null,
+      start_position: startPosition,
+      end_position: endPosition,
+      geoHash: this.geoService.computeGeoHash(
+        this.geoService.computeCenterPosition(startPosition, endPosition)),
+      sources: this.sources,
+      reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
+      relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0
+    }
+
     try {
+      
+      const data = await this.dataService.saveEvent(payload, this.loadedEventActors, this.selectedActors)
 
-      const startPosition:Coordinates = {
-        latitude: Number(start.latitude),
-        longitude: Number(start.longitude),
-        radius: Number(start.radius),
-      }
-
-      const endPosition:Coordinates | null = end.latitude ? {
-        latitude: Number(end.latitude),
-        longitude: Number(end.longitude),
-        radius: Number(end.radius),
-      } : null
-
-      const payload = {
-        owner: this.eventForm.controls.owner.value || this.userService.user().getId(),
-        type,
-        name: this.eventForm.controls.name.value.trim(),
-        description: this.eventForm.controls.description.value.trim(),
-        start_date: new Date(start.date).toISOString(),
-        end_date: end.date ? new Date(end.date).toISOString() : null,
-        start_position: startPosition,
-        end_position: endPosition,
-        geoHash: this.geoService.computeGeoHash(
-          this.geoService.computeCenterPosition(startPosition, endPosition)),
-        sources: this.sources,
-        reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
-        relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
-      }
-
-      const existingId = this.event()?.id
-      const { data, errors } = existingId
-        ? await client.models.Event.update({ id: existingId, ...payload })
-        : await client.models.Event.create(payload)
-
-      if (errors?.length || !data?.id) {
-        console.error('Error saving Event', payload, errors)
-        this.submitError.set('Errore durante il salvataggio dell’evento! Contattare l’amministratore.')
-        return
-      }
-
-      // refresh associated actors
-      if (existingId) {
-        for (const id of this.existingActorIds) {
-          await client.models.EventPerson.delete({ id })
-        }
-        this.existingActorIds = []
-      }
-
-      for (const actor of this.selectedActors) {
-        const { errors: actorErrors } = await client.models.EventPerson.create({
-          eventId: data.id,
-          eventName: data.name,
-          eventStartDate: data.start_date,
-          eventGeoHash: data.geoHash,
-          personId: actor.personId,
-          role: actor.role.trim(),
-        })
-        if (actorErrors?.length) {
-          this.submitError.set(`L’evento è stato creato, ma non è stato possibile associare ${this.personName(actor.personId)}: ${actorErrors[0].message}`)
-          return
-        }
+      if (!payload.id && !user.isAdmin()) {
+        this.userService.sendAdminEmail(
+            `Evento creato: ${data.name} con id '${data.id}'`,
+            `<p>Un nuovo evento <i>${data.name}</i> è stato creato con successo da <b>${user?.getName()} ${user?.getSurname()}</b>.</p>`)
       }
 
       this.saved.emit(this.eventMaskEvent())
 
     } catch (error) {
+      console.error('Error saving Event', payload, error)
       const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
       this.submitError.set(message);
     } finally {
@@ -489,18 +469,12 @@ export class EventMaskComponent {
     if (!confirmed) return
 
     this.isSaving.set(true)
+
     try {
-      const { errors } = await client.models.Event.delete({ id: existingId })
-      if (errors?.length) {
-        console.error('Error deleting Event', errors)
-        this.submitError.set('Errore durante l’eliminazione dell’evento! Contattare l’amministratore.')
-        return
-      }
-      //TODO: gestire eventuali errori durante l'eliminazione degli attori associati all'evento
-      for (const id of this.existingActorIds) {
-        await client.models.EventPerson.delete({ id })
-      }
+      await this.dataService.deleteEvent(existingId, this.loadedEventActors)
       this.saved.emit(this.eventMaskEvent())
+    } catch(error) {
+      this.submitError.set('Errore durante l’eliminazione dell’evento! Contattare l’amministratore.')
     } finally {
       this.isSaving.set(false)
     }

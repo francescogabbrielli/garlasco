@@ -27,6 +27,12 @@ interface Pagination {
   hasMore: boolean
 }
 
+export type SelectedActor = { 
+  rowId: number;
+  personId: string;
+  personQuery: string;
+  role: string
+}
 
 @Injectable({
   providedIn: 'root',
@@ -123,7 +129,12 @@ export class DataService {
           filter: filter.geoHash ? { 
             eventGeoHash: { beginsWith: filter.geoHash } 
           } : undefined,
-          selectionSet: ['event.*'],
+          selectionSet: ['event.id', 'event.owner', 
+            'event.type', 'event.name', 'event.description',
+            'event.start_date', 'event.end_date', 
+            'event.start_position.*', 'event.end_position.*',
+            'event.relevance', 'event.reliability'
+          ],
           limit: 10,
           nextToken: tokenForPerson || undefined // Usiamo il token se esiste
         }
@@ -162,5 +173,57 @@ export class DataService {
       })
     )
   }
+
+  async loadEvent(id: string): Promise<Event> {
+    const { data, errors } = await client.models.Event.get({ id })
+    if (errors?.length || !data?.id) {
+      throw new Error('Errore durante il caricamento dell’evento: '+ (errors?.[0]?.message || 'Errore sconosciuto'));
+    }
+    return data as Event
+  }
+
+  async saveEvent(event: any, previousEventActors:  string[], actors: SelectedActor[]): Promise<Event> {
+    // create / save event
+    const { data, errors } = event.id
+      ? await client.models.Event.update(event)
+      : await client.models.Event.create(event)
+    if (errors?.length || !data?.id) {
+      throw new Error('Errore durante il salvataggio dell’evento');
+    }
+
+    // refresh associated actors
+    if (event.id) {
+      for (const id of previousEventActors) {
+        await client.models.EventPerson.delete({ id })
+      }
+    }
+    for (const actor of actors) {
+      const { errors: actorErrors } = await client.models.EventPerson.create({
+        eventId: data.id,
+        eventName: data.name,
+        eventStartDate: data.start_date,
+        eventGeoHash: data.geoHash,
+        personId: actor.personId,
+        role: actor.role.trim(),
+      })
+      if (actorErrors?.length) {
+        throw new Error(`L’evento è stato creato, ma non è stato possibile associare ${actor.personQuery}: ${actorErrors[0].message}`)
+      }
+    }
+
+    return data as Event
+  }
+
+  async deleteEvent(id: string, eventActors: string[]): Promise<void> {
+    const { errors } = await client.models.Event.delete({ id })
+    if (errors?.length) {
+      console.error('Error deleting Event', errors)
+      throw new Error(errors[0]?.message || 'Errore sconosciuto durante l’eliminazione dell’evento');
+    }
+    //TODO: gestire eventuali errori durante l'eliminazione degli attori associati all'evento
+    for (const id of eventActors) {
+      await client.models.EventPerson.delete({ id })
+    }
+  }    
 
 }
