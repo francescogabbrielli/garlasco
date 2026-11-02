@@ -1,3 +1,19 @@
+export interface BotError {
+  source: 'BEDROCK' | 'TAVILY' | 'APPLICATION' | 'UNKNOWN';
+  code: string;
+  message: string;
+  retryable: boolean;
+  retryAfterSeconds?: number;
+  requestId?: string;
+}
+
+export class BotServiceError extends Error {
+  constructor(readonly details: BotError) {
+    super(JSON.stringify(details));
+    this.name = 'BotServiceError';
+  }
+}
+
 export interface BotDefinition {
   definition: string;
   name: string;

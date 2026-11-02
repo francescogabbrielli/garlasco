@@ -2,7 +2,7 @@ import { OnDestroy, computed, signal, inject } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { bots } from '../../../../amplify/data/bots';
+import { bots, BotError } from '../../../../amplify/data/bots';
 import type { Schema } from '../../../../amplify/data/resource';
 import { MainComponent } from '../main.component';
 
@@ -64,6 +64,65 @@ export class BotChatComponent implements OnDestroy {
   main = inject(MainComponent)
 
   isBotMenuOpen = signal(false)
+
+  isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+  }
+
+  isBotError(value: unknown): value is BotError {
+    return (
+      this.isRecord(value) &&
+      ['BEDROCK', 'TAVILY', 'APPLICATION', 'UNKNOWN'].includes(
+        String(value['source'])
+      ) &&
+      typeof value['code'] === 'string' &&
+      typeof value['message'] === 'string' &&
+      typeof value['retryable'] === 'boolean'
+    );
+  }
+
+  normalizeBotError(error: unknown): BotError {
+    const root = this.isRecord(error) ? error : {};
+
+    const entries = Array.isArray(root['errors'])
+      ? root['errors']
+      : [error];
+
+    for (const entry of entries) {
+      if (!this.isRecord(entry)) continue;
+
+      const message =
+        typeof entry['message'] === 'string' ? entry['message'] : '';
+
+      // Eventuale BotError serializzato dal nostro backend.
+      try {
+        const parsed: unknown = JSON.parse(message);
+        if (this.isBotError(parsed)) return parsed;
+      } catch {
+        // Un normale messaggio di errore non è JSON.
+      }
+
+      const type = entry['errorType'] ?? entry['name'];
+
+      // Nel percorso della conversazione è il tipico errore
+      // di throttling restituito dall'invocazione Bedrock.
+      if (type === 'ThrottlingException') {
+        return {
+          source: 'BEDROCK',
+          code: 'BEDROCK_THROTTLED',
+          message: 'Il servizio AI è al limite. Riprova tra poco.',
+          retryable: true
+        };
+      }
+    }
+
+    return {
+      source: 'UNKNOWN',
+      code: 'CONVERSATION_FAILED',
+      message: 'Impossibile completare la risposta.',
+      retryable: false
+    }
+  }
 
   toggleBotSelect(): void {
     this.isBotMenuOpen.set(!this.isBotMenuOpen())
@@ -130,14 +189,12 @@ export class BotChatComponent implements OnDestroy {
         const subscription = conversation.onStreamEvent({
           next: event => this.onStream(id, event),
           error: e => {
+            if (this.destroyed) return
+            const botError = this.normalizeBotError(e)
             console.error('Errore nello streaming del messaggio.', e)
-            const message =
-                e instanceof Error
-                  ? e.message
-                  : e?.errors?.map(error => error.message).join(' - ')
             this.updateSession(id, {
               busy: false,
-              error: 'Errore [' + message + ']'
+              error: botError.message
             })
           }
         })
@@ -157,10 +214,11 @@ export class BotChatComponent implements OnDestroy {
       // busy viene azzerato al termine dello streaming.
     } catch (error) {
       if (this.destroyed) return
-
+      const botError = this.normalizeBotError(error)
+      console.error('Errore invio', botError)
       this.updateSession(id, {
         busy: false,
-        error: error instanceof Error ? error.message : 'Invio non riuscito.'
+        error: botError.message
       })
     }
   }

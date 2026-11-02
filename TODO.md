@@ -6,8 +6,8 @@ NEXT
 ----
 - fix & generalise esc key precedence &check;
 - AI usage:
-    - set rate limits
-    - manage remote errors
+    - set rate limits (maybe next)
+    - manage remote errors &check; (needs improvements)
 - review chat chronology
 - review and stabilize code ...
 
