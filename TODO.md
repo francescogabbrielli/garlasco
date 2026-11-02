@@ -2,13 +2,15 @@ NEXT (0.2)
 ----------
 - create Hypothesis backend
 
-NEXT
-----
+TODO: 0.1.4
+-----------
+- add version history
 - fix & generalise esc key precedence &check;
 - AI usage:
-    - set rate limits (maybe next)
+    - set rate limits &cross; (maybe next)
     - manage remote errors &check; (needs improvements)
 - review chat chronology
+- improve mail templates and mailing backend &check;
 - review and stabilize code ...
 
 TODO: 0.1.3

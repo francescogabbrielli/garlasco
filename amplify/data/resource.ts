@@ -5,7 +5,6 @@ import { sendEmailFn } from '../functions/send-email/resource';
 import { searchWebFn } from '../functions/search-web/resource';
 import { analyst, detective, researcher } from './bots-defs';
 
-
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
   type: a.ref('EventType').required(),
@@ -32,7 +31,7 @@ const EmailResponse = a.customType({
 const sendEmail = a
     .query()
     .arguments({
-      to: a.string().required(),
+      to: a.string(),
       replyTo: a.string(),
       subject: a.string().required(),
       message: a.string().required(),

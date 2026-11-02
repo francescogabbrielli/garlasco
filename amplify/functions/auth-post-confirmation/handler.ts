@@ -1,21 +1,22 @@
 import type { PostConfirmationTriggerHandler } from 'aws-lambda';
-import { env } from 'process';
-import { sendEmail } from '../../utils/mailer';
+import { sendEmail, loadEmailBody } from '../../utils/mailer';
 
 export const handler: PostConfirmationTriggerHandler = async (event) => {
-   
+ 
+    const pkg = await import("../../package.json")
+
     try {
         
+        const email = event.request.userAttributes.email.includes('<') 
+            ? event.request.userAttributes.email
+            : `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name} <${event.request.userAttributes.email}>`
+
         await sendEmail(
-            event.request.userAttributes.email, 
+            email,
             undefined,
-            env.WELCOME_SUBJECT!,
-            env.WELCOME_MESSAGE!
-                .replace('${given_name}', event.request.userAttributes.given_name)
-                .replace('${email}', event.request.userAttributes.email)
-                .replaceAll('${title}', 'I fatti di Garlasco'),
+            "Benvenuti!",
+            await loadEmailBody('registration', email, pkg.displayName, pkg.website),
             {
-                mail: env.MAIL_ADMIN!,
                 operation: 'Richiesta nuova registrazione',
                 message: event.request.userAttributes.given_name + " " + event.request.userAttributes.family_name + ' (' + event.request.userAttributes.email + ') ha effettuato la registrazione.'
             }

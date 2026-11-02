@@ -49,7 +49,7 @@ export class ContactFormComponent implements OnInit, OnDestroy {
     try {
 
       const formValues = this.contactForm.getRawValue()
-      const { data, errors } = await this.userService.sendEmail(formValues.reason, formValues.message, "Contact Form")
+      const { data, errors } = await this.userService.sendAdminEmail(formValues.reason, formValues.message)
 
       if (!data || errors?.[0]) {
         // DEBUG: console.error('Error sending email:', errors)

@@ -57,7 +57,7 @@
                     <!-- Header / Logo -->
                     <tr>
                         <td align="center" style="padding: 40px 20px 20px 20px; background-color: #ffffff; border-bottom: 1px solid #eef2f1;">
-                            <h1 style="font-family: Georgia, serif; font-size: 32px; margin: 0;">I fatti di Garlasco</h1>
+                            <h1 style="font-family: Georgia, serif; font-size: 32px; margin: 0;">${siteTitle}</h1>
                         </td>
                     </tr>
 
@@ -98,7 +98,7 @@
                                 <tr>
                                     <td align="center" style="border-radius: 6px; background-color: #4f46e5;">
                                         <!-- Inserisci qui il link alla tua applicazione web -->
-                                        <a href="https://garlasco.francescogabbrielli.it" target="_blank" class="button" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 6px; padding: 14px 32px; border: 1px solid #4f46e5; display: inline-block; font-weight: 600;">
+                                        <a href="${website}" target="_blank" class="button" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 6px; padding: 14px 32px; border: 1px solid #4f46e5; display: inline-block; font-weight: 600;">
                                             Accedi al tuo profilo
                                         </a>
                                     </td>
@@ -118,12 +118,10 @@
                     <tr>
                         <td style="padding: 30px 40px 40px 40px; text-align: center;">
                             <p style="color: #888888; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">
-                                Ricevi questa email perché ti sei registrato su <strong>I fatti di Garlasco</strong>.<br>
+                                Ricevi questa email perché ti sei registrato su <strong>${siteTitle}</strong>.<br>
                                 Se non hai effettuato tu questa operazione, contatta immediatamente il nostro supporto.
                             </p>
-                            <p style="color: #aaaaaa; font-size: 12px; margin: 0;">
-                                © 2026 Nome Azienda S.r.l. - Tutti i diritti riservati.
-                            </p>
+                            <p style="color: #aaaaaa; font-size: 12px; margin: 0;">© 2026 ${siteTitle}</p>
                         </td>
                     </tr>
 

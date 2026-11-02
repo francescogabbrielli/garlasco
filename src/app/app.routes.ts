@@ -2,7 +2,6 @@ import { Routes } from '@angular/router'
 import { inject } from '@angular/core'
 import { Router } from '@angular/router'
 import { UserProfileService } from './user-profile.service'
-import { HomeComponent } from './main/home/home.component';
 
 const adminAccessGuard = async () => {
 	const userService = inject(UserProfileService)

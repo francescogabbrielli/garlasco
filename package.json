@@ -5,9 +5,11 @@
     "name": "Francesco Gabbrielli",
     "email": "garlasco@francescogabbrielli.it"
   },
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Sistema (sperimentale) integrato e normalizzato di ricerca/indagine. Lavori in corso",
-  "lastUpdate": "2026-10-30",
+  "lastUpdate": "2026-11-03",
+  "website": "https://garlasco.francescogabbrielli.it/",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",
@@ -28,6 +30,7 @@
     "@angular/platform-browser": "^20.3.32",
     "@angular/platform-browser-dynamic": "^20.3.32",
     "@angular/router": "^20.3.32",
+    "@aws-amplify/backend-ai": "^1.6.0",
     "@aws-amplify/ui-angular": "^6.0.1",
     "@aws-sdk/client-ses": "^3.1155.0",
     "@googlemaps/js-api-loader": "^2.1.3",

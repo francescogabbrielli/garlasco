@@ -7,21 +7,13 @@ describe('ContactFormComponent', () => {
   let component: ContactFormComponent
   let fixture: ComponentFixture<ContactFormComponent>
 
-  vi.mock('aws-amplify/data', () => ({
-    generateClient: () => ({
-      queries: {
-        sendEmail: vi.fn().mockResolvedValue({ data: { success: true }, errors: null }),
-      },
-    }),
-  }))
-
-  const mockUserData = {
+    const mockUserData = {
     getId: () => '123',
     getEmail: () => 'utente@test.com',
   }
 
   const mockUserService = {
-      sendEmail: vi.fn(),
+      sendAdminEmail: vi.fn(),
       user: () => mockUserData
   }
 
@@ -47,7 +39,7 @@ describe('ContactFormComponent', () => {
 
   it('should not submit if the user signal is not set', async () => {
     await component.submitEvent()
-    expect(mockUserService.sendEmail).not.toHaveBeenCalled()
+    expect(mockUserService.sendAdminEmail).not.toHaveBeenCalled()
   })
 
   it('should show an error if the form is incomplete on submit', async () => {
@@ -56,7 +48,7 @@ describe('ContactFormComponent', () => {
     await component.submitEvent()
 
     expect(component.sendError()).toBe('Completa tutti i campi obbligatori prima di inviare il form.')
-    expect(mockUserService.sendEmail).not.toHaveBeenCalled()
+    expect(mockUserService.sendAdminEmail).not.toHaveBeenCalled()
   })
 
   it('should successfully submit when the form is valid', async () => {
@@ -67,7 +59,7 @@ describe('ContactFormComponent', () => {
       message: 'Questo è un messaggio di test.',
     })
 
-    mockUserService.sendEmail.mockResolvedValue({
+    mockUserService.sendAdminEmail.mockResolvedValue({
       data: { success: true },
       errors: null,
     })
@@ -76,7 +68,7 @@ describe('ContactFormComponent', () => {
 
     await component.submitEvent()
 
-    expect(mockUserService.sendEmail).toHaveBeenCalledWith('Richiesta informazioni', 'Questo è un messaggio di test.')
+    expect(mockUserService.sendAdminEmail).toHaveBeenCalledWith('Richiesta informazioni', 'Questo è un messaggio di test.')
     expect(sentEmitSpy).toHaveBeenCalled()
     expect(component.sendError()).toBe('')
     expect(component.isSending()).toBe(false)
@@ -89,7 +81,7 @@ describe('ContactFormComponent', () => {
       message: 'Errore atteso',
     });
 
-    mockUserService.sendEmail.mockResolvedValue({
+    mockUserService.sendAdminEmail.mockResolvedValue({
       data: null,
       errors: [{ message: 'Impossibile inviare l`email: utente non autorizzato' }],
     });
@@ -107,7 +99,7 @@ describe('ContactFormComponent', () => {
       message: 'Test crash di rete',
     });
 
-    mockUserService.sendEmail.mockRejectedValue(new Error('Network Error - Connessione assente'));
+    mockUserService.sendAdminEmail.mockRejectedValue(new Error('Network Error - Connessione assente'));
 
     await component.submitEvent();
 
