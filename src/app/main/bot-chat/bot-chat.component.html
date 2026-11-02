@@ -1,14 +1,3 @@
-<button
-  #launcher
-  type="button"
-  class="chat-launcher"
-  aria-controls="bot-chat"
-  [attr.aria-expanded]="opened()"
-  (click)="opened.set(!opened())"
->
-  {{ opened() ? 'Chiudi chat' : 'Chat IA' }}
-</button>
-
 <section
   id="bot-chat"
   class="chat-window"
@@ -69,7 +58,7 @@
             type="button" 
             aria-label="Chiudi" 
             title="Chiudi" 
-            (click)="opened.set(false); launcher.focus()"><b>&times;</b></button>
+            (click)="opened.set(false)"><b>&times;</b></button>
       </div>
       
     </div>

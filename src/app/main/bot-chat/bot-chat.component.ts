@@ -1,4 +1,4 @@
-import { OnDestroy, computed, signal, inject } from '@angular/core';
+import { OnDestroy, computed, signal, inject, model, OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -7,6 +7,7 @@ import type { Schema } from '../../../../amplify/data/resource';
 import { MainComponent } from '../main.component';
 
 import { CHAT_CLIENT } from './chat-client';
+import { EscapeStack } from '../../escape-stack.service';
 
 type BotId = (typeof bots)[number]['definition'];
 
@@ -36,11 +37,13 @@ const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
   templateUrl: './bot-chat.component.html',
   styleUrl: './bot-chat.component.css'
 })
-export class BotChatComponent implements OnDestroy {
+export class BotChatComponent implements OnInit, OnDestroy {
 
   private readonly client = inject(CHAT_CLIENT)
 
-  readonly opened = signal(false)
+  private readonly escapeStack = inject(EscapeStack)
+
+  readonly opened = model(false)
   readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
   readonly text = signal('')
 
@@ -278,7 +281,14 @@ if (
     }
   }
 
+  offEscape?: () => void
+
+  ngOnInit(): void {
+    this.offEscape = this.escapeStack.push(() => this.opened.set(false))
+  }
+
   ngOnDestroy(): void {
+
     this.destroyed = true
 
     Object.values(this.sessions()).forEach(session =>
@@ -286,6 +296,9 @@ if (
     )
 
     this.chunks.clear()
+
+    this.offEscape?.()
+    
   }
 
 }

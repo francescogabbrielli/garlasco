@@ -117,7 +117,7 @@ describe('BotChatComponent', () => {
   })
 
   function launcher(): HTMLButtonElement {
-    return element.querySelector('.chat-launcher')!
+    return element.querySelector('button[title="Chat IA"]')!
   }
 
   function panel(): HTMLElement {
@@ -389,10 +389,10 @@ describe('BotChatComponent', () => {
     await send();
 
     expect(component.session().busy).toBe(false);
-    expect(component.session().error).toContain('Accesso negato');
+    expect(component.session().error).toContain('Impossibile completare la risposta');
     expect(routes.analyst.sendMessage).not.toHaveBeenCalled();
     expect(element.querySelector('[role="alert"]')?.textContent)
-      .toContain('Accesso negato');
+      .toContain('Impossibile completare la risposta');
   });
 
   it('handles an error returned by sendMessage', async () => {
@@ -404,7 +404,7 @@ describe('BotChatComponent', () => {
     await send();
 
     expect(component.session().busy).toBe(false);
-    expect(component.session().error).toContain('Invio rifiutato');
+    expect(component.session().error).toContain('Impossibile completare la risposta');
   });
 
   it('handles a network error during sending', async () => {
@@ -415,7 +415,7 @@ describe('BotChatComponent', () => {
     await send();
 
     expect(component.session().busy).toBe(false);
-    expect(component.session().error).toContain('Network error');
+    expect(component.session().error).toContain('Impossibile completare la risposta');
   });
 
   it('unblocks the form and shows an error if streaming fails', async () => {

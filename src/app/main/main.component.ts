@@ -45,6 +45,8 @@ export class MainComponent {
 
   user = computed(() => this.userProfile.user())
   isLoading = signal(false)
+
+  botChatOpened = signal(false)
   
   ngOnInit(): void {
     import('../../../package.json').then((p) => {

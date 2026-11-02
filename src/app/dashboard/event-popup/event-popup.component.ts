@@ -13,7 +13,6 @@ import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
 
 import { EventMaskComponent, EventMaskEvent } from '../event-mask/event-mask.component';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
-import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
 
 import { DEFAULT_COORDINATES } from '../../app.constants';
 
@@ -25,7 +24,7 @@ const client = generateClient<Schema>();
 
 @Component({
   selector: 'app-event-popup',
-  imports: [DatePipe, DecimalPipe, TickbarComponent, PersonMarkerComponent, EventMaskComponent, GoogleMap],
+  imports: [DatePipe, DecimalPipe, TickbarComponent, EventMaskComponent, GoogleMap],
   templateUrl: './event-popup.component.html',
   styleUrl: './event-popup.component.css',
 })
