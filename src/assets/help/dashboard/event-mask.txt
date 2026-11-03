@@ -1,8 +1,8 @@
 <h2>Informazioni necessarie</h2>
 <p>
-    Viene richiesto titolo, descrizione, (sintetica ma il più possible completa), almeno una persona coinvolta, e almeno una data e una posizione. Se si tratta di un evento che si protrae nel tempo indicare gli estremi di inizio e fine per data o luogo o entrambi.
+    Viene richiesto titolo, descrizione, (sintetica ma il più possible completa), almeno una persona coinvolta, e almeno una data e, se si tratta di un fatto, una posizione. Se si tratta di un evento che si protrae nel tempo indicare gli estremi di inizio e fine per data o luogo o entrambi.
 </p>
 <h3>Scelta della posizione</h3>
 <p>
-    Le posizioni devono essere specificate tramite la mappa interattiva. Cliccando un punto preciso sulla mappa si seleziona la precisione esatta, se conosciuta. Se invece la posizione è approssimativa, centrare e zoomare la mappa al livello desiderato e cliccare direttamente su "Usa questa posizione".
+    Le posizioni devono essere specificate tramite la mappa interattiva. Cliccando un punto preciso sulla mappa si seleziona la precisione esatta, se conosciuta. Se invece la posizione è approssimativa, centrare e zoomare la mappa al livello desiderato e cliccare direttamente su "Usa questa posizione". Fare attenzione che se una posizione esatta è già stata selezionata è necessario rimuoverla prima di impostarne una approssimativa.
 </p>

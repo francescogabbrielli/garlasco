@@ -1,4 +1,4 @@
-import { OnDestroy, computed, effect, signal, inject, model, OnInit } from '@angular/core';
+import { OnDestroy, computed, effect, signal, inject, model } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -40,7 +40,7 @@ const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
   templateUrl: './bot-chat.component.html',
   styleUrl: './bot-chat.component.css'
 })
-export class BotChatComponent implements OnInit, OnDestroy {
+export class BotChatComponent implements OnDestroy {
 
   private readonly client = inject(CHAT_CLIENT)
 
@@ -49,6 +49,15 @@ export class BotChatComponent implements OnInit, OnDestroy {
   readonly opened = model(false)
   readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
   readonly text = signal('')
+
+  constructor() {
+    effect(onCleanup => {
+      if (!this.opened()) return
+
+      const unregister = this.escapeStack.push(() => this.opened.set(false))
+      onCleanup(unregister)
+    })
+  }
 
   private readonly sessions = signal<Record<string, BotSession>>(
     bots
@@ -304,10 +313,6 @@ if (
         )
       })
     }
-  }
-
-  ngOnInit(): void {
-    effect(() => (this.opened() ? this.escapeStack.push(() => this.opened.set(false)) : null))
   }
 
   ngOnDestroy(): void {
