@@ -24,15 +24,20 @@
 }
 
 :host ::ng-deep .changelog ul {
-    margin: 0.5rem;
+    margin-top: 0.5rem;
     display: unset;
+    text-align: left;
     list-style-type: disc;
+    padding: 0;
 }
 
 :host ::ng-deep .changelog li {
+    font-size: 0.9rem;
+    padding: 0;
     margin-left: 1.5rem;
 }
 
 :host ::ng-deep .changelog h2 {
+    font-size: 1.2rem;
     text-decoration: underline;
 }

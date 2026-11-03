@@ -1,6 +1,9 @@
 <p>Benvenuti in questo esperimento di ricerca avanzata sugli eventi di Garlasco! Si tratta ancora un progetto in fase sperimentale e in continua evoluzione. </p>
 
+<p><span style="float:left;margin-right: 1rem"
+        class="context-button">?</span>Ogni componente (o quasi) possiede questo pulsante di aiuto contestuale che fornisce informazioni e suggerimenti specifici per l'uso di quella sezione della piattaforma.</p>
+
 <h2>Come collaborare</h2>
 <p>Per contribuire alla raccolta e alla gestione degli eventi di Garlasco, è possibile segnalare nuovi eventi, correggere informazioni errate e partecipare alle discussioni sulla piattaforma, nonché fare uso dell'intelligenza artificiale per migliorare la qualità dei dati e estrapolare informazioni utili.</p>
 <p>Selezionando la matita (Modifica) è possibile inviare un nuovo evento e modificare gli eventi creati o, se si disponde dei permessi necessari (per cui occorre una specifica richiesta), tutti gli eventi esistenti.</p>
-<p>Per contatti o suggerimenti è attualmente disponibile un modulo di contatto nel men&ugrave; utente.</p>
+<p>Per contatti o suggerimenti è attualmente disponibile un modulo di contatto in questo stesso men&ugrave;.</p>

@@ -41,12 +41,7 @@ google-map {
 }
 
 .map-search-container {
-  min-width: 200px;
+  min-width: 100px;
   max-width: 500px;
-
-  gmp-place-autocomplete {
-    display: block;
-    width: 100% !important;
-  }
-
 }
+

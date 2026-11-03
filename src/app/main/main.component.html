@@ -1,6 +1,6 @@
 <header class="topbar">
 
-  <p class="brand">I fatti di Garlasco</p>
+  <p><span class="brand">I fatti di Garlasco</span>&nbsp;</p>
 
   <nav class="menu" aria-label="Menu principale">
     @if (user().isMember()) {
@@ -59,14 +59,6 @@
       >
         ✎
       </button>
-      <button type="button"
-        class="context-button"
-        aria-label="Aiuto"
-        title="Aiuto"
-        (click)="help.set({page: 'main', title: 'Pagina principale'})"
-      >
-        ?
-      </button>
     }
     <div class="user-menu">
       <button
@@ -86,6 +78,14 @@
             (click)="this.openContactForm()">
             <span aria-hidden="true">✉</span>
             Form di contatto
+          </button>
+          <button id="help_button" type="button"
+            role="button"
+            aria-label="Aiuto"
+            title="Aiuto"
+            (click)="help.set({page: 'main', title: 'Pagina principale'})">
+            <span aria-hidden="true">?</span>
+            Guida
           </button>
           <hr role="separator" />
           <button id="about_button" type="button" 
@@ -137,18 +137,25 @@
         </div>
       </header>
 
-      <p>{{ appDescription() }}</p>
+      <main class="dialog-scrollable">
 
-      <!-- pick the version from package.json -->
-      <p class="version">
-        <a href="javascript:void(0)" (click)="this.help.set({ page: 'changelog', title: 'Storico versioni' })">
-          versione {{ version() }}
-        </a>&nbsp;|&nbsp;
-        <span>Ultimo aggiornamento: {{ lastUpdate() }} | Numero di eventi censiti: {{ tableCount() }}</span>
-      </p>
-      <small class="author">{{ appAuthor() }} + AI (Copilot, Kiro, Gemini, ChatGPT) @ 2026</small>
-      <a [style.textAlign]="'right'" href="/privacy-policy" target="privacy">Privacy Policy</a>
+        <p>{{ appDescription() }}</p>
 
+        <!-- pick the version from package.json -->
+        <p class="version">
+          <a href="javascript:void(0)" (click)="this.help.set({ page: 'changelog', title: 'Storico versioni' })">
+            versione {{ version() }}
+          </a><br>
+          <span>Ultimo aggiornamento: {{ lastUpdate() }}</span><br>
+          <span>Numero di eventi censiti: {{ tableCount() }}</span>
+        </p>
+        <small class="author">{{ appAuthor() }} + AI (Copilot, Kiro, Gemini, ChatGPT) @ 2026</small>
+      
+      </main>
+
+      <footer>
+        <a href="/privacy-policy" target="privacy">Privacy Policy</a>
+      </footer>
     </section>
   </div>
 } 

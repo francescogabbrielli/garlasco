@@ -2,6 +2,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-direction: row;
     gap: 1rem;
     width: 100%;
     min-height: 2rem;
@@ -139,7 +140,7 @@ button.main-link {
 /* TODO: Unify CSS for all menu + buttons */
 .user-dropdown {
     position: absolute;
-    top: calc(100% + 0.75rem);
+    top: calc(100% + 0.25rem);
     right: 0;
     z-index: 2;
     min-width: 13rem;
@@ -224,4 +225,9 @@ button.main-link {
     font-variant: small-caps;
     font-style: italic;
     color: rgba(34, 31, 43, 0.5);
+}
+
+footer {
+    display: flex;
+    justify-content: space-evenly; 
 }

@@ -30,16 +30,12 @@
     "@angular/platform-browser": "^20.3.32",
     "@angular/platform-browser-dynamic": "^20.3.32",
     "@angular/router": "^20.3.32",
-    "@aws-amplify/backend-ai": "^1.6.0",
     "@aws-amplify/ui-angular": "^6.0.1",
-    "@aws-sdk/client-dynamodb": "^3.1161.0",
-    "@aws-sdk/client-ses": "^3.1155.0",
     "@googlemaps/js-api-loader": "^2.1.3",
     "aws-amplify": "^6.6.6",
     "ngeohash": "^0.6.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zod": "3.25.17",
     "zone.js": "~0.15.1"
   },
   "devDependencies": {
@@ -49,8 +45,11 @@
     "@angular/cli": "^20.3.37",
     "@angular/compiler-cli": "^20.3.32",
     "@aws-amplify/backend": "^1.25.1",
+    "@aws-amplify/backend-ai": "^1.6.0",
     "@aws-amplify/backend-cli": "^1.10.0",
     "@aws-sdk/client-bedrock-runtime": "^3.1152.0",
+    "@aws-sdk/client-dynamodb": "^3.1161.0",
+    "@aws-sdk/client-ses": "^3.1155.0",
     "@types/google.maps": "^3.66.5",
     "@types/node": "^22.17.1",
     "aws-cdk": "^2.137.0",
@@ -60,7 +59,8 @@
     "jsdom": "^29.1.1",
     "tsx": "^4.7.2",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.1"
+    "vitest": "^3.1.1",
+    "zod": "3.25.17"
   },
   "allowScripts": {
     "@aws-amplify/hosting@1.0.1": true,

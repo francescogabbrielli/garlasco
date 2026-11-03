@@ -68,6 +68,9 @@ export class MapPickerComponent implements OnInit, OnDestroy {
 
     const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement()
 
+    // Forza gli stili inline tramite proprietà style a runtime
+    placeAutocomplete.style.setProperty('width', '100%');
+
     // Inserisci il web component nel container HTML
     this.searchContainer.nativeElement.appendChild(placeAutocomplete)
 

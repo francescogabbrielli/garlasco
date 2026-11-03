@@ -76,6 +76,7 @@ export class EventMaskComponent {
     const id = this.event()?.id
     if (!id) return
     const e = await this.dataService.loadEvent(id)
+    console.log(e)
     this.eventForm.patchValue({
       owner: e.owner,
       type: e.type,
@@ -87,13 +88,13 @@ export class EventMaskComponent {
         date: this.toLocalInput(e.start_date),
         latitude: e.start_position?.latitude ? this.COORDS_FORMAT.format(e.start_position.latitude) : null,
         longitude: e.start_position?.longitude ? this.COORDS_FORMAT.format(e.start_position.longitude) : null,
-        radius: e.start_position?.radius ? String(e.start_position.radius) : null,
+        radius: e.start_position?.radius == null ? null : String(e.start_position?.radius),
       },
       end: {
         date: this.toLocalInput(e.end_date),
         latitude: e.end_position?.latitude ? this.COORDS_FORMAT.format(e.end_position.latitude) : null,
         longitude: e.end_position?.longitude ? this.COORDS_FORMAT.format(e.end_position.longitude) : null,
-        radius: e.end_position?.radius ? String(e.end_position.radius) : null,
+        radius: e.end_position?.radius == null ? null : String(e.end_position?.radius),
       },
     })
 
