@@ -140,7 +140,11 @@
       <p>{{ appDescription() }}</p>
 
       <!-- pick the version from package.json -->
-      <p class="version">versione {{ version() }} - (ultimo aggiornamento: {{ lastUpdate() }})</p>
+      <p class="version">
+        <a href="javascript:void(0)" (click)="this.help.set({ page: 'changelog', title: 'Storico versioni' })">
+          versione {{ version() }}
+        </a> - (ultimo aggiornamento: {{ lastUpdate() }})
+      </p>
       <small class="author">{{ appAuthor() }} + AI (Copilot, Kiro, Gemini, ChatGPT) @ 2026</small>
       <a [style.textAlign]="'right'" href="/privacy-policy" target="privacy">Privacy Policy</a>
 

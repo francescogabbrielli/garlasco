@@ -1,4 +1,4 @@
-import { OnDestroy, computed, signal, inject, model, OnInit } from '@angular/core';
+import { OnDestroy, computed, effect, signal, inject, model, OnInit } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -281,10 +281,8 @@ if (
     }
   }
 
-  offEscape?: () => void
-
   ngOnInit(): void {
-    this.offEscape = this.escapeStack.push(() => this.opened.set(false))
+    effect(() => (this.opened() ? this.escapeStack.push(() => this.opened.set(false)) : null))
   }
 
   ngOnDestroy(): void {
@@ -297,8 +295,6 @@ if (
 
     this.chunks.clear()
 
-    this.offEscape?.()
-    
   }
 
 }

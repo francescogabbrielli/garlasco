@@ -4,14 +4,14 @@ NEXT (0.2)
 
 TODO: 0.1.4
 -----------
-- add version history
+- add version history &check;
 - fix & generalise esc key precedence &check;
 - AI usage:
     - set rate limits &cross; (maybe next)
     - manage remote errors &check; (needs improvements)
-- review chat chronology
+    - truncate output ...
 - improve mail templates and mailing backend &check;
-- review and stabilize code ...
+- review and stabilize code &check;
 
 TODO: 0.1.3
 -----------

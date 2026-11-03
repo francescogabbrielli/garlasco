@@ -1,4 +1,5 @@
 import { Component, effect, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
 import { HttpClient } from '@angular/common/http';
 
 import { EscapeStack } from '../../escape-stack.service';
@@ -13,6 +14,7 @@ export class HelpPopupComponent implements OnInit, OnDestroy {
 
   private http = inject(HttpClient)
   private escapeStack = inject(EscapeStack)
+  private domSanitizer = inject(DomSanitizer)
   private offEscape?: () => void
 
   page = input.required<string>()
@@ -36,7 +38,7 @@ export class HelpPopupComponent implements OnInit, OnDestroy {
         .get(`assets/help/${page}.txt`, { responseType: 'text' })
         .subscribe({
           next: html => {
-            this.content.set(html)
+            this.content.set(this.domSanitizer.bypassSecurityTrustHtml(html) as string)
             this.isLoading.set(false)
           },
           error: (err) => {

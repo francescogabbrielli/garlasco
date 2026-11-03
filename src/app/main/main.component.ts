@@ -108,6 +108,8 @@ export class MainComponent {
     if (this.escapeStack.isEmpty()) {
       this.closeAboutDialog()
       this.isUserMenuOpen = false   
+    } else {
+      console.log(this.escapeStack)
     }
   }
 

@@ -1,0 +1,29 @@
+<div class="changelog">
+    <h2>0.1.4 - Stabilizzazione funzionalità</h2>
+    <ul>
+        <li>Miglioramento invio email</li>
+        <li>Correzioni layout</li>
+        <li>Limitazioni sulle risposte IA</li>
+    </ul>
+
+    <h2>0.1.3 - Correzioni per mobile</h2>
+    <ul>
+        <li>Scrolling mappe e timeline</li>
+        <li>Nuova sezione di 'Analisi' (lavori in corso)</li>
+    </ul>
+
+    <h2>0.1.2 - Correzione e automazione mail</h2>
+    <ul>
+        <li>Correzione mail di registrazione</li>
+        <li>Unificazione layout</li>
+    </ul>
+        
+    <h2>0.1.1 - Fix bug di editing</h2>
+
+    <h2>0.1.0 - Prima versione pubblicata</h2>
+    <ul>
+        <li>Dashboard di ricerca con filtro per persona, timeline, e mappa</li>
+        <li>Inserimento eventi e modifica eventi</li>
+        <li>Implementazione rudimentale dei chat bot IA</li>
+    </ul>
+</div>

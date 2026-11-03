@@ -116,9 +116,10 @@ describe('BotChatComponent', () => {
     vi.clearAllMocks()
   })
 
-  function launcher(): HTMLButtonElement {
-    return element.querySelector('button[title="Chat IA"]')!
-  }
+  // "open" button moved outside component
+  // function launcher(): HTMLButtonElement {
+  //   return element.querySelector('button[title="Chat IA"]')!
+  // }
 
   function panel(): HTMLElement {
     return element.querySelector('.chat-window')!
@@ -162,24 +163,28 @@ describe('BotChatComponent', () => {
 
     expect(panel().classList.contains('is-open')).toBe(false);
     expect(panel().hasAttribute('inert')).toBe(true);
-    expect(launcher().getAttribute('aria-expanded')).toBe('false');
+    //expect(launcher().getAttribute('aria-expanded')).toBe('false');
 
     expect(routes.analyst.create).not.toHaveBeenCalled();
   })
 
   it('opens and closes the panel from the button', () => {
-    launcher().click()
+    //launcher().click()
+    component.opened.set(true)
     fixture.detectChanges()
 
     expect(component.opened()).toBe(true)
     expect(panel().classList.contains('is-open')).toBe(true)
     expect(panel().hasAttribute('inert')).toBe(false)
-    expect(launcher().getAttribute('aria-expanded')).toBe('true')
+    //expect(launcher().getAttribute('aria-expanded')).toBe('true')
 
-    launcher().click()
+    //launcher().click()
+    component.opened.set(false)
     fixture.detectChanges()
 
     expect(component.opened()).toBe(false)
+    expect(panel().classList.contains('is-open')).toBe(false)
+    expect(panel().hasAttribute('inert')).toBe(true)
   })
 
   /** TODO: Conflicts with other keyboard shortcuts, review all Escape key handling

@@ -22,3 +22,17 @@
     line-height: 1.2rem;
     text-align: justify;
 }
+
+:host ::ng-deep .changelog ul {
+    margin: 0.5rem;
+    display: unset;
+    list-style-type: disc;
+}
+
+:host ::ng-deep .changelog li {
+    margin-left: 1.5rem;
+}
+
+:host ::ng-deep .changelog h2 {
+    text-decoration: underline;
+}
