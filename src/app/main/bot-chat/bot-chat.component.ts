@@ -15,17 +15,20 @@ type Conversation = Schema[BotId]['type'];
 type StreamEvent = Schema[BotId]['streamEventType'];
 
 interface BotSession {
-  conversation?: Conversation;
-  subscription?: { unsubscribe(): void };
-  messages: ChatMessage[];
-  busy: boolean;
-  error: string;
+  conversation?: Conversation
+  subscription?: { unsubscribe(): void }
+  messages: ChatMessage[]
+  busy: boolean
+  error: string
+  activeAssistantId?: string
 }
 
 interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   text: string
+  truncated?: boolean
+  timedOut?: boolean
 }
 
 const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
@@ -116,6 +119,13 @@ export class BotChatComponent implements OnInit, OnDestroy {
           message: 'Il servizio AI è al limite. Riprova tra poco.',
           retryable: true
         };
+      } else if (type === 'TimeoutError' || type === 'ModelTimeoutException') {
+        return {
+          source: type ==='ModelTimeoutException' ? 'BEDROCK' : 'UNKNOWN',
+          code: 'RESPONSE_TIMEOUT',
+          message: 'Tempo massimo di attesa superato.',
+          retryable: true
+        };
       }
     }
 
@@ -168,6 +178,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
     this.updateSession(id, {
       busy: true,
       error: '',
+      activeAssistantId: undefined,
       messages: [
         ...session.messages,
         { id: localId, role: 'user', text }
@@ -194,10 +205,17 @@ export class BotChatComponent implements OnInit, OnDestroy {
           error: e => {
             if (this.destroyed) return
             const botError = this.normalizeBotError(e)
+            const session = this.sessions()[id]
+            const timeout = botError.code === 'RESPONSE_TIMEOUT'
+            const assistantId = session?.activeAssistantId
             console.error('Errore nello streaming del messaggio.', e)
             this.updateSession(id, {
               busy: false,
-              error: botError.message
+              activeAssistantId: undefined,
+              error: timeout && assistantId ? '' : botError.message,
+              messages: (session?.messages ?? []).map(message =>
+                timeout && message.id === assistantId ? { ...message, timedOut: true } : message
+              )
             })
           }
         })
@@ -268,6 +286,7 @@ if (
       const exists = messages.some(message => message.id === messageId)
 
       this.updateSession(botId, {
+        activeAssistantId: messageId,
         messages: exists
           ? messages.map(message =>
               message.id === messageId ? { ...message, text } : message
@@ -277,7 +296,13 @@ if (
     }
 
     if ('stopReason' in event) {
-      this.updateSession(botId, { busy: false })
+      const truncated = event.stopReason === 'max_tokens'
+      this.updateSession(botId, { 
+        busy: false,
+        messages: (this.sessions()[botId].messages ?? []).map(message =>
+          message.id === messageId ? { ...message, truncated } : message
+        )
+      })
     }
   }
 

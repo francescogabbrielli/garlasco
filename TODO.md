@@ -1,6 +1,8 @@
 NEXT (0.2)
 ----------
 - create Hypothesis backend
+- design a minimal 'Dashboard di Analisi'
+- add import/export for new data
 
 TODO: 0.1.4
 -----------
@@ -9,9 +11,10 @@ TODO: 0.1.4
 - AI usage:
     - set rate limits &cross; (maybe next)
     - manage remote errors &check; (needs improvements)
-    - truncate output ...
+    - truncate output (time & length) &check;
 - improve mail templates and mailing backend &check;
 - review and stabilize code &check;
+- make start_position required only for type='Fatto'
 
 TODO: 0.1.3
 -----------

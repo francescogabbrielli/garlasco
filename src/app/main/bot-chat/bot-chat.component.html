@@ -81,6 +81,13 @@
           {{ message.role === 'user' ? 'Tu' : bot()?.name }}
         </small>
         <div>{{ message.text }}</div>
+        @if (message.timedOut) {
+          <small class="output-warning" role="status">
+            Tempo massimo di attesa superato. La risposta potrebbe essere incompleta.
+          </small>
+        } @else if (message.truncated) {
+          <small class="output-warning" role="status">Messaggio troncato per lunghezza massima raggiunta.</small>
+        }
       </article>
     }
 
