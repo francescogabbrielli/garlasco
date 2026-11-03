@@ -7,9 +7,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
 
     try {
         
-        const email = event.request.userAttributes.email.includes('<') 
-            ? event.request.userAttributes.email
-            : `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name} <${event.request.userAttributes.email}>`
+        const email = `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name} <${event.request.userAttributes.email}>`
 
         await sendEmail(
             email,

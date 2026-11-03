@@ -76,7 +76,6 @@ export class EventMaskComponent {
     const id = this.event()?.id
     if (!id) return
     const e = await this.dataService.loadEvent(id)
-    console.log(e)
     this.eventForm.patchValue({
       owner: e.owner,
       type: e.type,

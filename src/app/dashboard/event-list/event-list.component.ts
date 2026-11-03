@@ -72,7 +72,6 @@ export class EventListComponent {
   onListScroll(event: globalThis.Event): void {
     const list = event.target as HTMLElement | null
     if (list && list.scrollHeight - list.scrollTop - list.clientHeight <= 50) {
-      console.log('Scrolled to bottom!')
       this.scrolledToBottom.emit()
     }
   }
