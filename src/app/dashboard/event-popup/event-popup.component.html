@@ -79,17 +79,19 @@
         <dd>{{ event().end_date | date: 'dd/MM/yyyy HH:mm' }}</dd>
       }
 
-      <dt>Posizione{{ event().end_position ? ' di partenza' : '' }}</dt>
-      <dd>
-        {{ event().start_position.latitude | number: '1.6-6' }},
-        {{ event().start_position.longitude | number: '1.6-6' }}
-        (raggio {{ event().start_position.radius | number: '1.0-0' }} m)
-        <button class="clear-control" 
-          [style.fontSize]="'larger'"
-          title="Mostra mappa"
-          aria-label="Mostra mappa"
-          (click)="mapOpen(event().start_position)">&nbsp;🗺&nbsp;</button>
-      </dd>
+      @if (event().start_position; as start) {
+        <dt>Posizione{{ event().end_position ? ' di partenza' : '' }}</dt>
+        <dd>
+          {{ start.latitude | number: '1.6-6' }},
+          {{ start.longitude | number: '1.6-6' }}
+          (raggio {{ start.radius | number: '1.0-0' }} m)
+          <button class="clear-control" 
+            [style.fontSize]="'larger'"
+            title="Mostra mappa"
+            aria-label="Mostra mappa"
+            (click)="mapOpen(start)">&nbsp;🗺&nbsp;</button>
+        </dd>
+      }
 
       @if (event().end_position; as end) {
         <dt>Posizione di arrivo</dt>

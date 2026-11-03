@@ -85,9 +85,9 @@ export class EventMaskComponent {
       relevance: e.relevance,
       start: {
         date: this.toLocalInput(e.start_date),
-        latitude: this.COORDS_FORMAT.format(e.start_position.latitude),
-        longitude: this.COORDS_FORMAT.format(e.start_position.longitude),
-        radius: String(e.start_position.radius),
+        latitude: e.start_position?.latitude ? this.COORDS_FORMAT.format(e.start_position.latitude) : null,
+        longitude: e.start_position?.longitude ? this.COORDS_FORMAT.format(e.start_position.longitude) : null,
+        radius: e.start_position?.radius ? String(e.start_position.radius) : null,
       },
       end: {
         date: this.toLocalInput(e.end_date),
@@ -155,9 +155,9 @@ export class EventMaskComponent {
     }),
     start: new FormGroup({
       date: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      latitude: new FormControl<string | null>(null, { nonNullable: true, validators: [Validators.required] }),
-      longitude: new FormControl<string | null>(null, { nonNullable: true }),
-      radius: new FormControl<string | null>(null, { nonNullable: true }),
+      latitude: new FormControl<string | null>(null, { nonNullable: false }),
+      longitude: new FormControl<string | null>(null, { nonNullable: false }),
+      radius: new FormControl<string | null>(null, { nonNullable: false }),
     }),
     end: new FormGroup({
       date: new FormControl('', { nonNullable: false }),
@@ -288,7 +288,7 @@ export class EventMaskComponent {
         date: this.toLocalInput(g.start_date),
         latitude: g.start_position?.latitude ? this.COORDS_FORMAT.format(g.start_position.latitude) : null,
         longitude: g.start_position?.longitude ? this.COORDS_FORMAT.format(g.start_position.longitude) : null,
-        radius: String(g.start_position?.radius || 0),
+        radius: g.start_position?.latitude ? String(g.start_position?.radius || 0) : null,
       },
       end: {
         date: this.toLocalInput(g.end_date),
@@ -410,17 +410,23 @@ export class EventMaskComponent {
 
     this.isSaving.set(true)
 
-    const startPosition:Coordinates = {
+    const startPosition:Coordinates | null = start.latitude ? {
       latitude: Number(start.latitude),
       longitude: Number(start.longitude),
       radius: Number(start.radius),
-    }
+    } : null
 
     const endPosition:Coordinates | null = end.latitude ? {
       latitude: Number(end.latitude),
       longitude: Number(end.longitude),
       radius: Number(end.radius),
     } : null
+
+    if (type === 'Fatto' && !startPosition) {
+      this.eventForm.controls.start.controls.latitude.setErrors({ required: true })
+      this.submitError.set('Specifica la posizione di partenza per gli eventi di tipo "Fatto".')
+      return
+    }
 
     const payload = {
       id: this.event()?.id,

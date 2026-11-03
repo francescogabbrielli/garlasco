@@ -126,8 +126,11 @@ export class DataService {
           eventStartDate: { 
             between: [filter.dateFrom, filter.dateTo] 
           },
-          filter: filter.geoHash ? { 
-            eventGeoHash: { beginsWith: filter.geoHash } 
+          filter: filter.geoHash ? {
+            or: [
+              { eventGeoHash: { eq: null } },
+              { eventGeoHash: { beginsWith: filter.geoHash } }
+            ]
           } : undefined,
           selectionSet: ['event.id', 'event.owner', 
             'event.type', 'event.name', 'event.description',

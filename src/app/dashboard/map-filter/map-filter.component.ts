@@ -81,31 +81,34 @@ export class MapFilterComponent implements OnInit {
     return byId
   })
 
-  private toLatLng(c: Coordinates): google.maps.LatLngLiteral {
+  private toLatLng(c: Coordinates | null): google.maps.LatLngLiteral {
+    if (!c) throw new Error('Coordinates cannot be null')
     return { lat: c.latitude, lng: c.longitude }
   }
 
   // Events that have an end position, drawn as a line between start and end
   tracks = computed(() => this.markers()
+    .filter(e => !!e.start_position)
     .filter(e => !!e.end_position)
     .map(e => ({
       id: e.id,
-      path: [this.toLatLng(e.start_position), this.toLatLng(e.end_position!)],
+      path: [this.toLatLng(e.start_position!), this.toLatLng(e.end_position!)],
     })))
 
   polylineOptions: google.maps.PolylineOptions = { strokeColor: '#167c72', strokeOpacity: .8, strokeWeight: 3 }
 
   pins = computed(() => {
     this.pinElements.clear()
-    return this.markers().map(e => {
-      return {
-        id: e.id,
-        title: e.name,
-        start: this.toLatLng(e.start_position),
-        startContent: this.createPin(e.id),
-        end: e.end_position ? this.toLatLng(e.end_position) : null,
-        endContent: e.end_position ? this.createPin(e.id, true) : null,
-      }
+    return this.markers()
+      .map(e => {
+        return {
+          id: e.id,
+          title: e.name,
+          start: this.toLatLng(e.start_position!),
+          startContent: this.createPin(e.id),
+          end: e.end_position ? this.toLatLng(e.end_position) : null,
+          endContent: e.end_position ? this.createPin(e.id, true) : null,
+        }
     })
   })
 

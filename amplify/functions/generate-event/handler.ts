@@ -12,10 +12,10 @@ const SYSTEM_PROMPT =
   'Basati sui risultati della ricerca web forniti e sulla descrizione dell\'utente. ' +
   'Non inventare fatti: quando un dettaglio è sconosciuto, fai la scelta meglio supportata dalle fonti. ' +
   'La start_date (e end_date) devono essere stringhe ISO 8601, timezone CET. Il type deve essere ESATTAMENTE (rispettando le maiuscole) uno dei seguenti tipi di evento: ' + EVENT_TYPES.join(', ') + '. ' +
-  'In start_postition e end_position, latitude e longitude devono essere espresse in gradi decimali con sei cifre decimali; rappresentano o la location precisa o il centro approssimativo della località citata (normalmente Garlasco); ' +
-  'radius è 0 se si tratta di una location precisa, altrimenti il raggio approssimativo in metri della località citata. ' +
+  'In start_postition e end_position, latitude e longitude devono essere espresse in gradi decimali con sei cifre decimali; start_position è obbligatoria solo per eventi di tipo "Fatto"; ' +
+  'radius è 0 se si tratta di una location precisa, altrimenti il raggio approssimativo in metri della località citata e in questo caso latitude e longitude si riferiscono al centro della viewport, non al bounding box. ' +
   'Se si tratta di una testimonianza (type "Testimonianza") o deposizione (type deve essere "Indagine") indica la data e il luogo della testimonianza e non dell\'evento testimoniato. ' +
-  'Inoltre, includi se possibile le fonti (sources) utilizzate per generare l\'evento, come URL dei siti web o video/podcast'
+  'Inoltre, includi se possibile le fonti (sources) utilizzate per generare l\'evento, solo se strettamente correlate al caso, come URL dei siti web o video/podcast'
   ;
 
 const coordinates = {
@@ -42,7 +42,7 @@ const EVENT_TOOL = {
         start_position: coordinates,
         sources: { type: 'array', items: { type: 'string' } }
       },
-      required: ['type', 'name', 'description', 'start_date', 'start_position', 'sources'],
+      required: ['type', 'name', 'description', 'start_date', 'sources'],
     },
   },
 };

@@ -63,8 +63,8 @@ export class GeoService {
     return EARTH_RADIUS_METERS * c + ( start.radius + end.radius) / 2
   }
 
-  computeCenterPosition(start:Coordinates, end:Coordinates | null | undefined): Coordinates {
-    return {
+  computeCenterPosition(start:Coordinates | null | undefined, end:Coordinates | null | undefined): Coordinates | null {
+    return start ? {
       latitude: end 
         ? (start.latitude + end.latitude) / 2 
         : start.latitude,
@@ -74,10 +74,11 @@ export class GeoService {
       radius: end 
         ? this.computeDistance(start, end)
         : start.radius
-    }
+    } : null
   }
 
-  computeGeoHash(coords:Coordinates): string {
+  computeGeoHash(coords:Coordinates | null): string | null {
+    if (!coords) return null
     //migliori risultati con misure empiriche...
     let len = 0 
     if (coords.radius < 250) len = 6

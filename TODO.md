@@ -3,6 +3,7 @@ NEXT (0.2)
 - create Hypothesis backend
 - design a minimal 'Dashboard di Analisi'
 - add import/export for new data
+- save user preferences (user service) & autosync localStorage
 
 TODO: 0.1.4
 -----------
@@ -14,7 +15,8 @@ TODO: 0.1.4
     - truncate output (time & length) &check;
 - improve mail templates and mailing backend &check;
 - review and stabilize code &check;
-- make start_position required only for type='Fatto'
+- make start_position required only for type='Fatto' &check;
+- show total events in info
 
 TODO: 0.1.3
 -----------
