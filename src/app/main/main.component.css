@@ -210,10 +210,13 @@ button.main-link {
 }
 
 .version {
-    text-align: right;
     font-size: 0.8rem;
     font-family: Courier, monospace;
     color: rgba(34, 31, 43, 0.5);
+}
+
+.version span {
+    white-space: nowrap;
 }
 
 .author {

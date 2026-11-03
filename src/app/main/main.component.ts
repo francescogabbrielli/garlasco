@@ -1,4 +1,5 @@
 import { Component, computed, effect, HostListener, inject, signal } from '@angular/core';
+import { DataService } from '../data.service';
 import { EscapeStack } from '../escape-stack.service';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AmplifyAuthenticatorModule, AuthenticatorService } from '@aws-amplify/ui-angular';
@@ -25,7 +26,8 @@ import { BotChatComponent } from './bot-chat/bot-chat.component';
 })
 export class MainComponent {
 
-  escapeStack = inject(EscapeStack)
+  private readonly escapeStack = inject(EscapeStack)
+  private readonly dataService = inject(DataService)
 
   version = signal('0.0.0')
   appAuthor = signal('')
@@ -47,6 +49,7 @@ export class MainComponent {
   isLoading = signal(false)
 
   botChatOpened = signal(false)
+  tableCount = signal(0)
   
   ngOnInit(): void {
     import('../../../package.json').then((p) => {
@@ -57,6 +60,9 @@ export class MainComponent {
       this.lastUpdate.set(new Date(p.lastUpdate).toLocaleDateString('it-IT'))
     })
       .then(() => this.userProfile.logIn())
+      .then(() => this.dataService.getTableCount())
+      .then(count => this.tableCount.set(count))
+      // Additional initialization if needed
       .catch((error) => {
         alert('Errore imprevisto durante il login: ' + error)
         this.logout(true)

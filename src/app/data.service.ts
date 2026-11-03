@@ -54,6 +54,11 @@ export class DataService {
   private accumulatedEvents: Event[] = []
   private personTokens: Record<string, string | null> = {}
 
+  async getTableCount():Promise<number> { 
+    const count = await client.queries.getTableCount();
+    return count.data || 0;
+  }
+
   /**
    * Load filtered events and append later pages as they are requested.
    */

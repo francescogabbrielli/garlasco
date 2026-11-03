@@ -4,6 +4,7 @@ import { generateEventFn } from '../functions/generate-event/resource';
 import { sendEmailFn } from '../functions/send-email/resource';
 import { searchWebFn } from '../functions/search-web/resource';
 import { analyst, detective, researcher } from './bots-defs';
+import { getTableCountFn } from '../functions/get-table-count/resource';
 
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
@@ -61,6 +62,11 @@ const searchWeb = a.query()
     .handler(a.handler.function(searchWebFn))
     .authorization(allow => allow.authenticated())
 
+const getTableCount = a.query()
+  .returns(a.integer())
+  .handler(a.handler.function(getTableCountFn))
+  .authorization(allow => allow.authenticated())
+
 const schema = a.schema({
   
   Coordinates,
@@ -70,6 +76,8 @@ const schema = a.schema({
   Event,
   EventPerson,
   EventRelated,
+
+  getTableCount,
   
   GeneratedEvent,
   generateEvent,
