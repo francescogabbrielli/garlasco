@@ -8,6 +8,7 @@ NEXT (0.2)
 
 TODO: 0.1.4
 -----------
+- fix bug caricamento persone nell'evento (LazyLoad) &check;
 - add version history &check;
 - fix & generalise esc key precedence &check;
 - AI usage:

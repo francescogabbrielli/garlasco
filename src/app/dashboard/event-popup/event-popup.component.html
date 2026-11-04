@@ -13,6 +13,9 @@
         <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Creazione') : event().type }}</p>
         <h1 id="event-popup-title">
           {{ isEditor() ? 'Evento' : event().name }}
+          @if (isAdmin()) {
+            <sub>{{ event().id }}</sub>
+          }
           @if (maskTouched()) { <small>*</small> }
         </h1>
       </div>

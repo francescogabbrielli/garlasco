@@ -50,8 +50,10 @@ export function isValidEventActors(actors: unknown): actors is EventActorImport[
   );
 }
 
-export function isValidEventType(type: unknown): type is EventType {
-  return typeof type === 'string' && eventTypes.some((eventType) => eventType === type);
+export function isValidEventType(type: unknown, start_position: unknown): type is EventType {
+  return typeof type === 'string' 
+    && eventTypes.some((eventType) => eventType === type) 
+    && (start_position !== null || type !== 'Fatto');
 }
 
 export function isValidPersonType(type: unknown): type is PersonType {
@@ -116,7 +118,7 @@ export class ImportComponent {
     try {
       for (const event of dataset) {
         // Valida la presenza dei campi minimi prima dell'invio
-        if (!event.name || !event.start_date || !event.start_position || !isValidEventType(event.type)) {
+        if (!event.name || !event.start_date || !isValidEventType(event.type, event.start_position)) {
           console.warn("Elemento saltato per mancanza di campi obbligatori:", event);
           continue;
         }

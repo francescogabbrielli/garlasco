@@ -1,4 +1,4 @@
-import { Component, computed, effect, ElementRef, inject, input, model, output, signal, ViewChild } from '@angular/core'
+import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
 import { FormControl, FormGroup, PristineChangeEvent, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 
@@ -56,6 +56,7 @@ export class EventMaskComponent {
 
   dialogOpen = output<boolean>()
 
+
   constructor() {
     effect(() => {
       // re-run once the people list is available so actor names can be resolved
@@ -97,20 +98,27 @@ export class EventMaskComponent {
       },
     })
 
-    const { data }  = await e.actors()
     if (this.event()?.id !== e.id) return
+    const data: Awaited<ReturnType<typeof e.actors>>['data'] = []
+    let token: string | null | undefined = null
+    do {
+      const page = await e.actors({ nextToken: token })
+      data.push(...page.data)
+      token = page.nextToken
+    } while (token)
+    if (this.event()?.id !== e.id) return
+    this.nextActorRowId = 0
     this.loadedEventActors = data.map(a => a.id)
-    if (data.length) {
-      this.nextActorRowId = data.length
-      this.selectedActors = data
-        .map((a, i) => ({
-          rowId: i,
+    this.selectedActors.set(
+      data
+        .map(a => ({
+          rowId: this.nextActorRowId++,
           personId: a.personId,
           personQuery: this.personName(a.personId),
           role: a.role,
-        }))        
-        .sort((a, b) => this.personFullName(a.personId).localeCompare(this.personFullName(b.personId)))
-    }
+        }))
+        .sort((a, b) => this.personFullName(a.personId).localeCompare(this.personFullName(b.personId))),
+    )
 
     this.sources = e.sources ?? []
 
@@ -128,7 +136,7 @@ export class EventMaskComponent {
   readonly submitError = model('')
 
   // actors involved in the event
-  selectedActors: SelectedActor[] = [{ rowId: 0, personId: '', personQuery: '', role: '' }]
+  readonly selectedActors = signal<SelectedActor[]>([{ rowId: 0, personId: '', personQuery: '', role: '' }])
   actorSelectionError = false
   actorRoleError = false
   private nextActorRowId = 1
@@ -178,7 +186,7 @@ export class EventMaskComponent {
   filteredPeople(actor: SelectedActor): Person[] {
     const query = actor.personQuery.trim().toLocaleLowerCase()
     return this.allPeople().filter((person) => {
-      const alreadySelected = this.selectedActors.some(
+      const alreadySelected = this.selectedActors().some(
         (selectedActor) => selectedActor.rowId !== actor.rowId && selectedActor.personId === person.id,
       )
       const name = `${person.name} ${person.surname}`.toLocaleLowerCase()
@@ -194,10 +202,10 @@ export class EventMaskComponent {
   }
 
   addActor(): void {
-    this.selectedActors = [
-      ...this.selectedActors,
+    this.selectedActors.update(actors => [
+      ...actors,
       { rowId: this.nextActorRowId++, personId: '', personQuery: '', role: '' },
-    ]
+    ])
     this.actorSelectionError = false
     this.actorRoleError = false
   }
@@ -206,30 +214,30 @@ export class EventMaskComponent {
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
 
-    this.selectedActors = this.selectedActors.map((actor) =>
+    this.selectedActors.update(actors => actors.map((actor) =>
       actor.rowId === rowId
         ? { ...actor, personId: '', personQuery: target.value }
         : actor,
-    )
+    ))
     this.actorSelectionError = false
   }
 
   selectActorPerson(rowId: number, person: Person): void {
     if (!this.allPeople().some((currentPerson) => currentPerson.id === person.id)) return
 
-    this.selectedActors = this.selectedActors.map((actor) =>
+    this.selectedActors.update(actors => actors.map((actor) =>
       actor.rowId === rowId
         ? { ...actor, personId: person.id, personQuery: this.personName(person.id) }
         : actor,
-    )
+    ))
     this.actorSelectionError = false
     this.modified.emit(true)
   }
 
   removeActor(rowId: number): void {
-    if (this.selectedActors.length <= 1) return
+    if (this.selectedActors().length <= 1) return
 
-    this.selectedActors = this.selectedActors.filter((actor) => actor.rowId !== rowId)
+    this.selectedActors.update(actors => actors.filter((actor) => actor.rowId !== rowId))
     this.actorSelectionError = false
     this.actorRoleError = false
     this.modified.emit(true)
@@ -307,9 +315,9 @@ export class EventMaskComponent {
       this.selectActorPerson(rowId, value as Person)
       return
     }
-    this.selectedActors = this.selectedActors.map((actor) =>
+    this.selectedActors.update(actors => actors.map((actor) =>
       actor.rowId === rowId ? { ...actor, personId: '', personQuery: '' } : actor,
-    )
+    ))
     this.openPersonDialog(rowId)
   }
 
@@ -335,9 +343,9 @@ export class EventMaskComponent {
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
 
-    this.selectedActors = this.selectedActors.map((actor) =>
+    this.selectedActors.update(actors => actors.map((actor) =>
       actor.rowId === rowId ? { ...actor, role: target.value } : actor,
-    )
+    ))
     this.actorRoleError = false
   }
 
@@ -361,8 +369,8 @@ export class EventMaskComponent {
 
     this.eventForm.markAllAsTouched()
     this.submitError.set('')
-    this.actorSelectionError = this.selectedActors.length === 0
-      || this.selectedActors.some((actor) => !this.isActorPersonValid(actor))
+    this.actorSelectionError = this.selectedActors().length === 0
+      || this.selectedActors().some((actor) => !this.isActorPersonValid(actor))
 
     if (this.eventForm.invalid) {
       this.submitError.set(
@@ -378,16 +386,16 @@ export class EventMaskComponent {
 
     if (this.actorSelectionError) {
       this.submitError.set(
-        this.selectedActors.length === 0
+        this.selectedActors().length === 0
           ? 'Seleziona almeno una persona coinvolta.'
-          : this.selectedActors.some((actor) => this.isActorPersonValid(actor))
+          : this.selectedActors().some((actor) => this.isActorPersonValid(actor))
             ? 'Seleziona una persona in ogni riga.'
             : 'Seleziona una persona valida dall’elenco in ogni riga.',
       )
       return
     }
 
-    this.actorRoleError = this.selectedActors.some((actor) => !actor.role.trim())
+    this.actorRoleError = this.selectedActors().some((actor) => !actor.role.trim())
     if (this.actorRoleError) {
       this.submitError.set('Indica il ruolo per ogni persona selezionata.')
       return
@@ -447,7 +455,7 @@ export class EventMaskComponent {
 
     try {
       
-      const data = await this.dataService.saveEvent(payload, this.loadedEventActors, this.selectedActors)
+      const data = await this.dataService.saveEvent(payload, this.loadedEventActors, this.selectedActors())
 
       if (!payload.id && !user.isAdmin()) {
         this.userService.sendAdminEmail(

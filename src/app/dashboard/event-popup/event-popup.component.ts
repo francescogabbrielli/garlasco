@@ -75,6 +75,8 @@ export class EventPopupComponent implements OnInit, OnDestroy {
     const isNew = !this.event().id
     return edit && (isEditor || isOwner || isNew)
   })
+
+  isAdmin = computed(() => this.userService.user().isAdmin())
   
   people = input.required<Person[]>()
 

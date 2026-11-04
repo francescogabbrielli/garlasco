@@ -43,8 +43,8 @@
                 <p class="actor-control-message">Nessuna persona disponibile.</p>
             }
 
-            <div class="selected-actors">
-                @for (actor of selectedActors; track actor.rowId) {
+            <div class="selected-actors" #selectedActorsContainer>
+                @for (actor of selectedActors(); track actor.rowId) {
                 <div class="actor-person-role-row">
                     <div class="actor-person-role-fields">
                         <div class="form-field">
@@ -96,7 +96,7 @@
                         </div>
                     </div>
 
-                    @if (selectedActors.length > 1) {
+                    @if (selectedActors().length > 1) {
                     <button
                         class="actor-remove-control"
                         type="button"
