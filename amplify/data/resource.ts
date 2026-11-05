@@ -1,5 +1,8 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
-import { Coordinates, EventType, PersonType, Person, Event, EventPerson, EventRelated } from './models';
+import { 
+  Coordinates, EventType, PersonType, Person, Event, EventPerson, EventRelated,
+  Hypothesis, HypothesisPerson, HypothesisPublished, HypothesisPublishedPerson, PublicationRequest, RequestStatus 
+} from './models';
 import { generateEventFn } from '../functions/generate-event/resource';
 import { sendEmailFn } from '../functions/send-email/resource';
 import { searchWebFn } from '../functions/search-web/resource';
@@ -76,6 +79,13 @@ const schema = a.schema({
   Event,
   EventPerson,
   EventRelated,
+
+  Hypothesis,
+  HypothesisPerson,
+  HypothesisPublished,
+  HypothesisPublishedPerson,
+  PublicationRequest,
+  RequestStatus,
 
   getTableCount,
   

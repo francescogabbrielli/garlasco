@@ -5,6 +5,7 @@ export const EVENT_TYPES = [
   'Testimonianza',
   'Intercettazione',
   'Sentenza',
+  'Ipotesi'
 ] as const;
 
 export const PERSON_TYPES = [
@@ -14,4 +15,10 @@ export const PERSON_TYPES = [
   'Avvocato',
   'Testimone',
   'Cronista',
+] as const;
+
+export const REQUEST_STATUS = [
+  'pending',
+  'approved',
+  'rejected',
 ] as const;

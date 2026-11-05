@@ -1,4 +1,9 @@
 <div class="changelog">
+    <h2>0.2.0 - Elaborazione/Analisi di Ipotesi</h2>
+    <ul>
+        <li>Introduzione pannello ipotesi</li>
+        <li>Aggiunto tema scuro</li>
+    </ul>
     <h2>0.1.5 - Bugfixes</h2>
     <ul>
         <li>Pulizia errori imprevisti di autenticazione</li>
