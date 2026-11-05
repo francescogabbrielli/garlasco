@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core'
+import { Component, inject, OnInit, OnDestroy } from '@angular/core'
+import { AuthenticatorService } from '@aws-amplify/ui-angular'
 import { Router, RouterOutlet } from '@angular/router'
 import { Amplify } from 'aws-amplify'
 import outputs from '../../amplify_outputs.json'
@@ -19,11 +20,14 @@ I18n.setLanguage('it')
     styleUrl: './app.component.css',
     imports: [AmplifyAuthenticatorModule, RouterOutlet]
 })
-export class AppComponent {
-
+export class AppComponent  implements OnInit, OnDestroy {
+  
   userService: UserProfileService = inject(UserProfileService)
+  authenticatorService: AuthenticatorService = inject(AuthenticatorService)
 
   router: Router = inject(Router)
+
+  private authSubscription!: any
 
   title = 'Garlasco Home'
 
@@ -80,6 +84,19 @@ export class AppComponent {
   // Controlla se la rotta attuale è pubblica
   isPublicRoute(): boolean {
     return this.router.url.includes('privacy-policy');
+  }
+
+  ngOnInit() {
+    this.authSubscription = this.authenticatorService.subscribe(context => {
+      if (context.error) {
+        localStorage.clear()
+        window.location.reload()
+      }
+    })
+  }
+
+  ngOnDestroy() {
+    this.authSubscription?.unsubscribe();
   }
 }
 

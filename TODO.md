@@ -6,9 +6,13 @@ NEXT (0.2)
 - save user preferences (in user service) & autosync localStorage
 - create dark theme & link to system theme
 
+TODO: 0.1.5
+-----------
+- fix bug token scaduti ...
+- fix bug caricamento persone nell'evento (LazyLoad) &check;
+
 TODO: 0.1.4
 -----------
-- fix bug caricamento persone nell'evento (LazyLoad) &check;
 - add version history &check;
 - fix & generalise esc key precedence &check;
 - AI usage:
