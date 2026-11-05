@@ -8,7 +8,7 @@ NEXT (0.2)
 
 TODO: 0.1.5
 -----------
-- fix bug token scaduti ...
+- fix bug token scaduti &check;
 - fix bug caricamento persone nell'evento (LazyLoad) &check;
 
 TODO: 0.1.4

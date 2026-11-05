@@ -5,9 +5,9 @@
     "name": "Francesco Gabbrielli",
     "email": "garlasco@francescogabbrielli.it"
   },
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Sistema (sperimentale) integrato e normalizzato di ricerca/indagine. Lavori in corso",
-  "lastUpdate": "2026-11-03",
+  "lastUpdate": "2026-11-05",
   "website": "https://garlasco.francescogabbrielli.it/",
   "license": "MIT",
   "scripts": {

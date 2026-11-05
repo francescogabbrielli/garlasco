@@ -28,6 +28,7 @@ export class AppComponent  implements OnInit, OnDestroy {
   router: Router = inject(Router)
 
   private authSubscription!: any
+  authError: string = ''
 
   title = 'Garlasco Home'
 
@@ -88,9 +89,10 @@ export class AppComponent  implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.authSubscription = this.authenticatorService.subscribe(context => {
-      if (context.error) {
+      if (context.error && !context.error.toLowerCase().includes('password')) {
+        this.authError = context.error
         localStorage.clear()
-        window.location.reload()
+        setTimeout(() => window.location.reload(), 1000)
       }
     })
   }

@@ -1,4 +1,8 @@
 <div class="changelog">
+    <h2>0.1.5 - Bugfixes</h2>
+    <ul>
+        <li>Pulizia errori imprevisti di autenticazione</li>
+    </ul>
     <h2>0.1.4 - Stabilizzazione funzionalità</h2>
     <ul>
         <li>Miglioramento invio email</li>

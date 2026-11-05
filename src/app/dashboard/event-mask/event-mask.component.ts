@@ -99,15 +99,10 @@ export class EventMaskComponent {
     })
 
     if (this.event()?.id !== e.id) return
-    const data: Awaited<ReturnType<typeof e.actors>>['data'] = []
-    let token: string | null | undefined = null
-    do {
-      const page = await e.actors({ nextToken: token })
-      data.push(...page.data)
-      token = page.nextToken
-    } while (token)
-    if (this.event()?.id !== e.id) return
+
+    // load persons
     this.nextActorRowId = 0
+    const data = await this.dataService.loadEventActors(e)
     this.loadedEventActors = data.map(a => a.id)
     this.selectedActors.set(
       data

@@ -13,6 +13,7 @@ const client = generateClient<Schema>();
 
 type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
+type EventPerson = Schema['EventPerson']['type']
 
 type Filter = {
   personIds: string[]
@@ -188,6 +189,17 @@ export class DataService {
       throw new Error('Errore durante il caricamento dell’evento: '+ (errors?.[0]?.message || 'Errore sconosciuto'));
     }
     return data as Event
+  }
+
+  async loadEventActors(event: Event): Promise<EventPerson[]> {
+    const data: EventPerson[] = []
+    let token: string | null | undefined = null
+    do {
+      const page = await event.actors({ nextToken: token })
+      data.push(...page.data)
+      token = page.nextToken
+    } while (token)
+    return data as EventPerson[]
   }
 
   async saveEvent(event: any, previousEventActors:  string[], actors: SelectedActor[]): Promise<Event> {

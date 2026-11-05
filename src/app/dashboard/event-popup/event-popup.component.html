@@ -14,9 +14,9 @@
         <h1 id="event-popup-title">
           {{ isEditor() ? 'Evento' : event().name }}
           @if (isAdmin()) {
-            <sub>{{ event().id }}</sub>
+            <small>{{ event().id }}</small>
           }
-          @if (maskTouched()) { <small>*</small> }
+          @if (maskTouched()) { <small>&nbsp;(*)</small> }
         </h1>
       </div>
 
