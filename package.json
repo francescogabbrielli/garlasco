@@ -15,7 +15,8 @@
     "start": "node scripts/generate-runtime-config.mjs && ng serve --no-hmr",
     "build": "node scripts/generate-runtime-config.mjs && ng build",
     "watch": "node scripts/generate-runtime-config.mjs && ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:amplify": "vitest run --config vitest.amplify.config.js"
   },
   "private": true,
   "dependencies": {
