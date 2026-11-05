@@ -87,13 +87,14 @@ describe('ImportComponent', () => {
   });
 
   it('accepts only supported event types', () => {
-    expect(isValidEventType('Indagine')).toBe(true);
-    expect(isValidEventType('Comunicazione')).toBe(true);
-    expect(isValidEventType('Fatto')).toBe(true);
-    expect(isValidEventType('Intercettazione')).toBe(true);
-    expect(isValidEventType('Sentenza')).toBe(true);
-    expect(isValidEventType('Altro')).toBe(false);
-    expect(isValidEventType(undefined)).toBe(false);
+    expect(isValidEventType('Indagine', null)).toBe(true);
+    expect(isValidEventType('Comunicazione', null)).toBe(true);
+    expect(isValidEventType('Fatto', 'a position')).toBe(true);
+    expect(isValidEventType('Intercettazione', null)).toBe(true);
+    expect(isValidEventType('Sentenza', null)).toBe(true);
+    expect(isValidEventType('Altro', null)).toBe(false);
+    expect(isValidEventType('Fatto', null)).toBe(false);
+    expect(isValidEventType(undefined, null)).toBe(false);
   });
 
   it('accepts only supported person types', () => {
