@@ -8,7 +8,7 @@ import { AmplifyAuthenticatorModule, translations } from '@aws-amplify/ui-angula
 
 import { I18n } from 'aws-amplify/utils'
 
-import { UserProfileService } from './user-profile.service'
+import { PREFERENCE_KEY_THEME, UserProfileService } from './user-profile.service'
 
 Amplify.configure(outputs)
 I18n.putVocabularies(translations)
@@ -91,7 +91,7 @@ export class AppComponent  implements OnInit, OnDestroy {
     this.authSubscription = this.authenticatorService.subscribe(context => {
       if (context.error && !context.error.toLowerCase().includes('password')) {
         this.authError = context.error
-        localStorage.clear()
+        this.userService.clearPreferences([PREFERENCE_KEY_THEME])
         setTimeout(() => window.location.reload(), 1000)
       }
     })

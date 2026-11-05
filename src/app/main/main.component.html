@@ -88,6 +88,17 @@
             Guida
           </button>
           <hr role="separator" />
+          <button
+            id="theme_toggle_button"
+            class="theme-toggle"
+            type="button"
+            role="menuitemcheckbox"
+            [attr.aria-checked]="isDarkTheme()"
+            (click)="toggleTheme()">
+            <span aria-hidden="true">{{ isDarkTheme() ? '☀' : '☾' }}</span>
+            <span>Tema scuro</span>
+            <span class="theme-switch" [class.enabled]="isDarkTheme()" aria-hidden="true"></span>
+          </button>
           <button id="about_button" type="button" 
             role="menuitem" 
             (click)="this.openAboutDialog()">

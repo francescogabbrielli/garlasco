@@ -1,10 +1,11 @@
-NEXT (0.2)
-----------
+TODO: 0.2.0
+-----------
 - create Hypothesis backend
 - design a minimal 'Dashboard di Analisi'
 - add import/export for new data
-- save user preferences (in user service) & autosync localStorage
-- create dark theme & link to system theme
+- save user preferences in user service &check;
+- create dark theme & link to system theme &check;
+- restructure filters
 
 TODO: 0.1.5
 -----------
@@ -96,7 +97,7 @@ TODO: 0.0.4
 TODO: 0.0.3
 -----------
 - fix timeline glitch on slider drag &check;
-- fix filters localStorage &check; 
+- fix filters persistence &check;
 - fix user details not showing on delayed login &check;
 - add export secton &check;
 - unify buttons & action panels CSS &check;

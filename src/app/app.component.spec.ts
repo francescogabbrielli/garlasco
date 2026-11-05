@@ -15,7 +15,11 @@ describe('AppComponent', () => {
     | undefined;
 
   beforeEach(async () => {
-    userService = { logIn: vi.fn(), logOut: vi.fn() } as unknown as Mocked<UserProfileService>
+    userService = {
+      logIn: vi.fn(),
+      logOut: vi.fn(),
+      clearPreferences: vi.fn(),
+    } as unknown as Mocked<UserProfileService>
     userService.logIn.mockReturnValue(Promise.resolve(new UserData()));
     router = {
       url: '/',

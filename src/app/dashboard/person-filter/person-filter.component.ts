@@ -1,6 +1,7 @@
-import { Component, computed, input, OnInit, output, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, output, signal } from '@angular/core';
 
 import { PersonMarkerComponent } from '../../ui/person-marker/person-marker.component';
+import { UserProfileService } from '../../user-profile.service';
 import { Schema } from '../../../../amplify/data/resource';
 
 import { PERSON_TYPES } from '../../../../amplify/data/enums';
@@ -14,6 +15,8 @@ type Person = Schema['Person']['type']
   styleUrl: './person-filter.component.css',
 })
 export class PersonFilterComponent implements OnInit {
+  private readonly userProfile = inject(UserProfileService)
+
   people = input<Person[]>([])
   loading = input(false)
   error = input('')
@@ -27,7 +30,7 @@ export class PersonFilterComponent implements OnInit {
   selectedPeople = computed(() => this.people().filter(p => this.selectedIds().includes(p.id)))
 
   ngOnInit(): void {
-    this.selectedTypes.set(JSON.parse(localStorage.getItem('personFilter.selectedTypes') || '[0, 4]'))
+    this.selectedTypes.set(this.userProfile.getPreference('personFilter.selectedTypes', [0, 4]))
   }
 
   toggle(personId: string): void {
@@ -44,7 +47,7 @@ export class PersonFilterComponent implements OnInit {
         ? this.selectedTypes().filter(i => i !== index)
         : [...this.selectedTypes(), index]
     )
-    localStorage.setItem('personFilter.selectedTypes', JSON.stringify(this.selectedTypes()))
+    this.userProfile.setPreference('personFilter.selectedTypes', this.selectedTypes())
   }
 
   clear(): void {

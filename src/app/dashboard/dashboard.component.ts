@@ -11,7 +11,7 @@ import { EventListComponent } from './event-list/event-list.component';
 import { MapFilterComponent } from './map-filter/map-filter.component';
 import { TimelineSliderComponent } from '../ui/timeline-slider/timeline-slider.component';
 import { EventPopupComponent } from './event-popup/event-popup.component';
-import { UserProfileService } from '../user-profile.service';
+import { UserProfileService, PREFERENCE_KEY_DASHBOARD_FILTERS } from '../user-profile.service';
 
 import { MainComponent } from '../main/main.component';
 import { toObservable } from '@angular/core/rxjs-interop';
@@ -49,8 +49,6 @@ export class DashboardComponent implements OnInit {
   readonly MIN_DATE = new Date(2007, 1, 1)
 
   private readonly PEOPLE_SORTER = (a: Person, b: Person) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)
-
-  private readonly STORAGE_FILTERS = 'dashboard_filters'
 
   // L'unico accumulatore locale per Mappa + Lista
   events = signal<Event[]>([])
@@ -137,7 +135,7 @@ export class DashboardComponent implements OnInit {
   }
 
   triggerReload() {
-    localStorage.setItem(this.STORAGE_FILTERS, JSON.stringify(this.currentFilters));
+    this.userService.setPreference(PREFERENCE_KEY_DASHBOARD_FILTERS, this.currentFilters)
     this.dataService.setFilters(
       this.currentFilters.personIds,
       this.showTimeline() ? this.currentFilters.interval.from : this.MIN_DATE, 
@@ -150,7 +148,7 @@ export class DashboardComponent implements OnInit {
     this.loadPeople()
 
     // Recupera lo stato iniziale dalla cache locale
-    const savedFilters = JSON.parse(localStorage.getItem(this.STORAGE_FILTERS) || '{}')
+    const savedFilters = this.userService.getPreference<Partial<Filter>>(PREFERENCE_KEY_DASHBOARD_FILTERS, {})
     
     this.currentFilters = savedFilters ? {
       personIds: savedFilters.personIds ? savedFilters.personIds : this.defaultFilters.personIds,

@@ -16,11 +16,11 @@
   }
 
 .brand {
-    color: #221f2b;
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 0.75em;
+    text-shadow: 1px 1px 2px gray;
   }
 
 .toolbar-separator {
@@ -46,7 +46,6 @@
   }
 
 .menu a {
-    color: inherit;
     text-wrap: nowrap;
   }
 
@@ -61,7 +60,6 @@
     height: 2.25rem;
     place-items: center;
     border-radius: 50%;
-    color: rgba(34, 31, 43, 0.72);
     font-size: 1.25rem;
     font-weight: 400;
     line-height: 1;
@@ -118,23 +116,6 @@ button.main-link {
 
 .user-label:hover {
     border-left-color: rgba(117, 81, 194, 0.45);
-    color: #7551c2;
-}
-
-@media (max-width: 600px) {
-    .brand {
-        display: none;
-    }
-
-    .user-label {
-        padding: 0.6rem;
-        font-size: 0;
-    }
-
-    .user-label::after {
-        content: "☰";
-        font-size: 1rem;
-    }
 }
 
 /* TODO: Unify CSS for all menu + buttons */
@@ -169,7 +150,6 @@ button.main-link {
 .user-dropdown button:hover {
     border-color: transparent;
     background: #dadbf9;
-    color: #221f2b;
 }
 
 .user-dropdown hr {
@@ -187,6 +167,46 @@ button.main-link {
     justify-content: center;
     background: rgba(0, 0, 0, 0.5);
     z-index: 9999;
+}
+
+
+.version {
+    font-size: 0.8rem;
+    font-family: Courier, monospace;
+    color:gray;
+}
+
+.version span {
+    white-space: nowrap;
+}
+
+.author {
+    text-align: right;
+    font-variant: small-caps;
+    font-style: italic;
+    color: gray;
+}
+
+footer {
+    display: flex;
+    justify-content: space-evenly; 
+}
+
+/*** Responsive styles for different screen sizes ***/
+@media (max-width: 600px) {
+    .brand {
+        display: none;
+    }
+
+    .user-label {
+        padding: 0.6rem;
+        font-size: 0;
+    }
+
+    .user-label::after {
+        content: "☰";
+        font-size: 1rem;
+    }
 }
 
 @media (min-width: 2201px) {
@@ -210,24 +230,14 @@ button.main-link {
     }
 }
 
-.version {
-    font-size: 0.8rem;
-    font-family: Courier, monospace;
-    color: rgba(34, 31, 43, 0.5);
+:host-context(html[data-theme="dark"]) .user-label {
+  color: white;
 }
 
-.version span {
-    white-space: nowrap;
+:host-context(html[data-theme="dark"]) .user-dropdown button {
+    color: white;
 }
 
-.author {
-    text-align: right;
-    font-variant: small-caps;
-    font-style: italic;
-    color: rgba(34, 31, 43, 0.5);
-}
-
-footer {
-    display: flex;
-    justify-content: space-evenly; 
+:host-context(html[data-theme="dark"]) .user-dropdown button:hover {
+    background: var(--dark-page)
 }

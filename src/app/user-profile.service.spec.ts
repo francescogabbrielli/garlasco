@@ -5,9 +5,11 @@ describe('UserProfileService', () => {
   let service: UserProfileService;
 
   beforeEach(() => {
-    localStorage.clear();
     TestBed.configureTestingModule({});
     service = TestBed.inject(UserProfileService);
+    service.clearPreferences();
+    service.user.set(new UserData());
+    TestBed.tick();
   });
 
   it('should return the cached user and recognize user roles', async () => {
@@ -32,35 +34,45 @@ describe('UserProfileService', () => {
     expect(user.isAdmin()).toBe(false);
   });
 
-  it('should clear cached user data and editEnabled on logout', () => {
+  it('should clear cached user data and all preferences on logout', () => {
     let user = new UserData({ sub: 'user-123' }, ['Admin']);
-    user.editEnabled.set(true);
     service.user.set(user);
+    service.setEditEnabled(true);
+    service.setPreference('theme', 'dark');
+    service.setPreference('dashboardFilters', { personIds: ['person-1'] });
 
     service.logOut();
     user = service.user();
+    TestBed.tick();
 
     expect(user.getId()).toBe('');
     expect(user.isAdmin()).toBe(false);
     expect(user.isEditor()).toBe(false);
     expect(user.editEnabled()).toBe(false);
+    expect(service.getPreference('theme', null)).toBeNull();
+    expect(service.getPreference('dashboardFilter', null)).toBeNull();
+    expect(service.getPreference('editEnabled', null)).toBeNull();
   });
 
   it('should default editEnabled to false', () => {
     expect(new UserData().editEnabled()).toBe(false);
   });
 
-  it('should restore editEnabled from localStorage', () => {
-    localStorage.setItem('editEnabled', 'true');
-    expect(new UserData().editEnabled()).toBe(true);
+  it('should restore editEnabled from the user preferences', () => {
+    service.setPreference('editEnabled', true);
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(UserProfileService);
+
+    expect(service.user().editEnabled()).toBe(true);
   });
 
-  it('should persist editEnabled to localStorage', () => {
+  it('should persist editEnabled in the user preferences', () => {
     const user = new UserData({ sub: 'u' }, ['Editor']);
     service.user.set(user);
-    user.editEnabled.set(true);
+    service.setEditEnabled(true);
     TestBed.tick();
 
-    expect(localStorage.getItem('editEnabled')).toBe('true');
+    expect(service.getPreference('editEnabled', false)).toBe(true);
   });
 });

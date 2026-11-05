@@ -3,14 +3,25 @@ import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
-import { UserData, UserProfileService } from '../user-profile.service';
+import { PREFERENCE_KEY_THEME, UserData, UserProfileService } from '../user-profile.service';
 import { MainComponent } from './main.component';
 
 describe('MainComponent', () => {
   let fixture: ComponentFixture<MainComponent>;
   let signOut: ReturnType<typeof vi.fn>;
+  let systemThemeListener: ((event: MediaQueryListEvent) => void) | undefined;
+  let preferences: Record<string, unknown>;
 
   beforeEach(async () => {
+    preferences = {};
+    systemThemeListener = undefined;
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: true,
+      addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => {
+        systemThemeListener = listener;
+      },
+      removeEventListener: vi.fn(),
+    })));
     signOut = vi.fn();
     vi.stubGlobal('IntersectionObserver', class {
       observe() {}
@@ -30,7 +41,20 @@ describe('MainComponent', () => {
         { provide: AuthenticatorService, useValue: { signOut } },
         {
           provide: UserProfileService,
-          useValue: { user: signal(userData), logIn: vi.fn().mockResolvedValue(userData), logOut: vi.fn() },
+          useValue: {
+            user: signal(userData),
+            logIn: vi.fn().mockResolvedValue(userData),
+            logOut: vi.fn(),
+            getPreference: <T>(key: string, defaultValue: T): T =>
+              key in preferences ? preferences[key] as T : defaultValue,
+            setPreference: (key: string, value: unknown) => { preferences[key] = value },
+            clearPreferences: (preserve: readonly string[] = []) => {
+              for (const key of Object.keys(preferences)) {
+                if (!preserve.includes(key)) delete preferences[key]
+              }
+            },
+            setEditEnabled: (enabled: boolean) => userData.editEnabled.set(enabled),
+          },
         },
       ],
     }).compileComponents();
@@ -76,6 +100,49 @@ describe('MainComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('toggles and persists the dark theme from the user menu', () => {
+    const initialTheme = fixture.componentInstance.isDarkTheme();
+
+    fixture.nativeElement.querySelector('.user-label').click();
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('#theme_toggle_button');
+    expect(button.getAttribute('role')).toBe('menuitemcheckbox');
+    expect(button.getAttribute('aria-checked')).toBe(String(initialTheme));
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isDarkTheme()).toBe(!initialTheme);
+    expect(document.documentElement.dataset['theme']).toBe(initialTheme ? 'light' : 'dark');
+    expect(fixture.componentInstance.userProfile.getPreference(PREFERENCE_KEY_THEME, null))
+      .toBe(initialTheme ? 'light' : 'dark');
+
+    button.click();
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.isDarkTheme()).toBe(initialTheme);
+  });
+
+  it('uses the system dark preference when no theme has been saved', () => {
+    expect(fixture.componentInstance.isDarkTheme()).toBe(true);
+    expect(document.documentElement.dataset['theme']).toBe('dark');
+    expect(fixture.componentInstance.userProfile.getPreference(PREFERENCE_KEY_THEME, null)).toBeNull();
+  });
+
+  it('follows system theme changes until the user chooses a theme', () => {
+    systemThemeListener?.({ matches: false } as MediaQueryListEvent);
+    expect(fixture.componentInstance.isDarkTheme()).toBe(false);
+    expect(document.documentElement.dataset['theme']).toBe('light');
+
+    fixture.componentInstance.toggleTheme();
+    expect(fixture.componentInstance.isDarkTheme()).toBe(true);
+    expect(fixture.componentInstance.userProfile.getPreference(PREFERENCE_KEY_THEME, null)).toBe('dark');
+
+    systemThemeListener?.({ matches: false } as MediaQueryListEvent);
+    expect(fixture.componentInstance.isDarkTheme()).toBe(true);
   });
 
   it('signs out after confirmation', () => {
