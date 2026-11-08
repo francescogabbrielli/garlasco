@@ -1,0 +1,8 @@
+<dialog #dialog class="splash" aria-labelledby="splash-message" 
+  (cancel)="onCancel($event)"
+  >
+  <p id="splash-message" aria-live="polite">{{ message() }}</p>
+  @if (showCloseButton()) {
+    <button type="button" aria-label="Chiudi" (click)="dismiss()">&times;</button>
+  }
+</dialog>

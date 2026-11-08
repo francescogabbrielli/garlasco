@@ -54,6 +54,10 @@ export class UserData {
     return this.attributes['family_name'] ?? ''
   }
 
+  getFullName(): string {
+    return (this.getName() + ' ' + this.getSurname()).trim()
+  }
+
   isAdmin(): boolean {
     return this.groups.includes('Admin')
   }

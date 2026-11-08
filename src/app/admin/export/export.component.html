@@ -5,10 +5,12 @@
         <div class="actions-panel" style="width: fit-content;">
             <button type="button" 
                 class="action-button"
+                [disabled]="isWorking()"
                 (click)="exportPeople()"
                 >Esporta persone</button>
             <button type="button" 
                 class="action-button"
+                [disabled]="isWorking()"
                 (click)="exportEvents()"
                 >Esporta eventi</button>
             <button type="button" 
@@ -19,3 +21,4 @@
         </div>
     </div>
     
+    <app-splash-dialog #exportSplash defaultMessage="Esportazione"></app-splash-dialog>

@@ -12,13 +12,13 @@
             <div class="actions-panel">
                 <button type="button" 
                     class="btn action-button" 
-                    [disabled]="isLoading()" 
+                    [disabled]="isWorking()" 
                     (click)="importaPersoneDaTextarea()">
-                    {{ isLoading() ? 'Caricamento...' : 'Importa persone' }}
+                    {{ isWorking() ? 'Caricamento...' : 'Importa persone' }}
                 </button>
                 <button type="button"
                     class="btn secondary-button"  
-                    [disabled]="isLoading()" 
+                    [disabled]="isWorking()" 
                     (click)="cleanPeopleInput()">
                     Azzera
                 </button>
@@ -34,13 +34,13 @@
             <div class="actions-panel">
                 <button type="button" 
                     class="btn action-button" 
-                    [disabled]="isLoading()" 
+                    [disabled]="isWorking()" 
                     (click)="eseguiUploadDaTextarea()">
-                    {{ isLoading() ? 'Caricamento...' : 'Importa eventi' }}
+                    {{ isWorking() ? 'Caricamento...' : 'Importa eventi' }}
                 </button>
                 <button type="button" 
                     class="btn secondary-button" 
-                    [disabled]="isLoading()" 
+                    [disabled]="isWorking()" 
                     (click)="cleanInputData()">
                     Azzera
                 </button>
@@ -49,3 +49,5 @@
         </section>
         </div>
     </div>
+
+    <app-splash-dialog #importSplash defaultMessage="Importazione"></app-splash-dialog>

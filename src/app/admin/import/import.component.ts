@@ -1,6 +1,7 @@
-import { Component, inject, signal} from '@angular/core'
+import { Component, inject, model, signal, ViewChild} from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
+
 import { generateClient } from 'aws-amplify/data'
 
 import { EVENT_TYPES, PERSON_TYPES } from '../../../../amplify/data/enums'
@@ -8,6 +9,8 @@ import type { Schema } from '../../../../amplify/data/resource'
 
 import { UserProfileService } from '../../user-profile.service'
 import { GeoService } from '../../geo.service'
+
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component'
 
 const client = generateClient<Schema>()
 
@@ -75,7 +78,7 @@ export function toPersonCreateInput(
 
 @Component({
   selector: 'app-import',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SplashDialogComponent],
   templateUrl: './import.component.html',
   styleUrl: './import.component.css',
 })
@@ -86,13 +89,16 @@ export class ImportComponent {
 
   jsonInput = signal<string>('');
   peopleJsonInput = signal<string>('');
-  isLoading = signal<boolean>(false);
+  isWorking = model<boolean>(false);
+
+  @ViewChild('importSplash')
+  splash!: SplashDialogComponent
 
   async eseguiUploadDaTextarea() {
     const rawText = this.jsonInput().trim();
     
     if (!rawText) {
-      alert("⚠️ L'area di testo è vuota. Incolla prima un JSON valido.")
+      this.splash.show("⚠️ L'area di testo è vuota. Incolla prima un JSON valido.")
       return
     }
 
@@ -103,12 +109,12 @@ export class ImportComponent {
       const parsing = JSON.parse(rawText);
       dataset = (Array.isArray(parsing) ? parsing : [parsing]) as EventImportRecord[];
     } catch (e) {
-      alert("❌ Errore di sintassi nel JSON. Verifica che le virgolette e le virgole siano corrette.");
+      this.splash.show("❌ Errore di sintassi nel JSON. Verifica che le virgolette e le virgole siano corrette.");
       console.error(e);
       return;
     }
 
-    this.isLoading.set(true);
+    this.isWorking.set(true);
     console.log(`Avvio importazione di ${dataset.length} elementi da textarea...`);
 
     const ownerId = (await this.userProfile.logIn()).getId()
@@ -185,13 +191,13 @@ export class ImportComponent {
         contatoreSuccessi++;
       }
       
-      alert(`🎉 Importazione completata! Caricati con successo ${contatoreSuccessi} su ${dataset.length} eventi.`);
-      this.cleanInputData();
+      this.splash.show(`🎉 Importazione completata! Caricati con successo ${contatoreSuccessi} su ${dataset.length} eventi.`)
+      this.cleanInputData()
     } catch (errore) {
-      console.error("Errore durante l'invio a DynamoDB:", errore);
-      alert("Ops! Si è verificato un errore di comunicazione con AWS. Controlla la console degli sviluppatori.");
+      console.error("Errore durante l'invio a DynamoDB:", errore)
+      this.splash.show("❌ Ops! Si è verificato un errore di comunicazione con AWS. Controlla la console degli sviluppatori.")
     } finally {
-      this.isLoading.set(false);
+      this.isWorking.set(false);
     }
   }
 
@@ -203,48 +209,48 @@ export class ImportComponent {
     const rawText = this.peopleJsonInput().trim();
 
     if (!rawText) {
-      alert('Incolla prima il JSON delle persone.');
+      this.splash.show('Incolla prima il JSON delle persone.')
       return;
     }
 
-    let dataset: PersonImportRecord[];
+    let dataset: PersonImportRecord[]
     try {
-      const parsing: unknown = JSON.parse(rawText);
-      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as PersonImportRecord[];
+      const parsing: unknown = JSON.parse(rawText)
+      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as PersonImportRecord[]
     } catch (error) {
-      alert('JSON delle persone non valido.');
-      console.error(error);
-      return;
+      this.splash.show('JSON delle persone non valido.')
+      console.error(error)
+      return
     }
 
-    this.isLoading.set(true);
-    let importedCount = 0;
+    this.isWorking.set(true)
+    let importedCount = 0
 
     try {
       for (const person of dataset) {
-        const type = person.type;
+        const type = person.type
         if (!person.name || !person.surname || !person.initials || !isValidPersonType(type)) {
-          console.warn('Persona ignorata: nome, cognome, iniziali e tipologia valida sono obbligatori.', person);
-          continue;
+          console.warn('Persona ignorata: nome, cognome, iniziali e tipologia valida sono obbligatori.', person)
+          continue
         }
 
-        const { errors } = await client.models.Person.create(toPersonCreateInput({ ...person, type }));
+        const { errors } = await client.models.Person.create(toPersonCreateInput({ ...person, type }))
 
         if (errors?.length) {
-          console.error('Errore durante la creazione della persona:', person, errors);
-          continue;
+          console.error('Errore durante la creazione della persona:', person, errors)
+          continue
         }
 
-        importedCount++;
+        importedCount++
       }
 
-      alert(`Importate ${importedCount} persone su ${dataset.length}.`);
-      this.cleanPeopleInput();
+      this.splash.show(`🎉 Importazione completata! Importate ${importedCount} persone su ${dataset.length}.`)
+      this.cleanPeopleInput()
     } catch (error) {
-      console.error('Errore durante l’importazione delle persone:', error);
-      alert('Impossibile importare le persone. Controlla la console degli sviluppatori.');
+      console.error('Errore durante l’importazione delle persone:', error)
+      this.splash.show('❌ Impossibile importare le persone. Controlla la console degli sviluppatori.')
     } finally {
-      this.isLoading.set(false);
+      this.isWorking.set(false);
     }
   }
 

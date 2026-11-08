@@ -455,7 +455,7 @@ export class EventMaskComponent {
       if (!payload.id && !user.isAdmin()) {
         this.userService.sendAdminEmail(
             `Evento creato: ${data.name} con id '${data.id}'`,
-            `<p>Un nuovo evento <i>${data.name}</i> è stato creato con successo da <b>${user?.getName()} ${user?.getSurname()}</b>.</p>`)
+            `<p>Un nuovo evento <i>${data.name}</i> è stato creato con successo da <b>${user?.getFullName()}</b>.</p>`)
       }
 
       this.saved.emit(this.eventMaskEvent())

@@ -1,11 +1,12 @@
-import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserProfileService, UserData } from '../../user-profile.service';
 import { EscapeStack } from '../../escape-stack.service';
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 
 @Component({
   selector: 'app-contact-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SplashDialogComponent],
   templateUrl: './contact-form.component.html',
   styleUrl: './contact-form.component.css',
 })
@@ -14,6 +15,9 @@ export class ContactFormComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserProfileService)
 
   private readonly escapeStack = inject(EscapeStack)
+
+  @ViewChild('splashDialog', { static: true })
+  private splash!: SplashDialogComponent
 
   user = input<UserData>()
 
@@ -48,6 +52,8 @@ export class ContactFormComponent implements OnInit, OnDestroy {
 
     try {
 
+      if (user.isAdmin()) return
+
       const formValues = this.contactForm.getRawValue()
       const { data, errors } = await this.userService.sendAdminEmail(formValues.reason, formValues.message)
 
@@ -68,17 +74,28 @@ export class ContactFormComponent implements OnInit, OnDestroy {
 
     } finally {
       this.isSending.set(false)
+      if (!this.sendError()) {
+        this.splash.show()
+      }
     }
+
   }
 
   private offEscape?: () => void
 
   ngOnInit(): void {
-    this.offEscape = this.escapeStack.push(() => this.close.emit())
+    this.offEscape = this.escapeStack.push(() => this.closeDialog())
   }
 
   ngOnDestroy(): void {
     this.offEscape?.()
+  }
+
+  closeDialog(): void {
+    if (!this.isSending()) {
+      this.splash.dismiss()
+      this.close.emit()
+    }
   }
 
 }

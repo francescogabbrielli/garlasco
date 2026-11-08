@@ -65,11 +65,13 @@ describe('ContactFormComponent', () => {
     })
 
     const sentEmitSpy = vi.spyOn(component.sent, 'emit')
+    const closeEmitSpy = vi.spyOn(component.close, 'emit')
 
     await component.submitEvent()
 
     expect(mockUserService.sendAdminEmail).toHaveBeenCalledWith('Richiesta informazioni', 'Questo è un messaggio di test.')
-    expect(sentEmitSpy).toHaveBeenCalled()
+    expect(sentEmitSpy).toHaveBeenCalledOnce()
+    expect(closeEmitSpy).not.toHaveBeenCalled()
     expect(component.sendError()).toBe('')
     expect(component.isSending()).toBe(false)
   })

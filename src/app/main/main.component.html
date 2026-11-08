@@ -64,12 +64,12 @@
       <button
         class="user-label"
         type="button"
-        [attr.aria-label]="user().getName() + ' ' + user().getSurname()"
+        [attr.aria-label]="user().getFullName()"
         [attr.aria-expanded]="isUserMenuOpen"
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
-        {{ user().getName() }} {{ user().getSurname() }}
+        {{ user().getFullName() }}
       </button>
       @if (isUserMenuOpen) {
         <div class="user-dropdown" role="menu">

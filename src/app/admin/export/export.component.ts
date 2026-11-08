@@ -1,7 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, model, signal, ViewChild } from '@angular/core';
 import { generateClient } from 'aws-amplify/data'
 
 import type { Schema } from '../../../../amplify/data/resource'
+
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 
 const client = generateClient<Schema>()
 
@@ -10,13 +12,18 @@ type Person = Schema['Person']['type']
 
 @Component({
   selector: 'app-export',
-  imports: [],
+  imports: [SplashDialogComponent],
   templateUrl: './export.component.html',
   styleUrl: './export.component.css',
 })
 export class ExportComponent {
 
   exported = signal([false, false])
+
+  isWorking = model(false)
+
+  @ViewChild('exportSplash')
+  splash!: SplashDialogComponent
 
   async exportPeople(): Promise<void> {
     try {
@@ -118,7 +125,7 @@ export class ExportComponent {
   }
 
   canDelete(): boolean {
-    return this.exported().every((value) => value)
+    return !this.isWorking() && this.exported().every((value) => value)
   }
 
   async deleteAll(): Promise<void> {

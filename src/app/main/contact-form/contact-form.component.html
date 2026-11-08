@@ -1,4 +1,4 @@
-<div class="dialog-backdrop" (click)="close.emit()">
+<div class="dialog-backdrop" (click)="closeDialog()">
     <section class="dialog help-dialog" role="dialog" aria-modal="true" aria-labelledby="about-title"
         (click)="$event.stopPropagation()">
         <header>
@@ -12,7 +12,7 @@
                     type="button" 
                     aria-label="Chiudi" 
                     title="Chiudi" 
-                    (click)="close.emit()"><b>&times;</b></button>
+                    (click)="closeDialog()"><b>&times;</b></button>
             </div>
         </header>
 
@@ -62,3 +62,9 @@
     
     </section>
 </div>
+
+<app-splash-dialog
+    #splashDialog
+    defaultMessage="Email inviata! Sarete ricontattati al più presto."
+    (closed)="closeDialog()"
+></app-splash-dialog>

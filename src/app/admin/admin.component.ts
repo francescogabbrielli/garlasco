@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { ImportComponent } from './import/import.component';
 import { ExportComponent } from './export/export.component';
 
@@ -14,12 +14,13 @@ import { ExportComponent } from './export/export.component';
         </div>
         <p class="heading-note">Carica separatamente gli eventi e le persone da/verso ill database.</p>
       </header>    
-      <app-import></app-import>
+      <app-import [(isWorking)]=isWorking></app-import>
       <hr/>
-      <app-export></app-export>
+      <app-export [(isWorking)]=isWorking></app-export>
     </main>`
 })
 export class AdminComponent {
 
+  isWorking = signal(false)
 
 }

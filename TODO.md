@@ -9,13 +9,14 @@ TODO: 0.2.0
 - save user preferences in user service &check;
 - create dark theme & link to system theme &check;
 - tune dark theme:
-    - maps
+    - maps ...
     - authenticator
     - website (event list, main menu, etc)
 - restructure filters:
     - move title and activation to parent component
     - map: make it usable as "view only"
     - timeline-slider: check colors (Material setup and dark theme compatibility)
+- splash message &check;
 
 TODO: 0.1.5
 -----------
