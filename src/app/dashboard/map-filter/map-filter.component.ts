@@ -45,11 +45,11 @@ export class MapFilterComponent implements OnInit {
   createPin(eventId: string, ended = false): HTMLElement {
     const pin = document.createElement('div')
     pin.style.cssText = 'display:grid;place-items:center;width:1.9rem;height:1.9rem;box-sizing:border-box;'
-      + 'border-radius:50%;border:1px solid #167c72;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .12s;'
+      + 'border-radius:50%;border:1px solid var(--highlight);box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .12s;'
       + (ended ? 'background:#fff;' : 'background:#e3f3ed;')
     const icon = document.createElement('div')
     icon.style.cssText = 'display:grid;place-items:center;width:100%;height:100%;border-radius:50%;'
-      + `background:${ended ? '#e9eee8' : '#167c72'};color:${ended ? '#35524b' : '#fff'};`
+      + `background:${ended ? '#e9eee8' : 'var(--highlight)'};color:${ended ? '#35524b' : '#fff'};`
       + 'font:700 .62rem/1 system-ui,sans-serif;'
     pin.appendChild(icon)
     pin.addEventListener('mouseenter', () => this.eventHover.emit(eventId))
@@ -95,7 +95,7 @@ export class MapFilterComponent implements OnInit {
       path: [this.toLatLng(e.start_position!), this.toLatLng(e.end_position!)],
     })))
 
-  polylineOptions: google.maps.PolylineOptions = { strokeColor: '#167c72', strokeOpacity: .8, strokeWeight: 3 }
+  polylineOptions: google.maps.PolylineOptions = { strokeColor: 'var(--highlight)', strokeOpacity: .8, strokeWeight: 3 }
 
   pins = computed(() => {
     this.pinElements.clear()

@@ -1,5 +1,17 @@
 
     <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" (keydown)="onKeyDown($event)" novalidate>
+
+        @if (isAdmin()) {
+            <div class="form-field">
+                <label for="event-id">ID</label>
+                <input type="text" class="search-control" id="event-id" readonly [value]="event()?.id || ''">
+            </div>
+            <div class="form-field">
+                <label for="event-owner">Proprietario</label>
+                <input type="text" class="search-control" id="event-owner" readonly [value]="event()?.owner">
+            </div>
+        }
+
         <div class="form-field">
             <label for="event-type">Tipologia</label>
             <select class="search-control" id="event-type" formControlName="type" required>

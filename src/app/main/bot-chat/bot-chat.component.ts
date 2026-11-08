@@ -53,7 +53,6 @@ export class BotChatComponent implements OnDestroy {
   constructor() {
     effect(onCleanup => {
       if (!this.opened()) return
-
       const unregister = this.escapeStack.push(() => this.opened.set(false))
       onCleanup(unregister)
     })

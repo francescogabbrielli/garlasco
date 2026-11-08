@@ -44,6 +44,6 @@
 }
 
 .person-dialog-confirm {
-  background: #167c72;
+  background: var(--highlight);
   color: #fff;
 }

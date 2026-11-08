@@ -11,19 +11,18 @@
     box-sizing: border-box;
     border: 1px solid #d2dad7;
     border-radius: 50%;
-    background: #fff;
     color: #263a38;
     transition: background .15s, border-color .15s, color .15s;
 }
 
 .marker:hover {
-    border-color: #167c72;
+    border-color: var(--highlight);
 }
 
 .marker.selected {
-    border-color: #167c72;
-    background: #e3f3ed;
-    color: #145c54;
+    border-color: var(--border);
+    background: var(--highlight);
+    color: white;
 }
 
 .initials {
@@ -40,7 +39,7 @@
 }
 
 .selected .initials {
-    background: #167c72;
+    background: var(--highlight);
     color: #fff;
 }
 

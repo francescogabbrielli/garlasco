@@ -24,22 +24,22 @@
 .import-panel {
     min-width: 0;
     padding: 1.15rem;
-    border: 1px solid #d5ddda;
-    border-top: 3px solid #167c72;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--highlight);
     border-radius: 5px;
-    background: #fbfcfa;
+    background: var(--surface);
 }
 
 .import-panel h2 {
     margin: 0 0 .9rem;
-    color: #1d3332;
+    color: var(--text);
     font: 600 1.1rem/1.25 Georgia, 'Times New Roman', serif;
 }
 
 .import-panel label {
     display: block;
     margin-bottom: .4rem;
-    color: #50615d;
+    color: var(--text-muted);
     font-size: .78rem;
 }
 
@@ -52,13 +52,13 @@
     padding: .7rem;
     border: 1px solid #cbd5d2;
     border-radius: 4px;
-    background: #fff;
-    color: #263a38;
+    color: var(--text);
+    background-color: var(--page);
     font: .78rem/1.45 Consolas, 'Courier New', monospace;
 }
 
 .custom-textarea:focus-visible {
-    outline: 2px solid #167c72;
+    outline: 2px solid var(--highlight);
     outline-offset: 1px;
 }
 

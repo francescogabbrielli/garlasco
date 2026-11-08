@@ -21,16 +21,16 @@
     grid-template-columns: 5.4rem minmax(12rem, 2fr) minmax(9rem, 1fr) minmax(9rem, 1fr);
     gap: 1.0rem;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #dce1e0;
+    border-bottom: 1px solid var(--border);
     background: transparent;
 }
 
 .event-column-headings {
     min-width: 42rem;
     padding: .65rem 0;
-    border-top: 1px solid #cbd5d2;
-    border-bottom: 1px solid #cbd5d2;
-    color: #50615d;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
     font-size: .72rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -44,7 +44,7 @@
 .event-fact {
     font-family: Georgia, 'Times New Roman', serif;
     font-size: larger;
-    :hover {
+    &:hover {
         text-decoration: none;
     }
 }
@@ -58,12 +58,11 @@
 }
 
 .event-related-list .clickable:hover {
-    color: #167c72;
     text-decoration: underline;
 }
 
 .event-list li.highlighted {
-    background: #e3f3ed;
+    background: var(--hover);
 }
 
 .event-time {
@@ -72,7 +71,7 @@
     align-items: flex-start;
     gap: .12rem;
     padding-top: .15rem;
-    color: #167c72;
+    color: var(--accent);
     font-variant-numeric: tabular-nums;
 }
 
@@ -81,11 +80,12 @@
 }
 
 .event-time span:nth-child(2) {
-    color: #50615d;
+    color: var(--text-muted);
     font-size: .72rem;
     text-transform: uppercase;
 }
 
+/* Non usato ? */
 .event-time span:last-child {
     color: #71807c;
     font-size: .72rem;
@@ -109,22 +109,7 @@
 }
 
 .reliability {
-    color: #75827e;
-    font-size: .68rem;
-}
-
-.event-actors {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .35rem;
-    margin-top: .6rem;
-}
-
-.event-actors span {
-    padding: .2rem .5rem;
-    border-radius: 2rem;
-    background: #edf2ef;
-    color: #3f5e55;
+    padding: 0.25rem;
     font-size: .68rem;
 }
 
@@ -132,7 +117,7 @@
     min-width: 0;
     margin: 0;
     padding: 0;
-    color: #566560;
+    color: var(--text);
     font-size: .82rem;
     line-height: 1.45;
     list-style: none;
@@ -185,3 +170,4 @@
         overscroll-behavior: contain;
     }
 }
+

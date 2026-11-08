@@ -45,3 +45,12 @@ google-map {
   max-width: 500px;
 }
 
+:host-context(html[data-theme="dark"]) gmp-place-autocomplete,
+:host-context(html[data-theme="dark"]) .map-search-container {
+  color-scheme: dark;
+}
+
+:host-context(html[data-theme="light"]) gmp-place-autocomplete,
+:host-context(html[data-theme="light"]) .map-search-container {
+  color-scheme: light;
+}

@@ -11,7 +11,7 @@ TODO: 0.2.0
 - tune dark theme:
     - maps ...
     - authenticator
-    - website (event list, main menu, etc)
+    - website (event list, main menu, etc) &check;
 - restructure filters:
     - move title and activation to parent component
     - map: make it usable as "view only"

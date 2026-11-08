@@ -7,7 +7,7 @@
 }
 
 .help-content {
-    color: #333;
+    color: var(--text);
     padding: 1rem;    
     text-align: justify;
 }
@@ -17,7 +17,7 @@
 }
 
 .help-content p {
-    color: rgba(34, 31, 43, 0.78);
+    opacity: 0.8;
     font-size: 0.9rem;
     line-height: 1.2rem;
     text-align: justify;

@@ -20,12 +20,12 @@
     }
 
     .actor-option:focus-visible {
-        outline: 2px solid #167c72;
+        outline: 2px solid var(--highlight);
         outline-offset: 2px;
     }
 
     .person-types-filter {
-        border-top: 1px solid #dce1e0;
+        border-top: 1px solid var(--border);
     }
 
     .person-types-filter ul {
@@ -40,7 +40,7 @@
             font-size: smaller;
         }
         margin-bottom: .5rem;
-        border-bottom: 1px solid #dce1e0;
+        border-bottom: 1px solid var(--border);
     }
 
     .selected-actors {

@@ -13,9 +13,6 @@
         <p class="eyebrow">{{ isEditor() ? (event().id ? 'Modifica' : 'Creazione') : event().type }}</p>
         <h1 id="event-popup-title">
           {{ isEditor() ? 'Evento' : event().name }}
-          @if (isAdmin()) {
-            <small>{{ event().id }}</small>
-          }
           @if (maskTouched()) { <small>&nbsp;(*)</small> }
         </h1>
       </div>
@@ -131,6 +128,7 @@
 
 <dialog
   #mapDialog
+  class="mapDialog"
   aria-labelledby="map-preview-title"
   (click)="mapClose()"
   (close)="mapLocation.set(null)"

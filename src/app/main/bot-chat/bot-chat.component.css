@@ -12,7 +12,7 @@
   overflow: hidden;
   border: 2px groove rgba(34, 31, 43, 0.375);
   border-radius: 16px;
-  background: white;
+  background: var(--surface);
   box-shadow: 0 12px 48px #0003;
 
   opacity: 0;
@@ -46,7 +46,7 @@
   z-index: 901;
   padding: 0.35rem;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--surface);
   box-shadow: 0 0.75rem 2rem rgba(34, 31, 43, 0.16);
   opacity: 0;
   visibility: hidden;
@@ -63,7 +63,7 @@
     gap: 0.5rem;
     border: 0;
     background: transparent;
-    color: rgba(34, 31, 43, 0.72);
+    color: var(--text);
     padding: 0.25rem;
     font: inherit;
     text-align: left;
@@ -71,8 +71,8 @@
 
     &:hover {
       border-color: transparent;
-      background: #dadbf9;
-      color: #221f2b;     
+      background: var(--hover);
+      color: var(--text-muted);     
     }
 
   }
@@ -81,9 +81,8 @@
 .bot-capabilities { 
   margin: 0px; 
   padding-left: 1rem;
-  border-top: 1px inset #eee;
-  border-bottom: 1px inset #eee;
-  color: #62706d; 
+  border-top: 1px solid gray;
+  color: var(--text-muted);
   font-size: .9rem; 
 }
 
@@ -92,7 +91,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background: #eee;
+  background: var(--page);
 }
 
 .messages {
@@ -108,7 +107,6 @@
   margin-bottom: 12px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: #f2eff8;
   overflow-wrap: anywhere;
 
   small {
@@ -123,7 +121,7 @@
 
   &.user {
     margin-left: auto;
-    background: #167c72;
+    background: var(--highlight);
     color: white;
   }
 }
@@ -147,7 +145,7 @@
 .error {
   margin: 0;
   padding: 8px 16px;
-  color: #a32020;
+  color: var(--danger);
   font-size: 13px;
 }
 
@@ -155,14 +153,14 @@
   display: flex;
   gap: 8px;
   padding: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border);
 
   textarea {
     flex: 1;
     min-width: 0;
     resize: none;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border);
     border-radius: 8px;
   }
 

@@ -8,7 +8,7 @@
     min-height: 2rem;
     padding: 0 5vw;
     border-bottom: 1px solid rgba(34, 31, 43, 0.12);
-    background: rgba(255, 255, 255, 0.82);
+    background: var(--surface);
     position: sticky;
     top: 0;
     z-index: 5;
@@ -16,6 +16,7 @@
   }
 
 .brand {
+    color: var(--text);
     font-family: Georgia, 'Times New Roman', serif;
     font-size: 1.5rem;
     font-weight: 600;
@@ -41,20 +42,24 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #221f2b;
+    color: var(--text);
     font-size: 0.9rem;
   }
 
 .menu a {
     text-wrap: nowrap;
+    border: 1px solid var(--border);
   }
 
 .menu a:hover,
 .menu a.active {
-    color: #7551c2;
+    color: var(--accent);
+    background-color: var(--hover);
+    border: 1px solid var(--border);
   }
 
 .main-link {
+    color: var(--accent);
     display: inline-grid;
     width: 2.25rem;
     height: 2.25rem;
@@ -97,8 +102,8 @@ button.main-link {
 
 .main-link:hover,
 .main-link.active {
-    background: #dadbf9;
-    color: #7551c2;
+    /*background: #dadbf9;*/
+    color: var(--accent)
 }
 
 .user-menu {
@@ -108,14 +113,14 @@ button.main-link {
 .user-label {
     padding: 0.6em 0.6em 0.6em 0.6em;
     border: 0;
-    border-radius: 0;
+    border-radius: 6px;
     background: transparent;
-    color: rgba(34, 31, 43, 0.72);
+    color: var(--text-muted);
     font: inherit;
 }
 
 .user-label:hover {
-    border-left-color: rgba(117, 81, 194, 0.45);
+    background-color: var(--hover);
 }
 
 /* TODO: Unify CSS for all menu + buttons */
@@ -126,9 +131,9 @@ button.main-link {
     z-index: 2;
     min-width: 13rem;
     padding: 0.35rem;
-    border: 1px solid rgba(34, 31, 43, 0.14);
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.96);
+    background: var(--surface);
     box-shadow: 0 0.75rem 2rem rgba(34, 31, 43, 0.16);
 }
 
@@ -142,14 +147,14 @@ button.main-link {
     margin: 0;
     border-radius: 6px;
     background: transparent;
-    color: rgba(34, 31, 43, 0.72);
+    color: var(--text-muted);
     font: inherit;
     text-align: left;
 }
 
 .user-dropdown button:hover {
     border-color: transparent;
-    background: #dadbf9;
+    background: var(--hover);
 }
 
 .user-dropdown hr {
@@ -228,16 +233,4 @@ footer {
         display: flex;
         flex-direction: column;
     }
-}
-
-:host-context(html[data-theme="dark"]) .user-label {
-  color: white;
-}
-
-:host-context(html[data-theme="dark"]) .user-dropdown button {
-    color: white;
-}
-
-:host-context(html[data-theme="dark"]) .user-dropdown button:hover {
-    background: var(--dark-page)
 }

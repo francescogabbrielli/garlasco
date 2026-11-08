@@ -13,12 +13,14 @@
   font-style: italic;
   font-size: 0.8rem;
   padding-top: 2px;
+  color: var(--text-muted)
   
 }
 
 .event-fields dd {
   margin: 0;
   overflow-wrap: anywhere;
+  color: var(--text);
 }
 
 .event-fields .description {
@@ -39,28 +41,28 @@
   margin-bottom: -0.65rem;
 }*/
 
-dialog {
+.mapDialog {
   width: min(720px, calc(100vw - 32px));
   max-width: none;
   max-height: calc(100dvh - 32px);
   padding: 0;
   overflow: auto;
-  box-shadow: 0 24px 80px rgb(0 0 0 / 30%);
-  border: 2px groove rgba(34, 31, 43, 0.75);
+  box-shadow: 0 24px 80px var(--page);
+  border: 2px groove var(--border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--surface);
 }
 
-dialog::backdrop {
+.mapDialog::backdrop {
   background: rgb(0 0 0 / 45%);
   backdrop-filter: blur(3px);
 }
 
-dialog[open] {
+.mapDialog[open] {
   animation: popup-enter 220ms ease-out;
 }
 
-dialog[open]::backdrop {
+.mapDialog[open]::backdrop {
   animation: backdrop-enter 220ms ease-out;
 }
 

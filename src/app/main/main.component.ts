@@ -145,7 +145,7 @@ export class MainComponent implements OnDestroy {
       this.closeAboutDialog()
       this.isUserMenuOpen = false   
     } else {
-      console.log(this.escapeStack)
+      this.botChatOpened.set(false)
     }
   }
 
