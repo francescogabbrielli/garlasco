@@ -71,7 +71,7 @@ describe('MainComponent', () => {
   });
 
   it('shows navigation links based on the signed-in user', () => {
-    expect(fixture.nativeElement.querySelector('a[aria-label="Import"]').getAttribute('routerLink'))
+    expect(fixture.nativeElement.querySelector('a[aria-label="Admin"]').getAttribute('routerLink'))
       .toBe('/admin');
   });
 

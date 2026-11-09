@@ -110,7 +110,9 @@ export class DashboardComponent implements OnInit {
   constructor() {
     // Sincronizziamo il Signal 'getEvents' del Service con il nostro accumulatore locale.
     // Ogni volta che il Service completa il debounce e lo switchMap, resetta l'array iniziale.
-    effect(() => this.events.set(this.dataService.getEvents()))
+    effect(() => this.events.set(this.dataService.getEvents().filter(
+      e => e.reliability || e.owner === this.userService.user().getId() || this.userService.user().isAdmin())
+    ))
 
     // ricarica i dati ogni volta che lo stato di visibiltà dei filtri cambia 
     // (gestione separata dagli handler per poter essere spostata da altre parti del codice in futuro)

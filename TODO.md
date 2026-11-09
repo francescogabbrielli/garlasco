@@ -17,6 +17,7 @@ TODO: 0.2.0
     - map: make it usable as "view only"
     - timeline-slider: check colors (Material setup and dark theme compatibility)
 - splash message &check;
+- restructure Admin Dashboard, with users management &check;
 
 TODO: 0.1.5
 -----------

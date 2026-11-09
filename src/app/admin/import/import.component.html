@@ -1,11 +1,11 @@
 
-    <h1>Importazione JSON</h1>
-
+    <h2>Importazione JSON</h2>
+    <hr>
     <div class="seed-container">
 
         <div class="import-grid">
         <section class="import-panel" aria-labelledby="people-import-title">
-            <h2 id="people-import-title">Persone</h2>
+            <h3 id="people-import-title">Persone</h3>
             <label for="people-json">JSON persone</label>
             <textarea id="people-json" rows="14" placeholder='[{ "name": "Mario", "surname": "Rossi", "initials": "MR" }]' [ngModel]="peopleJsonInput()"
                 (ngModelChange)="peopleJsonInput.set($event)" class="custom-textarea"></textarea>
@@ -27,7 +27,7 @@
         </section>
 
         <section class="import-panel" aria-labelledby="events-import-title">
-            <h2 id="events-import-title">Eventi</h2>
+            <h3 id="events-import-title">Eventi</h3>
             <label for="events-json">JSON eventi</label>
             <textarea id="events-json" rows="14" placeholder='[{ "name": "Evento", ... }]' [ngModel]="jsonInput()"
                 (ngModelChange)="jsonInput.set($event)" class="custom-textarea"></textarea>

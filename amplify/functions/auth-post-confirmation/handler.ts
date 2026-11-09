@@ -13,7 +13,7 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
             email,
             undefined,
             "Benvenuti!",
-            await loadEmailBody('registration', email, pkg.displayName, pkg.website),
+            await loadEmailBody('registration', email, pkg.displayName, pkg.website, event.request.userAttributes.given_name),
             {
                 operation: 'Richiesta nuova registrazione',
                 message: event.request.userAttributes.given_name + " " + event.request.userAttributes.family_name + ' (' + event.request.userAttributes.email + ') ha effettuato la registrazione.'

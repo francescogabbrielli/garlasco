@@ -1,0 +1,58 @@
+<main class="main-view admin-layout" aria-label="Dashboard Amministrativa">
+  <header class="page-heading">
+    <div>
+      <p class="eyebrow">Amministrazione</p>
+      <h1>Dashboard Admin</h1>
+    </div>
+    <div>
+      <p class="heading-note">Tutte le impostazioni configurabili</p>
+      <div class="context-controls">
+        <button
+          class="context-button mobile-only"
+          type="button"
+          [attr.aria-expanded]="menuOpen()"
+          aria-label="Apri menu"
+          title="Apri menu"
+          (click)="menuOpen.set(!menuOpen())"
+        >☰</button>
+        <button
+          class="context-button"
+          type="button"
+          aria-label="Apri aiuto"
+          title="Apri aiuto"
+          (click)="mainComponent.help.set({page: 'admin/admin', title: 'Amministrazione'})"
+        >?</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-body">
+    <nav class="admin-side-menu" [class.open]="menuOpen()" aria-label="Sezioni admin">
+      @for (section of sections; track section.id) {
+        <button
+          class="admin-nav-item"
+          type="button"
+          [class.active]="activeSection() === section.id"
+          [attr.aria-current]="activeSection() === section.id ? 'page' : null"
+          (click)="selectSection(section.id)">
+          <span class="admin-nav-icon" aria-hidden="true">{{ section.icon }}</span>
+          <span class="admin-nav-label">{{ section.label }}</span>
+        </button>
+      }
+    </nav>
+
+    @if (menuOpen()) {
+      <div class="admin-backdrop" (click)="menuOpen.set(false)"></div>
+    }
+
+    <section class="admin-content">
+      @if (activeSection() === 'users') {
+        <app-users></app-users>
+      }
+      @if (activeSection() === 'data') {
+        <app-import [(isWorking)]="isWorking"></app-import>
+        <app-export [(isWorking)]="isWorking"></app-export>
+      }
+    </section>
+  </div>
+</main>

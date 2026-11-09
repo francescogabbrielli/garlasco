@@ -7,7 +7,7 @@
   },
   "version": "0.2.0",
   "description": "Sistema (sperimentale) integrato e normalizzato di ricerca/indagine. Lavori in corso",
-  "lastUpdate": "2026-11-07",
+  "lastUpdate": "2026-11-11",
   "website": "https://garlasco.francescogabbrielli.it/",
   "license": "MIT",
   "scripts": {
@@ -49,6 +49,7 @@
     "@aws-amplify/backend-ai": "^1.6.0",
     "@aws-amplify/backend-cli": "^1.10.0",
     "@aws-sdk/client-bedrock-runtime": "^3.1152.0",
+    "@aws-sdk/client-cognito-identity-provider": "^3.1164.0",
     "@aws-sdk/client-dynamodb": "^3.1161.0",
     "@aws-sdk/client-ses": "^3.1155.0",
     "@types/google.maps": "^3.66.5",

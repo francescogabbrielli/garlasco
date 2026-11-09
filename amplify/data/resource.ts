@@ -8,6 +8,8 @@ import { sendEmailFn } from '../functions/send-email/resource';
 import { searchWebFn } from '../functions/search-web/resource';
 import { analyst, detective, researcher } from './bots-defs';
 import { getTableCountFn } from '../functions/get-table-count/resource';
+import { listUsersFn } from '../functions/list-users/resource';
+import { updateUserGroupsFn } from '../functions/update-user-groups/resource';
 
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
@@ -70,6 +72,37 @@ const getTableCount = a.query()
   .handler(a.handler.function(getTableCountFn))
   .authorization(allow => allow.authenticated())
 
+// ---- Cognito user management (Admin only) ----
+
+const CognitoUser = a.customType({
+  username: a.string().required(),
+  sub: a.string(),
+  email: a.string(),
+  givenName: a.string(),
+  familyName: a.string(),
+  status: a.string(),
+  enabled: a.boolean(),
+  groups: a.string().array(),
+})
+
+const listUsers = a.query()
+  .returns(a.ref('CognitoUser').array())
+  .handler(a.handler.function(listUsersFn))
+  .authorization((allow) => allow.group('Admin'))
+
+const updateUserGroups = a.mutation()
+  .arguments({
+    name: a.string().required(),
+    surname: a.string().required(),
+    email: a.string().required(),
+    username: a.string().required(),
+    group: a.string().required(),
+    action: a.string().required(),
+  })
+  .returns(a.boolean())
+  .handler(a.handler.function(updateUserGroupsFn))
+  .authorization((allow) => allow.group('Admin'))
+
 const schema = a.schema({
   
   Coordinates,
@@ -88,6 +121,10 @@ const schema = a.schema({
   RequestStatus,
 
   getTableCount,
+
+  CognitoUser,
+  listUsers,
+  updateUserGroups,
   
   GeneratedEvent,
   generateEvent,

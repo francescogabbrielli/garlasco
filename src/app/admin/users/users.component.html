@@ -1,0 +1,72 @@
+<div class="users-section">
+  <div class="section-heading">
+    <div>
+      <h2>Utenti registrati</h2>
+      <p>Gestisci i gruppi Cognito assegnati a ciascun utente.</p>
+    </div>
+    <button
+      class="secondary-button"
+      type="button"
+      [disabled]="isLoading()"
+      (click)="loadUsers()">
+      ↻ Aggiorna
+    </button>
+  </div>
+
+  @if (error()) {
+    <span class="field-error">{{ error() }}</span>
+  }
+
+  @if (isLoading()) {
+    <p class="users-muted">Caricamento utenti…</p>
+  } @else if (!users().length) {
+    <p class="users-muted">Nessun utente trovato.</p>
+  } @else {
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Stato</th>
+            @for (group of groups; track group) {
+              <th class="group-col">{{ group }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.username) {
+            <tr [class.disabled]="!user.enabled">
+              <td class="user-name">
+                {{ user.familyName }} {{ user.givenName }}
+                @if (!user.enabled) {
+                  <span class="user-badge">disabilitato</span>
+                }
+              </td>
+              <td class="user-email">{{ user.email }}</td>
+              <td class="user-status">{{ user.status }}</td>
+              @for (group of groups; track group) {
+                <td class="group-col">
+                  <button
+                    class="group-toggle"
+                    type="button"
+                    [class.active]="hasGroup(user, group)"
+                    [disabled]="updating() === user.username"
+                    [attr.aria-pressed]="hasGroup(user, group)"
+                    [attr.aria-label]="(hasGroup(user, group) ? 'Rimuovi da' : 'Aggiungi a') + ' ' + group"
+                    (click)="toggleGroup(user, group)">
+                    @if (updating() === user.username) {
+                      ⋯
+                    } @else {
+                      {{ hasGroup(user, group) ? '✓' : '○' }}
+                    }
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

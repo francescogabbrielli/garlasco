@@ -11,6 +11,12 @@ export const EventType = a.enum(EVENT_TYPES);
 export const PersonType = a.enum(PERSON_TYPES);
 export const RequestStatus = a.enum(REQUEST_STATUS);
 
+const memberPermissions = (allow:any) => [
+  allow.group('Member'),
+  allow.group('Editor'),
+  allow.group('Admin')
+]
+
 export const Person = a.model({
   name: a.string().required(),
   surname: a.string().required(),
@@ -21,7 +27,7 @@ export const Person = a.model({
   hypotheses: a.hasMany('HypothesisPerson', 'personId'),
   publishedHypotheses: a.hasMany('HypothesisPublishedPerson', 'personId'),
 })
-  .authorization((allow) => [allow.authenticated()]);
+  .authorization(memberPermissions);
 
 export const Event = a.model({
   owner: a.id().required(), //Cognito ID
@@ -45,7 +51,7 @@ export const Event = a.model({
   //hypotheses
   hypothesis: a.hasMany('Hypothesis', 'eventId')
 })
-  .authorization((allow) => [allow.authenticated()]);
+  .authorization(memberPermissions)
 
 export const EventRelated = a.model({
   relatesToId: a.id().required(),
@@ -58,7 +64,7 @@ export const EventRelated = a.model({
   targetName: a.string().required(),
 
 })
-  .authorization((allow) => [allow.authenticated()]);
+  .authorization(memberPermissions)
   
 export const EventPerson = a.model({
   eventId: a.id().required(),
@@ -76,7 +82,7 @@ export const EventPerson = a.model({
   .secondaryIndexes((index) => [
     index('personId').sortKeys(['eventStartDate']).name('personIdStartDate-index')
   ])
-  .authorization((allow) => [allow.authenticated()]);
+  .authorization(memberPermissions)
 
 
 //----------------------- HYPOTHESIS MODELS -------------------------

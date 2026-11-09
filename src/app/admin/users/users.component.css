@@ -1,0 +1,99 @@
+:host {
+  display: block;
+}
+
+.users-section {
+  max-width: 60rem;
+}
+
+.users-muted {
+  color: var(--text-muted);
+  font-size: .9rem;
+}
+
+.users-table-wrap {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+}
+
+.users-table th,
+.users-table td {
+  padding: .55rem .7rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.group-col {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.user-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.user-email {
+  color: var(--text-muted);
+}
+
+.user-status {
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+
+.user-badge {
+  margin-left: .4rem;
+  padding: .1rem .35rem;
+  border-radius: 3px;
+  background: var(--border);
+  color: var(--text-muted);
+  font-size: .68rem;
+  text-transform: uppercase;
+}
+
+.users-table tr.disabled {
+  opacity: .55;
+}
+
+/* Toggle buttons */
+.group-toggle {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .95rem;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.group-toggle:hover:not(:disabled) {
+  border-color: var(--highlight);
+}
+
+.group-toggle.active {
+  background: var(--highlight);
+  border-color: var(--highlight);
+  color: #fff;
+  font-weight: 700;
+}
+
+.group-toggle:disabled {
+  cursor: wait;
+  opacity: .6;
+}

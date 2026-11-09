@@ -17,12 +17,22 @@ async function streamToString(stream: any): Promise<string> {
     });
 }
 
+/** TO IMPLEMENT IN PLACE OF NAMED PARAMETERS */
+export interface EmailData {
+    to?: string,
+    replyTo?: string,
+    subject: string,
+    body: string,
+    adminData?: AdminData
+
+}
+
 export interface AdminData {
     operation: string
     message?: string
 }
 
-export async function loadEmailBody(template: string, emailField: string, title: string, website: string) {
+export async function loadEmailBody(template: string, emailField: string, title: string, website: string, salutation: string | undefined = undefined) {
 
     const s3command = new GetObjectCommand({
         Bucket: env.TEMPLATES_BUCKET_NAME,
@@ -33,7 +43,7 @@ export async function loadEmailBody(template: string, emailField: string, title:
     const s3response = await s3Client.send(s3command)
     const body = await streamToString(s3response.Body)
     return body
-        .replace('${given_name}', matchEmail ? matchEmail[1].trim() : emailField)
+        .replace('${given_name}', salutation || (matchEmail ? matchEmail[1].trim() : emailField))
         .replace('${email}', matchEmail ? matchEmail[2].trim() : emailField)
         .replaceAll('${siteTitle}', title)
         .replaceAll('${website}', website)
@@ -47,7 +57,7 @@ function isSameEmail(email1: string, email2: string) {
     return email1.trim().toLowerCase() === email2.trim().toLowerCase()
 }
 
-export async function sendEmail(to: string | undefined, replyTo: string | undefined, subject: string, body: string, adminData: AdminData) {
+export async function sendEmail(to: string | undefined, replyTo: string | undefined, subject: string, body: string, adminData: AdminData | null = null) {
     const pkg = await import("../package.json")
     const adminEmail = `${pkg.displayName} <${pkg.author.email}>`
 
@@ -57,6 +67,10 @@ export async function sendEmail(to: string | undefined, replyTo: string | undefi
         return sendEmailInternal(adminEmail, replyTo, subject, body)
             .then(() => loadEmailBody('request', replyTo, pkg.displayName, pkg.website))
             .then((requestBody) => sendEmailInternal(replyTo, undefined, "La tua richiesta è stata ricevuta: " + subject, requestBody))
+    }
+
+    if (!adminData) {
+        return sendEmailInternal(to, replyTo, subject, body)
     }
 
     const adminMessage = adminData.message || `L'utente ${to} ha effettuato l'operazione '${adminData.operation}'`
