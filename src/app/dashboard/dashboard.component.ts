@@ -127,10 +127,20 @@ export class DashboardComponent implements OnInit {
     
   }
 
-  /** Refresh person's list if a new person has been created */
+  /** Refresh person's list if a person has been created, updated, or deleted */
   updatePeople(event: EventMaskEvent) {
-    if (event && event.personCreated.length) {
-      this.people.update((list: Person[]) => [...list, ...event.personCreated].sort(this.PEOPLE_SORTER))
+    if (event && event.personSaved.length) {
+      this.people.update((list: Person[]) => {
+        const savedMap = new Map(event.personSaved.map(p => [p.id, p]))
+        return [
+          ...list.map(p => savedMap.get(p.id) || p),
+          ...event.personSaved.filter(p => !list.some(b => b.id === p.id)),
+        ].sort(this.PEOPLE_SORTER)
+      })
+    }
+    if (event && event.personDeleted?.length) {
+      this.people.update((list: Person[]) => list.filter(p => !event.personDeleted.includes(p.id)))
+      this.selectedIds.update(ids => ids.filter(id => !event.personDeleted.includes(id)))
     }
   }
 

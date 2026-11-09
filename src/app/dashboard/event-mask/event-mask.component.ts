@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, model, output, signal } from '@angular/core'
+import { Component, computed, effect, inject, input, model, output, signal, ViewChild } from '@angular/core'
 import { FormControl, FormGroup, PristineChangeEvent, ReactiveFormsModule, Validators } from '@angular/forms'
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete'
 
@@ -12,6 +12,8 @@ import type { Schema } from '../../../../amplify/data/resource'
 
 import { MapPickerComponent } from '../../ui/map-picker/map-picker.component'
 import { PersonDialogComponent } from '../person-popup/person-popup.component'
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component'
+
 import { toSignal } from '@angular/core/rxjs-interop'
 import { distinctUntilChanged, filter, map } from 'rxjs'
 
@@ -21,12 +23,13 @@ type Person = Schema['Person']['type']
 type Coordinates = Schema['Coordinates']['type']
 
 export interface EventMaskEvent {
-  personCreated: Person[]
+  personSaved: Person[]
+  personDeleted: string[]
 }
 
 @Component({
   selector: 'app-event-mask',
-  imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent, PersonDialogComponent],
+  imports: [ReactiveFormsModule, MatAutocompleteModule, MapPickerComponent, PersonDialogComponent, SplashDialogComponent],
   templateUrl: './event-mask.component.html',
   styleUrl: './event-mask.component.css',
 })
@@ -41,13 +44,23 @@ export class EventMaskComponent {
   saved = output<EventMaskEvent>()
   modified = output<boolean>()
 
-  eventMaskEvent = computed(() => ({ personCreated: this.createdPeople() }))
+  eventMaskEvent = computed(() => ({ 
+    personSaved: this.savedPeople(), 
+    personDeleted: this.deletedPersonIds() 
+  }))
 
-  // people created from this mask, merged with the ones received as input
-  private createdPeople = signal<Person[]>([])
+  // people created or updated from this mask, merged with the ones received as input
+  private savedPeople = signal<Person[]>([])
+  private deletedPersonIds = signal<string[]>([])
   readonly allPeople = computed(() => {
     const base = this.people()
-    return [...base, ...this.createdPeople().filter(p => !base.some(b => b.id === p.id))]
+    const saved = this.savedPeople()
+    const deleted = new Set(this.deletedPersonIds())
+    const savedMap = new Map(saved.map(p => [p.id, p]))
+    return [
+      ...base.filter(p => !deleted.has(p.id)).map(p => savedMap.get(p.id) || p),
+      ...saved.filter(p => !base.some(b => b.id === p.id)),
+    ]
   })
   readonly personDialogOpen = signal(false)
   private personDialogRowId: number | null = null
@@ -56,6 +69,8 @@ export class EventMaskComponent {
 
   dialogOpen = output<boolean>()
 
+  @ViewChild('eventSplash')
+  private splash!: SplashDialogComponent
 
   constructor() {
     effect(() => {
@@ -317,6 +332,13 @@ export class EventMaskComponent {
   }
 
   openPersonDialog(rowId: number): void {
+    if (!this.isAdmin()) {
+      this.splash.show('Operazione non consentita! Inviare una richiesta per modifica/inserimento persona')
+      return
+    }
+    const editPerson = this.allPeople()
+      .find(p => this.selectedActors().find(a => a.rowId == rowId)?.personId == p.id)
+    this.editPerson.set(editPerson || null)
     this.personDialogRowId = rowId
     this.personDialogOpen.set(true)
     this.dialogOpen.emit(true)
@@ -328,11 +350,29 @@ export class EventMaskComponent {
     this.dialogOpen.emit(false)
   }
 
-  onPersonCreated(person: Person): void {
-    this.createdPeople.update(list => [...list, person])
+  onPersonSaved(person: Person): void {
+    this.savedPeople.update(list => {
+      const existing = list.find(p => p.id === person.id)
+      if (existing) {
+        return list.map(p => p.id === person.id ? person : p)
+      }
+      return [...list, person]
+    })
     if (this.personDialogRowId !== null) this.selectActorPerson(this.personDialogRowId, person)
     this.closePersonDialog()
   }
+
+  onPersonDeleted(personId: string): void {
+    this.savedPeople.update(list => list.filter(p => p.id !== personId))
+    this.deletedPersonIds.update(ids => ids.includes(personId) ? ids : [...ids, personId])
+    this.selectedActors.update(actors => {
+      const filtered = actors.filter(a => a.personId !== personId)
+      return filtered.length ? filtered : [{ rowId: this.nextActorRowId++, personId: '', personQuery: '', role: '' }]
+    })
+    this.closePersonDialog()
+  }
+
+  editPerson = signal<Person | null>(null)
 
   updateActorRole(rowId: number, event: Event): void {
     const target = event.target
@@ -458,7 +498,9 @@ export class EventMaskComponent {
             `<p>Un nuovo evento <i>${data.name}</i> è stato creato con successo da <b>${user?.getFullName()}</b>.</p>`)
       }
 
-      this.saved.emit(this.eventMaskEvent())
+      this.splash
+        .show("Evento " + (payload.id ? "modificato" : "creato")  + " con successo!")
+        .finally(() => this.saved.emit(this.eventMaskEvent()))
 
     } catch (error) {
       console.error('Error saving Event', payload, error)
@@ -481,6 +523,7 @@ export class EventMaskComponent {
 
     try {
       await this.dataService.deleteEvent(existingId, this.loadedEventActors)
+      await this.splash.show("Evento eliminato!")
       this.saved.emit(this.eventMaskEvent())
     } catch(error) {
       this.submitError.set('Errore durante l’eliminazione dell’evento! Contattare l’amministratore.')

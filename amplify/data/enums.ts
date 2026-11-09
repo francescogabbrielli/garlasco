@@ -4,8 +4,7 @@ export const EVENT_TYPES = [
   'Comunicazione',
   'Testimonianza',
   'Intercettazione',
-  'Sentenza',
-  'Ipotesi'
+  'Sentenza'
 ] as const;
 
 export const PERSON_TYPES = [

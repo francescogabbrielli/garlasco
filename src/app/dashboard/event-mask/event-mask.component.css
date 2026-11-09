@@ -93,6 +93,11 @@ div.form-field.form-field-small > label {
   font-weight: 400;
 } */
 
+.event-person {
+  display: flex;
+  gap: 2px;
+}
+
 .actor-selection-heading {
   display: flex;
   align-items: flex-start;

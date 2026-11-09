@@ -160,6 +160,7 @@ export class EventPopupComponent implements OnInit, OnDestroy {
     disableDoubleClickZoom: true,
     keyboardShortcuts: false,
     clickableIcons: false,
+    colorScheme: this.mapsLoader.colorScheme()
   }
 
   mapOpen(which: Coordinates) {

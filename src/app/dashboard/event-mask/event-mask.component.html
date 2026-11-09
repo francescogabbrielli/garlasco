@@ -4,11 +4,11 @@
         @if (isAdmin()) {
             <div class="form-field">
                 <label for="event-id">ID</label>
-                <input type="text" class="search-control" id="event-id" readonly [value]="event()?.id || ''">
+                <input type="text" class="search-control" id="event-id" readonly disabled [value]="event()?.id || ''">
             </div>
             <div class="form-field">
                 <label for="event-owner">Proprietario</label>
-                <input type="text" class="search-control" id="event-owner" readonly [value]="event()?.owner">
+                <input type="text" class="search-control" id="event-owner" readonly disabled [value]="event()?.owner">
             </div>
         }
 
@@ -61,17 +61,22 @@
                     <div class="actor-person-role-fields">
                         <div class="form-field">
                             <label [for]="'event-person-' + actor.rowId">Persona</label>
-                            <input type="text" required
-                                class="search-control"
-                                [id]="'event-person-' + actor.rowId"
-                                [matAutocomplete]="personAutocomplete"
-                                [value]="actor.personQuery"
-                                [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
-                                [disabled]="!allPeople().length"
-                                #trigger="matAutocompleteTrigger"
-                                (blur)="closeAutocomplete(trigger)"
-                                (input)="updateActorPersonQuery(actor.rowId, $event)"
-                            />
+                            <div class="event-person">
+                                <input type="text" required
+                                    class="search-control"
+                                    [id]="'event-person-' + actor.rowId"
+                                    [matAutocomplete]="personAutocomplete"
+                                    [value]="actor.personQuery"
+                                    [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
+                                    [disabled]="!allPeople().length"
+                                    #trigger="matAutocompleteTrigger"
+                                    (blur)="closeAutocomplete(trigger)"
+                                    (input)="updateActorPersonQuery(actor.rowId, $event)"
+                                />
+                                @if (isAdmin()) {
+                                <button type="button" class="context-button" (click)="openPersonDialog(actor.rowId)">✎</button>
+                                }
+                            </div>
                             <mat-autocomplete
                                 #personAutocomplete="matAutocomplete"
                                 panelClass="custom-autocomplete-panel"
@@ -276,7 +281,11 @@
 
 
 @if (personDialogOpen()) {
-    <app-person-popup (created)="onPersonCreated($event)" (closed)="closePersonDialog()"/>
+    <app-person-popup 
+        [edited]="editPerson()"
+        (saved)="onPersonSaved($event)"
+        (deleted)="onPersonDeleted($event)" 
+        (closed)="closePersonDialog()"/>
 }
 
 @if (pickerTarget(); as target) {
@@ -290,3 +299,5 @@
       <div>Loading Map Picker...</div>
     }
 }
+
+<app-splash-dialog #eventSplash defaultMessage="Operazione sconosciuta"></app-splash-dialog>

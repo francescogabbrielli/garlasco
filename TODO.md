@@ -3,14 +3,14 @@ TODO: 0.2.0
 - create Hypothesis backend 
     - mermaid docs &check;
     - models &check;
-- add edit capability for Persons
+- add edit capability for Persons &check;
 - design a minimal 'Dashboard di Analisi'
 - add import/export for new data
 - save user preferences in user service &check;
 - create dark theme & link to system theme &check;
 - tune dark theme:
-    - maps ...
-    - authenticator
+    - maps+places &check;
+    - authenticator (maybe next) &cross;
     - website (event list, main menu, etc) &check;
 - restructure filters:
     - move title and activation to parent component

@@ -18,14 +18,18 @@ export class SplashDialogComponent implements OnDestroy {
   message = signal<string | null>(null)
 
   private closeTimer?: ReturnType<typeof setTimeout>
+  private settleShow?: { resolve: () => void; reject: (reason?: unknown) => void }
 
-  show(text: string | null = null): void {
+  async show(text: string | null = null): Promise<void> {
     this.message.set(text || this.defaultMessage())
     this.dialog.nativeElement.showModal()
     const duration = this.durationSeconds()
-    if (Number.isFinite(duration) && duration > 0) {
-      this.closeTimer = setTimeout(() => this.dismiss(), duration * 1000);
-    }
+    return new Promise<void>((resolve, reject) => {
+      this.settleShow = { resolve, reject }
+      if (Number.isFinite(duration) && duration > 0) {
+        this.closeTimer = setTimeout(() => this.close(true), duration * 1000)
+      }
+    })
   }
 
   ngOnDestroy(): void {
@@ -38,9 +42,20 @@ export class SplashDialogComponent implements OnDestroy {
   }
 
   dismiss(): void {
+    this.close(false)
+  }
+
+  private close(automatically: boolean): void {
     if (!this.dialog.nativeElement.open) return
+    if (this.closeTimer !== undefined) {
+      clearTimeout(this.closeTimer)
+      this.closeTimer = undefined
+    }
     this.dialog.nativeElement.close()
     this.closed.emit()
+    const settleShow = this.settleShow
+    this.settleShow = undefined
+    settleShow?.resolve()
   }
 
 }

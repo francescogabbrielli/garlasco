@@ -12,7 +12,7 @@
       <header>
 
         <div>
-          <p class="eyebrow">Creazione</p>
+          <p class="eyebrow">{{ edited() ? "Modifica" : "Creazione" }}</p>
           <h1 id="person-dialog-title">Persona</h1>
         </div>
         <div class="context-controls">
@@ -30,6 +30,12 @@
       }
 
       <div class="event-admin-fields">
+
+        <div class="form-field form-field-wide">
+            <label for="event-id">ID</label>
+            <input type="text" class="search-control" id="event-id" readonly disabled [value]="edited()?.id || ''">
+        </div>
+
         <div class="form-field">
           <label for="person-name">Nome</label>
           <input class="search-control" id="person-name" type="text" formControlName="name" required autofocus/>
@@ -72,16 +78,21 @@
       </div>
       
       <footer class="actions-panel">
-        <button type="button" 
-          class="secondary-button" 
-          (click)="close()">Annulla</button>
+        @if (edited()) {
+          <button class="danger-button" type="button" [disabled]="isSaving()" (click)="deletePerson()">
+            <span aria-hidden="true">✖</span>
+            'Elimina'
+          </button>
+        }
         <button type="submit" 
           class="action-button" 
           [disabled]="isSaving()">
-          {{ isSaving() ? 'Salvataggio...' : 'Crea persona' }}
+          {{ isSaving() ? 'Salvataggio...' : edited() ? 'Salva persona' : 'Crea persona' }}
         </button>
       </footer>
     </form>
 
   </section>
 </div>
+
+<app-splash-dialog #personSplash defaultMessage="Operazione sconosciuta"></app-splash-dialog>

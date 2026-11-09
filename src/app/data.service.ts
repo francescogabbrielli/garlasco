@@ -14,6 +14,7 @@ const client = generateClient<Schema>();
 type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
 type EventPerson = Schema['EventPerson']['type']
+type Person = Schema['Person']['type']
 
 type Filter = {
   personIds: string[]
@@ -244,6 +245,23 @@ export class DataService {
     for (const id of eventActors) {
       await client.models.EventPerson.delete({ id })
     }
-  }    
+  }
+
+  async savePerson(person: { id?: string; name: string; surname: string; type: Person['type']; profession?: string; initials: string }): Promise<Person> {
+    const { data, errors } = person.id
+      ? await client.models.Person.update({ ...person, id: person.id })
+      : await client.models.Person.create(person)
+    if (errors?.length || !data?.id) {
+      throw new Error(errors?.[0]?.message ?? 'Errore durante il salvataggio della persona')
+    }
+    return data as Person
+  }
+
+  async deletePerson(id: string): Promise<void> {
+    const { errors } = await client.models.Person.delete({ id })
+    if (errors?.length) {
+      throw new Error(errors[0]?.message || 'Errore sconosciuto durante l’eliminazione della persona')
+    }
+  }
 
 }

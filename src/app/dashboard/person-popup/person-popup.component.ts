@@ -1,27 +1,32 @@
-import { Component, inject, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, output, signal, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { generateClient } from 'aws-amplify/data';
 import { PERSON_TYPES } from '../../../../amplify/data/enums';
 import type { Schema } from '../../../../amplify/data/resource';
 
 import { EscapeStack } from '../../escape-stack.service';
+import { DataService } from '../../data.service';
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 
 type Person = Schema['Person']['type']
 
-const client = generateClient<Schema>()
-
 @Component({
   selector: 'app-person-popup',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, SplashDialogComponent],
   templateUrl: './person-popup.component.html',
   styleUrl: './person-popup.component.css',
 })
 export class PersonDialogComponent implements OnInit, OnDestroy {
 
   private escapeStack = inject(EscapeStack)
+  private dataService = inject(DataService)
   private offEscape?: () => void
 
-  created = output<Person>()
+  @ViewChild('personSplash')
+  private splash!: SplashDialogComponent
+
+  edited = input<Person | null>()
+  saved = output<Person>()
+  deleted = output<string>()
   closed = output<void>()
 
   readonly personTypes = PERSON_TYPES
@@ -37,9 +42,22 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
   })
 
   ngOnInit(): void {
+    
     this.offEscape = this.escapeStack.push(() => this.onEscape())
+
     Array.from(document.getElementsByTagName('input'))
       .forEach((el:HTMLInputElement) => el.hasAttribute('autofocus') && el.focus())
+
+    const p = this.edited()
+    if (p) {
+      this.form.patchValue({
+        name: p.name,
+        surname: p.surname,
+        type: p.type,
+        profession: p.profession || undefined,
+        initials: p.initials
+      })
+    }
   }
 
   ngOnDestroy(): void {
@@ -56,17 +74,18 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
     this.isSaving.set(true)
     this.error.set('')
     try {
-      const { data, errors } = await client.models.Person.create({
+      const person = await this.dataService.savePerson({
+        id: this.edited()?.id,
         name: name.trim(),
         surname: surname.trim(),
         type: type!,
         profession: profession.trim() || undefined,
         initials: initials?.trim() || `${name.trim()[0] ? name.trim()[0] : ''}${surname.trim().substring(0, 1)}${surname.trim().substring(1, 3).toLowerCase() + '.'}`,
       })
-      if (!data) throw new Error(errors?.[0]?.message ?? 'Creazione non riuscita')
-      this.created.emit(data)
+      await this.splash.show(`Persona ${this.edited() ? 'modificata' : 'creata'} con successo!`)
+      this.saved.emit(person)
     } catch (e) {
-      this.error.set(e instanceof Error ? e.message : 'Impossibile creare la persona.')
+      this.error.set(e instanceof Error ? e.message : 'Impossibile salvare la persona.')
     } finally {
       this.isSaving.set(false)
     }
@@ -74,6 +93,26 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
 
   onEscape(): void {
     this.close()
+  }
+
+  async deletePerson(): Promise<void> {
+    const existingId = this.edited()?.id
+    if (!existingId) return
+
+    if (!window.confirm('Sei sicuro di voler eliminare questa persona? Potrebbe essere collegata ad altri eventi!'))
+      return
+
+    this.isSaving.set(true)
+    this.error.set('')
+    try {
+      await this.dataService.deletePerson(existingId)
+      await this.splash.show('Persona eliminata!')
+      this.deleted.emit(existingId)
+    } catch (e) {
+      this.error.set(e instanceof Error ? e.message : 'Impossibile eliminare la persona.')
+    } finally {
+      this.isSaving.set(false)
+    }
   }
 
   close(): void {

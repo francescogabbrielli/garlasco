@@ -10,6 +10,7 @@ describe('ContactFormComponent', () => {
     const mockUserData = {
     getId: () => '123',
     getEmail: () => 'utente@test.com',
+    isAdmin: () => false,
   }
 
   const mockUserService = {

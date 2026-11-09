@@ -28,7 +28,7 @@ describe('SplashDialogComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(SplashDialogComponent);
-    fixture.componentRef.setInput('message', 'Email inviata!');
+    fixture.componentRef.setInput('defaultMessage', 'Email inviata!');
   });
 
   afterEach(() => {
@@ -46,12 +46,13 @@ describe('SplashDialogComponent', () => {
     vi.useRealTimers();
   });
 
-  it('opens the dialog and closes it after the configured duration', () => {
+  it('opens the dialog and resolves when it closes after the configured duration', async () => {
     vi.useFakeTimers();
     fixture.componentRef.setInput('durationSeconds', 2);
     const closedSpy = vi.spyOn(fixture.componentInstance.closed, 'emit');
 
     fixture.detectChanges();
+    const showPromise = fixture.componentInstance.show();
     expect(fixture.nativeElement.querySelector('dialog').open).toBe(true);
 
     vi.advanceTimersByTime(1999);
@@ -60,18 +61,21 @@ describe('SplashDialogComponent', () => {
     vi.advanceTimersByTime(1);
     expect(closedSpy).toHaveBeenCalledOnce();
     expect(fixture.nativeElement.querySelector('dialog').open).toBe(false);
+    await expect(showPromise).resolves.toBeUndefined();
   });
 
-  it('keeps the dialog open without a timer when duration is zero and shows the optional close button', () => {
+  it('resolves when manually dismissed without a timer and shows the optional close button', async () => {
     vi.useFakeTimers();
     fixture.componentRef.setInput('durationSeconds', 0);
     fixture.componentRef.setInput('showCloseButton', true);
     fixture.detectChanges();
+    const showPromise = fixture.componentInstance.show();
 
     vi.advanceTimersByTime(10_000);
     expect(fixture.nativeElement.querySelector('dialog').open).toBe(true);
 
     fixture.nativeElement.querySelector('button').click();
     expect(fixture.nativeElement.querySelector('dialog').open).toBe(false);
+    await expect(showPromise).resolves.toBeUndefined();
   });
 });

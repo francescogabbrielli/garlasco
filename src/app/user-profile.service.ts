@@ -79,8 +79,11 @@ export class UserProfileService {
 
   constructor() {
     effect(() => {
-      const editEnabled = this.user().editEnabled()
-      this.setPreference(PREFERENCE_KEY_EDIT_ENABLED, editEnabled)
+      const user = this.user()
+      const editEnabled = user.editEnabled()
+      if (user.getId()) {
+        this.setPreference(PREFERENCE_KEY_EDIT_ENABLED, editEnabled)
+      }
     })
   }
 
