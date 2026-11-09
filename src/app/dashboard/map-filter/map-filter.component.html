@@ -15,12 +15,12 @@
   </div>
 
 @if (active()) {
-  @if (mapReady) {
+  @if (mapReady()) {
     <google-map
         height="500px"
         width="100%"
         [mapId]="mapId"
-        [options]="mapOptions()"
+        [options]="computedMapOptions()"
         (mapInitialized)="onMapReady($event)"
         (boundsChanged)="onBoundsChanged()">
 

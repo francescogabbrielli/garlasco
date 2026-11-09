@@ -35,7 +35,7 @@
             height="100%"
             width="100%"
             [mapId]="mapId"
-            [options]="mapOptions"
+            [options]="computedMapOptions()"
             (mapInitialized)="onMapReady($event)"
             (mapClick)="onMapClick($event)">
           @if (selectedPoint(); as point) {

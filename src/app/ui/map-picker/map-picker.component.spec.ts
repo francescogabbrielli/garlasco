@@ -14,7 +14,7 @@ describe('MapPickerComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [MapPickerComponent],
-      providers: [{ provide: GoogleMapsLoaderService, useValue: { load } }],
+      providers: [{ provide: GoogleMapsLoaderService, useValue: { load, colorScheme: () => undefined } }],
     })
     .compileComponents();
 

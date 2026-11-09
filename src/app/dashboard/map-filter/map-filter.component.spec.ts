@@ -33,7 +33,7 @@ describe('MapFilterComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [MapFilterComponent],
-      providers: [{ provide: GoogleMapsLoaderService, useValue: { load } }]
+      providers: [{ provide: GoogleMapsLoaderService, useValue: { load, colorScheme: () => undefined } }]
     })
     .compileComponents();
 

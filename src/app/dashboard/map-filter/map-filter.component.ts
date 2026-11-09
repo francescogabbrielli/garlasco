@@ -1,5 +1,5 @@
 // map-filter.component.ts
-import { Component, output, input, inject, OnInit, computed, effect, model } from '@angular/core';
+import { Component, output, input, inject, OnInit, computed, effect, model, viewChild, NgZone, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker, MapPolyline } from '@angular/google-maps'; 
 import { Schema } from '../../../../amplify/data/resource';
 import { GeoService } from '../../geo.service';
@@ -19,14 +19,18 @@ export class MapFilterComponent implements OnInit {
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
 
-  initialBounds = input<Coordinates | null>(null);
-  mapId = window.__appConfig?.googleMapsMapId ?? 'DEMO_MAP_ID';
+  initialBounds = input<Coordinates | null>(null)
+  mapId = window.__appConfig?.googleMapsMapId
 
-  mapOptions = input<google.maps.MapOptions>({ 
+  mapOptions: google.maps.MapOptions = { 
     isFractionalZoomEnabled: true, 
     renderingType: 'VECTOR' as google.maps.RenderingType, // Fractional zoom only works on vector maps
-    //gestureHandling: 'cooperative'
-  })
+  }
+
+  computedMapOptions = computed(() => ({
+    ...this.mapOptions,
+    colorScheme: this.mapsLoader.colorScheme()
+  }))
   
   // Riceve la lista dei marker reattivi filtrati dal componente padre
   markers = input<Event[]>([])
@@ -38,6 +42,17 @@ export class MapFilterComponent implements OnInit {
   eventClick = output<string>()
 
   active = model(true)
+
+  constructor() {
+    // L'effect monitora il tema globale e tocca CHIRURGICAMENTE la mappa nativa
+    effect(() => {
+      this.mapReady.set(false)      
+      this.mapsLoader.colorScheme()
+      setTimeout(() => {
+        this.mapReady.set(true)
+      }, 100)
+    })
+  }  
 
   private pinElements = new Map<string, HTMLElement[]>()
 
@@ -114,13 +129,13 @@ export class MapFilterComponent implements OnInit {
 
   private mapInstance?: google.maps.Map
   mapError: string = ''
-  mapReady = false
+  mapReady = signal(false)
 
   async ngOnInit() {
  
     try {
       await this.mapsLoader.load()
-      this.mapReady = true
+      this.mapReady.set(true)
     } catch {
       this.mapError = 'Impossibile caricare Google Maps.'
     }
@@ -132,9 +147,7 @@ export class MapFilterComponent implements OnInit {
     if (boundsToApply) {
       map.fitBounds(this.geoService.toBounds(boundsToApply), 0)
     }
-    setTimeout(() => {
-      this.mapInstance = map
-    }, 500)
+    this.mapInstance = map
   }
 
   onBoundsChanged(): void {

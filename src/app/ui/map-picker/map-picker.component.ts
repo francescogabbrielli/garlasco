@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, Signal, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
 import { GoogleMap, MapAdvancedMarker } from '@angular/google-maps';
 
 import type { Schema } from '../../../../amplify/data/resource';
@@ -22,6 +22,7 @@ export class MapPickerComponent implements OnInit, OnDestroy {
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
   private escapeStack = inject(EscapeStack)
+
   private offEscape?: () => void
 
   title = input('Seleziona la posizione')
@@ -40,6 +41,11 @@ export class MapPickerComponent implements OnInit, OnDestroy {
     // gestureHandling: 'cooperative'
   }
 
+  computedMapOptions = computed<google.maps.MapOptions>(() => ({
+    ...this.mapOptions,
+    colorScheme: this.mapsLoader.colorScheme() // Passa 'LIGHT' o 'DARK'
+  }));  
+
   readonly mapReady = signal(false)
   readonly mapError = signal('')
   // precise point chosen by clicking on the map
@@ -49,6 +55,21 @@ export class MapPickerComponent implements OnInit, OnDestroy {
   private mapInstance?: google.maps.Map
 
   @ViewChild('mapSearchContainer', { static: true }) searchContainer!: ElementRef<HTMLDivElement>
+  
+  private autocompleteInstance = signal<google.maps.places.PlaceAutocompleteElement | null>(null)
+
+  constructor() {
+    // 🚀 L'EFFECT NEL COSTRUTTORE: Perfettamente legale in Angular 20
+    effect(() => {
+      const element = this.autocompleteInstance();
+      const currentScheme = this.mapsLoader.colorScheme(); // Ritorna 'LIGHT' o 'DARK'
+
+      // Se l'elemento è stato creato, forziamo il tema rompendo l'ancoraggio di sistema
+      if (element && currentScheme) {
+        element.style.colorScheme = currentScheme;
+      }
+    })
+  }
 
   async ngOnInit() {
     this.offEscape = this.escapeStack.push(() => this.onEscape())
@@ -73,6 +94,8 @@ export class MapPickerComponent implements OnInit, OnDestroy {
 
     // Inserisci il web component nel container HTML
     this.searchContainer.nativeElement.appendChild(placeAutocomplete)
+
+    this.autocompleteInstance.set(placeAutocomplete)
 
     // Ascolta la selezione dell'indirizzo
     placeAutocomplete.addEventListener('gmp-select', async (event: any) => {

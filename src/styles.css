@@ -40,7 +40,7 @@ body {
       vertical-align: super;
       font-size: 0.8rem;
       font-weight: 700;
-      color: #c25172;
+      color: var(--danger);
     }
   }
 
@@ -369,7 +369,8 @@ body {
     --mat-option-label-text-size: 12px;
     min-height: 36px !important; 
     line-height: 36px !important;
-  }  
+  } 
+
 
   .search-control {
       background-color: var(--page);
@@ -549,6 +550,6 @@ html[data-theme="dark"] {
   --text: #d8d8c8;
   --text-muted: #a0aaa6;
   --accent: #29c797;
-  --danger: #db305b;
+  --danger: #df5762;
   --hover: #364444;
 }
