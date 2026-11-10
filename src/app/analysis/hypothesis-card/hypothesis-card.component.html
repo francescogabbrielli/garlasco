@@ -1,0 +1,35 @@
+<article
+  class="hypothesis-card"
+  [class.selected]="selected()"
+  role="button"
+  tabindex="0"
+  (click)="clicked.emit()"
+  (keydown.enter)="clicked.emit()"
+  (keydown.space)="$event.preventDefault(); clicked.emit()">
+
+  <h3 class="card-title">{{ hypothesis().name }}</h3>
+
+  <p class="card-description">{{ hypothesis().description }}</p>
+
+  <div class="card-meta">
+    @if (hypothesis().startDate; as d) {
+      <time [attr.datetime]="d">{{ d | date: 'MMM yyyy' }}</time>
+    }
+    @if (hypothesis().endDate) {
+      <span>–</span>
+      <time [attr.datetime]="hypothesis().endDate">{{ hypothesis().endDate | date: 'MMM yyyy' }}</time>
+    }
+  </div>
+
+  <div class="card-actors">
+    @if (loading()) {
+      <span class="actors-loading">⋯</span>
+    } @else if (actors().length) {
+      <ul class="actor-list">
+        @for (actor of actors(); track actor.id) {
+          <li class="actor-chip">{{ actorLabel(actor) }}<span class="actor-role">{{ actor.role }}</span></li>
+        }
+      </ul>
+    }
+  </div>
+</article>

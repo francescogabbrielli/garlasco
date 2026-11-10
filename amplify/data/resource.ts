@@ -16,8 +16,8 @@ const GeneratedEvent = a.customType({
   type: a.ref('EventType').required(),
   name: a.string().required(),
   description: a.string().required(),
-  start_date: a.string().required(),
-  start_position: a.ref('Coordinates'),
+  startDate: a.string().required(),
+  startPosition: a.ref('Coordinates'),
   sources: a.string().required().array(),
 })
 

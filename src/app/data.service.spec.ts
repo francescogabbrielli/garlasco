@@ -32,36 +32,36 @@ describe('DataService', () => {
 
   it('starts with no events and no pending load', () => {
     expect(service.getEvents()).toEqual([]);
-    expect(service.isLoading()).toBe(false);
+    expect(service.isLoadingEvents()).toBe(false);
     expect(service.hasMore()).toBe(false);
   });
 
   it('stores selected people, date bounds, and the computed map filter', () => {
-    service.setFilters(['person-1'], from, to, coordinates);
+    service.setEventFilters(['person-1'], from, to, coordinates);
 
-    expect(service.filterSubject.value).toEqual({
+    expect(service.eventFilterSubject.value).toEqual({
       personIds: ['person-1'],
       dateFrom: from.toISOString(),
       dateTo: to.toISOString(),
       geoHash: 'sr63'
     });
     expect(computeGeoHash).toHaveBeenCalledWith(coordinates);
-    expect(service.isLoading()).toBe(true);
+    expect(service.isLoadingEvents()).toBe(true);
   });
 
   it('ignores load-more requests when no additional pages are available', () => {
-    service.loadMore();
+    service.loadMoreEvents();
 
     expect(service.hasMore()).toBe(false);
-    expect(service.isLoading()).toBe(false);
+    expect(service.isLoadingEvents()).toBe(false);
     expect(service.getEvents()).toEqual([]);
   });
 
   it('clears the loading state after an empty filter result', async () => {
-    service.setFilters([], from, to, coordinates);
+    service.setEventFilters([], from, to, coordinates);
     await vi.advanceTimersByTimeAsync(750);
 
-    expect(service.isLoading()).toBe(false);
+    expect(service.isLoadingEvents()).toBe(false);
     expect(service.getEvents()).toEqual([]);
     expect(service.hasMore()).toBe(false);
   });

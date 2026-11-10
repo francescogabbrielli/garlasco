@@ -1,10 +1,19 @@
+NEXT
+----
+- configure client ErrorHandler and backend Lambda -> CloudWatch
+- review layout & CSS
+- review routing guards when the user role is not synced
+- implement notification system
+- turn some bots into agents that can alter data
+- add reason field in registration
+
 TODO: 0.2.0
 -----------
 - create Hypothesis backend 
     - mermaid docs &check;
     - models &check;
 - add edit capability for Persons &check;
-- design a minimal 'Dashboard di Analisi'
+- design a minimal 'Dashboard di Analisi' ...
 - add import/export for new data
 - save user preferences in user service &check;
 - create dark theme & link to system theme &check;
@@ -34,7 +43,7 @@ TODO: 0.1.4
     - truncate output (time & length) &check;
 - improve mail templates and mailing backend &check;
 - review and stabilize code &check;
-- make start_position required only for type='Fatto' &check;
+- make startPosition required only for type='Fatto' &check;
 - show total events in info &check;
 
 TODO: 0.1.3

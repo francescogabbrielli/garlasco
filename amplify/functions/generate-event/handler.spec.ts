@@ -32,7 +32,7 @@ describe('generate-event handler', () => {
   });
 
   it('returns the event produced by the model tool call', async () => {
-    const generated = { type: 'Fatto', name: 'n', description: 'd', start_date: '2007-08-13T00:00:00+01:00', sources: [] };
+    const generated = { type: 'Fatto', name: 'n', description: 'd', startDate: '2007-08-13T00:00:00+01:00', sources: [] };
     send.mockResolvedValue({ output: { message: { content: [{ text: 'x' }, { toolUse: { input: generated } }] } } });
 
     expect(await handler(event)).toEqual(generated);

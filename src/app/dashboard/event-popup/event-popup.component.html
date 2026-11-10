@@ -52,7 +52,7 @@
           <span class="field-error">{{ submitError() }}</span>
         }
 
-        <div class="dialog-scrollable">
+        <div class="scrollable">
           <app-event-mask id="event-mask" 
             [event]="event()" 
             [people]="people()"
@@ -72,15 +72,15 @@
       <dd class="description">{{ event().description }}</dd>
 
       <dt>Inizio</dt>
-      <dd>{{ event().start_date | date: 'dd/MM/yyyy HH:mm' }}</dd>
+      <dd>{{ event().startDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
 
-      @if (event().end_date) {
+      @if (event().endDate) {
         <dt>Fine</dt>
-        <dd>{{ event().end_date | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        <dd>{{ event().endDate | date: 'dd/MM/yyyy HH:mm' }}</dd>
       }
 
-      @if (event().start_position; as start) {
-        <dt>Posizione{{ event().end_position ? ' di partenza' : '' }}</dt>
+      @if (event().startPosition; as start) {
+        <dt>Posizione{{ event().endPosition ? ' di partenza' : '' }}</dt>
         <dd>
           {{ start.latitude | number: '1.6-6' }},
           {{ start.longitude | number: '1.6-6' }}
@@ -93,7 +93,7 @@
         </dd>
       }
 
-      @if (event().end_position; as end) {
+      @if (event().endPosition; as end) {
         <dt>Posizione di arrivo</dt>
         <dd>
           {{ end.latitude | number: '1.6-6' }}, {{ end.longitude | number: '1.6-6' }}
@@ -106,6 +106,7 @@
         </dd>
       }
 
+      @if (actors()) {
       <dt>Persone</dt>
       <dd>
           <ul class="actors">
@@ -114,6 +115,24 @@
             }
           </ul>
       </dd>
+      }
+
+      @if (sources(); as sources) {
+      <dt>Fonti</dt>
+      <dd>
+        <ul class="sources">
+        @for (source of sources; track source) {
+          <li>
+            @if (isUrl(source)) {
+              <a [href]="source" target="_blank">{{source}}</a>
+            } @else {
+              <span>{{source}}</span>
+            }
+          </li>
+        }
+        </ul>
+      </dd>
+      }
 
       <dt>Rilevanza</dt>
       <dd><app-tickbar [level]="event().relevance"></app-tickbar></dd>

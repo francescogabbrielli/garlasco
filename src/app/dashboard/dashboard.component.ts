@@ -95,11 +95,8 @@ export class DashboardComponent implements OnInit {
 
   private async loadPeople(): Promise<void> {
     try {
-      this.peopleLoading.set(true)
-      const response = await client.models.Person.list()
-      this.people.set(response.data
-        .sort(this.PEOPLE_SORTER) 
-        ?? [])
+      const peps = await this.dataService.loadPeople()
+      this.people.set(peps.sort(this.PEOPLE_SORTER) ?? [])
     } catch {
       this.peopleError.set('Impossibile caricare le persone.')
     } finally {
@@ -148,7 +145,7 @@ export class DashboardComponent implements OnInit {
 
   triggerReload() {
     this.userService.setPreference(PREFERENCE_KEY_DASHBOARD_FILTERS, this.currentFilters)
-    this.dataService.setFilters(
+    this.dataService.setEventFilters(
       this.currentFilters.personIds,
       this.showTimeline() ? this.currentFilters.interval.from : this.MIN_DATE, 
       this.showTimeline() ? this.currentFilters.interval.to : this.MAX_DATE, 
@@ -204,8 +201,8 @@ export class DashboardComponent implements OnInit {
    * Richiamata quando l'utente arriva in fondo alla lista di dettaglio
    */
   onScrollBottom(): void {
-    if (this.dataService.isLoading() || !this.dataService.hasMore()) return
-    this.dataService.loadMore()
+    if (this.dataService.isLoadingEvents() || !this.dataService.hasMore()) return
+    this.dataService.loadMoreEvents()
   }
 
   resetFilters(): void {

@@ -12,10 +12,20 @@ export const PersonType = a.enum(PERSON_TYPES);
 export const RequestStatus = a.enum(REQUEST_STATUS);
 
 const memberPermissions = (allow:any) => [
-  allow.group('Member'),
-  allow.group('Editor'),
-  allow.group('Admin')
+  allow.groups(['Member', 'Editor', 'Admin'])
 ]
+
+const caseFields = (modelName:string, idName:string) => ({
+  name: a.string().required(),
+  description: a.string().required(),
+  startDate: a.datetime().required(),
+  endDate: a.datetime(),
+  startPosition: a.ref('Coordinates'),
+  endPosition: a.ref('Coordinates'),
+  geoHash: a.string(),
+  actors: a.hasMany(modelName + 'Person', idName),
+  sources: a.string().required().array()
+})
 
 export const Person = a.model({
   name: a.string().required(),
@@ -30,26 +40,20 @@ export const Person = a.model({
   .authorization(memberPermissions);
 
 export const Event = a.model({
-  owner: a.id().required(), //Cognito ID
+  owner: a.id().required(), //Cognito ID or Bot ID
   type: a.ref('EventType').required(),
-  name: a.string().required(),
-  description: a.string().required(),
-  start_date: a.datetime().required(),
-  end_date: a.datetime(),
-  start_position: a.ref('Coordinates'),
-  end_position: a.ref('Coordinates'),
-  geoHash: a.string(),
-  actors: a.hasMany('EventPerson', 'eventId'),
+  ...caseFields('Event', 'eventId'),
+
   reliability: a.integer(),
   relevance: a.integer().required().default(0),
-  sources: a.string().required().array(),
 
   //linked events
   relatesTo: a.hasMany('EventRelated', 'relatesToId'),
   relatedBy: a.hasMany('EventRelated', 'relatedById'),
   
   //hypotheses
-  hypothesis: a.hasMany('Hypothesis', 'eventId')
+  hypothesis: a.hasMany('Hypothesis', 'eventId'),
+  coldCase: a.boolean().required().default(false)
 })
   .authorization(memberPermissions)
 
@@ -87,17 +91,6 @@ export const EventPerson = a.model({
 
 //----------------------- HYPOTHESIS MODELS -------------------------
 
-const hypothesisFields = (modelName: string) => ({
-  name: a.string().required(),
-  description: a.string().required(),
-  startDate: a.datetime().required(),
-  endDate: a.datetime(),
-  startPosition: a.ref('Coordinates').required(),
-  endPosition: a.ref('Coordinates'),
-  actors: a.hasMany(modelName + 'Person', 'hypothesisId'),
-  sources: a.string().required().array(),
-})
-
 const hypothesisPersonFields = (modelName: string) => ({
   hypothesisId: a.id().required(),
   personId: a.id().required(),
@@ -106,12 +99,18 @@ const hypothesisPersonFields = (modelName: string) => ({
   hypothesis: a.belongsTo(modelName, 'hypothesisId'),
   person: a.belongsTo('Person', 'personId'),
 
-  hypothesisTitle: a.string(),
+  hypothesisName: a.string(),
+})
+
+const protectedOwner = () => ({
+  owner: a.string().authorization(allow => [
+    allow.owner().to(['read', 'create']),
+    allow.group('Admin')
+  ])
 })
 
 const hypothesisPermissions = (allow: any) =>
   [
-    allow.authenticated().to(['read']),
     allow.owner(),
     allow.group('Admin'),
   ]
@@ -122,25 +121,33 @@ const hypothesisPublishedPermissions = (allow: any) =>
     allow.group('Admin'),
   ]
 
-
 export const Hypothesis = a.model({
-  ...hypothesisFields('Hypothesis'),
+  ...protectedOwner(),
+  ...caseFields('Hypothesis', 'hypothesisId'),
   
   publicationRequest: a.hasOne('PublicationRequest', 'hypothesisId'),
   published: a.hasOne('HypothesisPublished', 'originalId'),
 
   eventId: a.id(),
   event: a.belongsTo('Event', 'eventId'),
-}).authorization(hypothesisPermissions)
+})
+  .authorization(hypothesisPermissions)
 
 export const HypothesisPerson = a.model(
-  {...hypothesisPersonFields('Hypothesis')})
+  {
+    ...protectedOwner(),
+    ...hypothesisPersonFields('Hypothesis')
+  })
     .authorization(hypothesisPermissions)
 
 export const HypothesisPublished = a.model({
-  ...hypothesisFields('HypothesisPublished'),
+  ...caseFields('HypothesisPublished', 'hypothesisId'),
   originalId: a.id().required(),
-  original: a.belongsTo('Hypothesis', 'originalId')
+  original: a.belongsTo('Hypothesis', 'originalId'),
+
+  // utility fields
+  createdBy: a.string().required(), // descriptive string of the original owner
+  eventName: a.string().required(), // name of the event
 })
   .authorization(hypothesisPublishedPermissions)
 
@@ -149,6 +156,7 @@ export const HypothesisPublishedPerson = a.model(
     .authorization(hypothesisPublishedPermissions)
 
 export const PublicationRequest = a.model({
+  ...protectedOwner(),
   hypothesisId: a.id().required(),
   hypothesis: a.belongsTo('Hypothesis', 'hypothesisId'),
   status: a.ref('RequestStatus').authorization((allow) => [
@@ -163,6 +171,6 @@ export const PublicationRequest = a.model({
   ]),
 })
   .authorization((allow) => [
-    allow.owner().to(['read', 'create', 'update']),
+    allow.owner().to(['read', 'create']),
     allow.group('Admin'),
   ])

@@ -103,11 +103,11 @@ export class MapFilterComponent implements OnInit {
 
   // Events that have an end position, drawn as a line between start and end
   tracks = computed(() => this.markers()
-    .filter(e => !!e.start_position)
-    .filter(e => !!e.end_position)
+    .filter(e => !!e.startPosition)
+    .filter(e => !!e.endPosition)
     .map(e => ({
       id: e.id,
-      path: [this.toLatLng(e.start_position!), this.toLatLng(e.end_position!)],
+      path: [this.toLatLng(e.startPosition!), this.toLatLng(e.endPosition!)],
     })))
 
   polylineOptions: google.maps.PolylineOptions = { strokeColor: 'var(--highlight)', strokeOpacity: .8, strokeWeight: 3 }
@@ -119,10 +119,10 @@ export class MapFilterComponent implements OnInit {
         return {
           id: e.id,
           title: e.name,
-          start: this.toLatLng(e.start_position!),
+          start: this.toLatLng(e.startPosition!),
           startContent: this.createPin(e.id),
-          end: e.end_position ? this.toLatLng(e.end_position) : null,
-          endContent: e.end_position ? this.createPin(e.id, true) : null,
+          end: e.endPosition ? this.toLatLng(e.endPosition) : null,
+          endContent: e.endPosition ? this.createPin(e.id, true) : null,
         }
     })
   })

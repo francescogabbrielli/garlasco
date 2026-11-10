@@ -9,9 +9,9 @@
     height: var(--marker-size, 2.5rem);
     place-items: center;
     box-sizing: border-box;
-    border: 1px solid #d2dad7;
+    border: 1px solid var(--text-muted);
     border-radius: 50%;
-    color: #263a38;
+    color: var(--text-muted);
     transition: background .15s, border-color .15s, color .15s;
 }
 
@@ -20,9 +20,9 @@
 }
 
 .marker.selected {
-    border-color: var(--border);
+    border-color: var(--text-muted);
     background: var(--highlight);
-    color: white;
+    color: var(--lowlight);
 }
 
 .initials {
@@ -31,8 +31,6 @@
     height: 100%;
     place-items: center;
     border-radius: 50%;
-    background: #e9eee8;
-    color: #35524b;
     font-size: .67rem;
     font-weight: 700;
     white-space: nowrap;
@@ -40,7 +38,6 @@
 
 .selected .initials {
     background: var(--highlight);
-    color: #fff;
 }
 
 .tooltip {

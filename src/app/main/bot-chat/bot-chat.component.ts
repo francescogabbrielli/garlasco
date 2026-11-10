@@ -50,11 +50,18 @@ export class BotChatComponent implements OnDestroy {
   readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
   readonly text = signal('')
 
+  offEscape?: () => void
+
   constructor() {
     effect(onCleanup => {
-      if (!this.opened()) return
-      const unregister = this.escapeStack.push(() => this.opened.set(false))
-      onCleanup(unregister)
+      if (!this.opened()) {
+        this.offEscape?.()
+      } else {
+        this.offEscape = this.escapeStack.push(() => this.opened.set(false))
+      }
+      // if (!this.opened()) return
+      // const unregister = this.escapeStack.push(() => this.opened.set(false))
+      // onCleanup(unregister)
     })
   }
 

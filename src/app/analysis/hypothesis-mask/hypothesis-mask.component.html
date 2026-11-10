@@ -1,0 +1,213 @@
+<form class="hypothesis-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+  @if (hypothesis()?.id) {
+    <div class="form-field form-field-wide">
+      <label for="hyp-id">ID</label>
+      <input type="text" class="search-control" id="hyp-id" readonly disabled [value]="hypothesis()?.id || ''">
+    </div>
+  }
+
+  <div class="form-field form-field-wide">
+    <label for="hyp-name">Nome</label>
+    <input class="search-control" id="hyp-name" type="text" formControlName="name" required />
+    @if (form.controls.name.invalid && (form.controls.name.touched || form.controls.name.dirty)) {
+      <span class="field-error">Inserisci il nome dell'ipotesi.</span>
+    }
+  </div>
+
+  <div class="form-field form-field-wide">
+    <label for="hyp-description">Descrizione</label>
+    <textarea class="search-control" id="hyp-description" rows="4" formControlName="description" required></textarea>
+    @if (form.controls.description.invalid && (form.controls.description.touched || form.controls.description.dirty)) {
+      <span class="field-error">Inserisci una descrizione.</span>
+    }
+  </div>
+
+  <div class="form-field">
+    <label for="hyp-start-date">Data inizio</label>
+    <input class="search-control" id="hyp-start-date" type="datetime-local" formControlName="startDate" required />
+    @if (form.controls.start.controls.date.invalid && (form.controls.start.controls.date.touched || form.controls.start.controls.date.dirty)) {
+      <span class="field-error">Indica la data di inizio.</span>
+    }
+  </div>
+
+  <div class="form-field">
+    <label for="hyp-end-date">Data fine <span>(opzionale)</span></label>
+    <input class="search-control" id="hyp-end-date" type="datetime-local" formControlName="endDate" />
+  </div>
+
+  <fieldset class="fieldset-section" formGroupName="start">
+    <legend>Posizione di partenza</legend>
+    <div class="form-field">
+      <button class="map-picker-button" type="button" (click)="requestPosition('start')">
+        <span aria-hidden="true">⌖</span> Seleziona
+      </button>
+    </div>
+    <div class="coordinate-fields">
+      <div class="form-field form-field-small">
+        <label for="start-latitude">Latitudine</label>
+        <input class="search-control" id="start-latitude" type="text" formControlName="latitude" readonly />
+      </div>
+      <div class="form-field form-field-small">
+        <label for="start-longitude">Longitudine</label>
+        <input class="search-control" id="start-longitude" type="text" formControlName="longitude" readonly />
+      </div>
+      <div class="form-field form-field-small">
+        <label for="start-radius">Raggio <span>(m)</span></label>
+        <input class="search-control" id="start-radius" type="text" formControlName="radius" readonly />
+      </div>
+      <button type="button" class="danger-button" title="Cancella posizione" aria-label="Cancella posizione"
+        (click)="cancelPosition('start')">&times;</button>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset-section" formGroupName="end">
+    <legend>Posizione di arrivo <span>(opzionale)</span></legend>
+    <div class="form-field">
+      <button class="map-picker-button" type="button" (click)="requestPosition('end')">
+        <span aria-hidden="true">⌖</span> Seleziona
+      </button>
+    </div>
+    <div class="coordinate-fields">
+      <div class="form-field form-field-small">
+        <label for="end-latitude">Latitudine</label>
+        <input class="search-control" id="end-latitude" type="text" formControlName="latitude" readonly />
+      </div>
+      <div class="form-field form-field-small">
+        <label for="end-longitude">Longitudine</label>
+        <input class="search-control" id="end-longitude" type="text" formControlName="longitude" readonly />
+      </div>
+      <div class="form-field form-field-small">
+        <label for="end-radius">Raggio <span>(m)</span></label>
+        <input class="search-control" id="end-radius" type="text" formControlName="radius" readonly />
+      </div>
+      <button type="button" class="danger-button" title="Cancella posizione" aria-label="Cancella posizione"
+        (click)="cancelPosition('end')">&times;</button>
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset-section multiple-values-section form-field-wide">
+    <legend>Persone coinvolte</legend>
+    <div class="actor-selection-heading">
+      <p>Seleziona una persona e indica il ruolo.</p>
+      <button class="actor-add-control" type="button" (click)="addActor()" [disabled]="!allPeople().length">Aggiungi persona</button>
+    </div>
+    @if (!allPeople().length) {
+      <p class="actor-control-message">Nessuna persona disponibile.</p>
+    }
+    <div class="selected-actors">
+      @for (actor of selectedActors(); track actor.rowId) {
+        <div class="actor-person-role-row">
+          <div class="actor-person-role-fields">
+            <div class="form-field">
+              <label [for]="'hyp-person-' + actor.rowId">Persona</label>
+              <div class="event-person">
+                <input type="text" required class="search-control"
+                  [id]="'hyp-person-' + actor.rowId"
+                  [matAutocomplete]="personAutocomplete"
+                  [value]="actor.personQuery"
+                  [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
+                  [disabled]="!allPeople().length"
+                  #trigger="matAutocompleteTrigger"
+                  (blur)="closeAutocomplete(trigger)"
+                  (input)="updateActorPersonQuery(actor.rowId, $event)" />
+                @if (isAdmin()) {
+                  <button type="button" class="context-button" (click)="openPersonDialog(actor.rowId)">✎</button>
+                }
+              </div>
+              <mat-autocomplete #personAutocomplete="matAutocomplete" panelClass="custom-autocomplete-panel"
+                [displayWith]="displayPerson"
+                (optionSelected)="onPersonOptionSelected(actor.rowId, $event.option.value)">
+                @if (isAdmin() && !actor.personQuery) {
+                  <mat-option [value]="newPersonOption" class="new-person-option">+ Nuova persona…</mat-option>
+                }
+                @for (person of filteredPeople(actor); track person.id) {
+                  <mat-option [value]="person">{{ person.name }} {{ person.surname }}</mat-option>
+                }
+              </mat-autocomplete>
+              @if (actorSelectionError && !isActorPersonValid(actor)) {
+                <span class="field-error">Seleziona una persona dall'elenco.</span>
+              }
+            </div>
+            <div class="form-field">
+              <label [for]="'hyp-person-role-' + actor.rowId">Ruolo</label>
+              <input class="search-control" [id]="'hyp-person-role-' + actor.rowId" type="text"
+                [value]="actor.role"
+                [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
+                (input)="updateActorRole(actor.rowId, $event)" (change)="modified.emit(true)" required />
+              @if (actorRoleError && !actor.role.trim()) {
+                <span class="field-error">Indica il ruolo della persona.</span>
+              }
+            </div>
+          </div>
+          @if (selectedActors().length > 1) {
+            <button class="actor-remove-control" type="button"
+              [attr.aria-label]="'Rimuovi riga persona ' + (actor.rowId + 1)"
+              (click)="removeActor(actor.rowId)">Rimuovi</button>
+          }
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="fieldset-section multiple-values-section form-field-wide">
+    <legend>Fonti</legend>
+    <div class="actor-selection-heading">
+      <p>Seleziona una o più fonti.</p>
+      <button class="clear-control" type="button" (click)="addSource()" [disabled]="cannotAddSource()">Aggiungi fonte</button>
+    </div>
+    <div class="source-list">
+      @for (source of sources; track source; let i = $index) {
+        <div class="source-row">
+          <div class="form-field">
+            <label [for]="'hyp-source-' + i">Fonte {{ i + 1 }}</label>
+            <input class="search-control" type="text" required [id]="'hyp-source-' + i" [value]="source"
+              (change)="updateSource(i, $event)">
+            @if (sourceError === i) {
+              <span class="field-error">Specifica la fonte.</span>
+            }
+          </div>
+          <button class="clear-control" type="button"
+            [attr.aria-label]="'Rimuovi riga fonte ' + (i + 1)" (click)="removeSource(i)">Rimuovi</button>
+        </div>
+      }
+    </div>
+  </fieldset>
+
+  @if (submitError()) {
+    <span class="field-error">{{ submitError() }}</span>
+  }
+
+  <footer class="actions-panel">
+    @if (hypothesis()?.id) {
+      <button class="danger-button" type="button" [disabled]="isSaving()" (click)="deleteHypothesis()">
+        <span aria-hidden="true">✖</span> Elimina
+      </button>
+    }
+    <button class="secondary-button" type="button" [disabled]="isSaving()"
+      (click)="submitForPublication()">Pubblica</button>
+    <button class="action-button" type="submit" [disabled]="isSaving()">
+      {{ isSaving() ? 'Salvataggio...' : hypothesis()?.id ? 'Salva' : 'Crea ipotesi' }}
+    </button>
+  </footer>
+</form>
+
+@if (personDialogOpen()) {
+  <app-person-popup
+    [edited]="editPerson()"
+    (saved)="onPersonSaved($event)"
+    (deleted)="onPersonDeleted($event)"
+    (closed)="closePersonDialog()" />
+}
+
+@if (pickerTarget(); as target) {
+  @defer (on immediate) {
+    <app-map-picker
+      [title]="target === 'start' ? 'Posizione di partenza' : 'Posizione di arrivo'"
+      [initialPosition]="pickerInitialPosition()"
+      (picked)="onPositionPicked($event)"
+      (closed)="closePicker()" />
+  }
+}
+
+<app-splash-dialog #hypothesisSplash defaultMessage="Operazione completata"></app-splash-dialog>

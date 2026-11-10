@@ -53,10 +53,10 @@ export function isValidEventActors(actors: unknown): actors is EventActorImport[
   );
 }
 
-export function isValidEventType(type: unknown, start_position: unknown): type is EventType {
+export function isValidEventType(type: unknown, startPosition: unknown): type is EventType {
   return typeof type === 'string' 
     && eventTypes.some((eventType) => eventType === type) 
-    && (start_position !== null || type !== 'Fatto');
+    && (startPosition !== null || type !== 'Fatto');
 }
 
 export function isValidPersonType(type: unknown): type is PersonType {
@@ -124,7 +124,7 @@ export class ImportComponent {
     try {
       for (const event of dataset) {
         // Valida la presenza dei campi minimi prima dell'invio
-        if (!event.name || !event.start_date || !isValidEventType(event.type, event.start_position)) {
+        if (!event.name || !event.startDate || !isValidEventType(event.type, event.startPosition)) {
           console.warn("Elemento saltato per mancanza di campi obbligatori:", event);
           continue;
         }
@@ -154,16 +154,19 @@ export class ImportComponent {
           type: event.type,
           name: event.name,
           description: event.description,
-          start_date: event.start_date,
-          start_position: event.start_position,
-          end_date: event.end_date,
-          end_position: event.end_position,
+          startDate: event.startDate,
+          startPosition: event.startPosition,
+          endDate: event.endDate,
+          endPosition: event.endPosition,
           geoHash: this.mapsService.computeGeoHash(
             this.mapsService.computeCenterPosition(
-              event.start_position, event.end_position)),
+              event.startPosition, event.endPosition)),
           sources: event.sources,
+          
+          // --- admin managed ---
           relevance: event.relevance || 0,
-          reliability: event.reliability || 0
+          reliability: event.reliability || 0,
+          coldCase: event.coldCase
         });
 
         if (eventErrors?.length || !createdEvent?.id) {
@@ -175,7 +178,7 @@ export class ImportComponent {
           const { errors } = await client.models.EventPerson.create({
             eventId: createdEvent.id,
             eventName: createdEvent.name,
-            eventStartDate: createdEvent.start_date,
+            eventStartDate: createdEvent.startDate,
             eventGeoHash: createdEvent.geoHash,
             personId,
             role,

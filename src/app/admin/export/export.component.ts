@@ -49,10 +49,14 @@ export class ExportComponent {
 
       this.download(records, 'people.json')
       this.exported.set([true, this.exported()[1]])
+      
     } catch (error) {
+
       console.error('Errore durante l\'esportazione delle persone:', error)
-      alert('Errore durante l\'esportazione delle persone.')
+      this.splash.show('❌ Errore durante l\'esportazione delle persone.')
+
     }
+
   }
 
   private async getActorsByEvent():Promise<Map<string, { personId: string, role: string }[]>> {
@@ -96,10 +100,10 @@ export class ExportComponent {
         name: event.name,
         type: event.type,
         description: event.description,
-        start_date: event.start_date,
-        start_position: event.start_position,
-        ...(event.end_date ? { end_date: event.end_date } : {}),
-        ...(event.end_position ? { end_position: event.end_position } : {}),
+        startDate: event.startDate,
+        startPosition: event.startPosition,
+        ...(event.endDate ? { endDate: event.endDate } : {}),
+        ...(event.endPosition ? { endPosition: event.endPosition } : {}),
         actors: actorsByEvent.get(event.id) ?? [],
         sources: event.sources,
         relevance: event.relevance,
@@ -110,7 +114,7 @@ export class ExportComponent {
       this.exported.set([this.exported()[0], true])
     } catch (error) {
       console.error('Errore durante l\'esportazione degli eventi:', error)
-      alert('Errore durante l\'esportazione degli eventi.')
+      this.splash.show('❌ Errore durante l\'esportazione degli eventi.')
     }
   }
 
@@ -135,9 +139,10 @@ export class ExportComponent {
         await this.deleteAllFrom(client.models.Event)
         await this.deleteAllFrom(client.models.Person)      
         this.exported.set([false, false])
+        this.splash.show(`🎉 Cancellazione completata! Il database è ora fantasticamente vuoto!`)
       } catch (error) {
         console.error('Errore durante la cancellazione dei dati:', error)
-        alert('Errore durante la cancellazione dei dati.')
+        this.splash.show('❌ Errore durante la cancellazione dei dati.')
       }
     }
   }

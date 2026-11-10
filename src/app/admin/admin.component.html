@@ -49,7 +49,7 @@
       @if (activeSection() === 'users') {
         <app-users></app-users>
       }
-      @if (activeSection() === 'data') {
+      @else if (activeSection() === 'data') {
         <app-import [(isWorking)]="isWorking"></app-import>
         <app-export [(isWorking)]="isWorking"></app-export>
       }

@@ -100,16 +100,16 @@ export class EventMaskComponent {
       reliability: e.reliability ?? this.reliabilityOptions.length,
       relevance: e.relevance,
       start: {
-        date: this.toLocalInput(e.start_date),
-        latitude: e.start_position?.latitude ? this.COORDS_FORMAT.format(e.start_position.latitude) : null,
-        longitude: e.start_position?.longitude ? this.COORDS_FORMAT.format(e.start_position.longitude) : null,
-        radius: e.start_position?.radius == null ? null : String(e.start_position?.radius),
+        date: this.toLocalInput(e.startDate),
+        latitude: e.startPosition?.latitude ? this.COORDS_FORMAT.format(e.startPosition.latitude) : null,
+        longitude: e.startPosition?.longitude ? this.COORDS_FORMAT.format(e.startPosition.longitude) : null,
+        radius: e.startPosition?.radius == null ? null : String(e.startPosition?.radius),
       },
       end: {
-        date: this.toLocalInput(e.end_date),
-        latitude: e.end_position?.latitude ? this.COORDS_FORMAT.format(e.end_position.latitude) : null,
-        longitude: e.end_position?.longitude ? this.COORDS_FORMAT.format(e.end_position.longitude) : null,
-        radius: e.end_position?.radius == null ? null : String(e.end_position?.radius),
+        date: this.toLocalInput(e.endDate),
+        latitude: e.endPosition?.latitude ? this.COORDS_FORMAT.format(e.endPosition.latitude) : null,
+        longitude: e.endPosition?.longitude ? this.COORDS_FORMAT.format(e.endPosition.longitude) : null,
+        radius: e.endPosition?.radius == null ? null : String(e.endPosition?.radius),
       },
     })
 
@@ -292,7 +292,7 @@ export class EventMaskComponent {
     this.modified.emit(true)
   }
 
-  applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'start_date' | 'end_date' | 'start_position' | 'end_position' | 'reliability' | 'relevance' | 'sources']?: EventModel[K] | null }): void {
+  applyGenerated(g: { [K in 'type' | 'name' | 'description' | 'startDate' | 'endDate' | 'startPosition' | 'endPosition' | 'reliability' | 'relevance' | 'sources']?: EventModel[K] | null }): void {
     const clamp = (n: number | null | undefined, def: number) =>
       n && n >= 1 && n <= 4 ? n : def
     const type = this.typeOptions.find(t => t === g.type) ?? null
@@ -303,16 +303,16 @@ export class EventMaskComponent {
       reliability: clamp(g.reliability, this.reliabilityOptions.length),
       relevance: clamp(g.relevance, this.relevanceOptions.length),
       start: {
-        date: this.toLocalInput(g.start_date),
-        latitude: g.start_position?.latitude ? this.COORDS_FORMAT.format(g.start_position.latitude) : null,
-        longitude: g.start_position?.longitude ? this.COORDS_FORMAT.format(g.start_position.longitude) : null,
-        radius: g.start_position?.latitude ? String(g.start_position?.radius || 0) : null,
+        date: this.toLocalInput(g.startDate),
+        latitude: g.startPosition?.latitude ? this.COORDS_FORMAT.format(g.startPosition.latitude) : null,
+        longitude: g.startPosition?.longitude ? this.COORDS_FORMAT.format(g.startPosition.longitude) : null,
+        radius: g.startPosition?.latitude ? String(g.startPosition?.radius || 0) : null,
       },
       end: {
-        date: this.toLocalInput(g.end_date),
-        latitude: g.end_position?.latitude ? this.COORDS_FORMAT.format(g.end_position.latitude) : null,
-        longitude: g.end_position?.longitude ? this.COORDS_FORMAT.format(g.end_position.longitude) : null,
-        radius: g.end_position?.latitude ? String(g.end_position?.radius || 0) : null,
+        date: this.toLocalInput(g.endDate),
+        latitude: g.endPosition?.latitude ? this.COORDS_FORMAT.format(g.endPosition.latitude) : null,
+        longitude: g.endPosition?.longitude ? this.COORDS_FORMAT.format(g.endPosition.longitude) : null,
+        radius: g.endPosition?.latitude ? String(g.endPosition?.radius || 0) : null,
       }
     })
     this.sources = g.sources ?? []
@@ -477,10 +477,10 @@ export class EventMaskComponent {
       type,
       name: this.eventForm.controls.name.value.trim(),
       description: this.eventForm.controls.description.value.trim(),
-      start_date: new Date(start.date).toISOString(),
-      end_date: end.date ? new Date(end.date).toISOString() : null,
-      start_position: startPosition,
-      end_position: endPosition,
+      startDate: new Date(start.date).toISOString(),
+      endDate: end.date ? new Date(end.date).toISOString() : null,
+      startPosition: startPosition,
+      endPosition: endPosition,
       geoHash: this.geoService.computeGeoHash(
         this.geoService.computeCenterPosition(startPosition, endPosition)),
       sources: this.sources,

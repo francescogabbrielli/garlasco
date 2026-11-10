@@ -13,7 +13,7 @@
   border: 2px groove rgba(34, 31, 43, 0.375);
   border-radius: 16px;
   background: var(--surface);
-  box-shadow: 0 12px 48px #0003;
+  box-shadow: 0 1rem 3rem var(--text-muted);
 
   opacity: 0;
   visibility: hidden;

@@ -15,6 +15,7 @@ import { EventMaskComponent, EventMaskEvent } from '../event-mask/event-mask.com
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
 
 import { DEFAULT_COORDINATES } from '../../app.constants';
+import { DataService } from '../../data.service';
 
 type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
@@ -31,6 +32,7 @@ const client = generateClient<Schema>();
 export class EventPopupComponent implements OnInit, OnDestroy {
 
   private userService = inject(UserProfileService)
+  private dataService = inject(DataService)
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
   private escapeStack = inject(EscapeStack)
@@ -80,54 +82,30 @@ export class EventPopupComponent implements OnInit, OnDestroy {
   
   people = input.required<Person[]>()
 
-  actors = signal<Person[]>([])
   personsLoading = signal(false)
+  actors = signal<Person[] | null | undefined>(undefined)
+  sources = signal<string[] | null | undefined>(undefined)
 
   constructor() {
-    effect(() => {
-      const id = this.event().id
-      this.loadPersons(id)
+    effect(async () => {
+      const e = await this.dataService.loadEvent(this.event().id)
+      if (e) {
+        this.sources.set(e.sources)
+        const actors = await this.dataService.loadEventActors(e)
+        const lazyLoaders = actors.map(async (a) => (await a.person()).data as Person)
+        this.actors.set(await Promise.all(lazyLoaders))
+      }
     })
   }
 
-  private async loadPersons(eventId: string): Promise<void> {
-    this.actors.set([])
-    this.personsLoading.set(true)
-    try {
-      const { data } = await client.models.Event.get(
-        { id: eventId },
-        { selectionSet: ['id', 'actors.person.*'] }
-      )
-      if (this.event().id !== eventId) return
-      this.actors.set(
-        (data?.actors ?? []).map(a => a.person as Person).filter(p => !!p)
-      )
-    } catch (e) {
-      console.error('Errore nel caricamento delle persone', e)
-    } finally {
-      if (this.event().id === eventId) this.personsLoading.set(false)
-    }
+  isUrl(url:string) {
+    return url.match(/^(https?:\/\/)?([\w-]+(\.[\w-]+)+)([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?$/) !== null
   }
 
-  onEscape(): void {
-    if (this.mapLocation()) {
-      this.mapClose()
-      return
-    }
-    this.close(true)
-  }
-
-  close(disabledOnEdit = false) {
-    // Quando l'utente può modificare, non chiude!
-    if ((disabledOnEdit && this.userService.user().editEnabled()) && (this.maskTouched() || this.dialogOpen()))
-      return
-
-    if (!this.maskTouched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
-      this.closed.emit()
-  }
-
-
-  /*********************** MAP PREVIEW  *************************/
+  // ----------------------------
+  // | MAP MANAGEMENT (preview)
+  // |
+  // V
 
   @ViewChild('mapDialog', { static: true })
   private mapDialog!: ElementRef<HTMLDialogElement>;
@@ -142,10 +120,6 @@ export class EventPopupComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.offEscape?.()
-  }
-  
   isMapReady = signal(false)
 
   mapLocation = signal<Coordinates | null>(null) // null means no map is visible
@@ -182,6 +156,31 @@ export class EventPopupComponent implements OnInit, OnDestroy {
       map.setZoom(16)
     }
 
+  }
+  // ^
+  // |
+  // | (END MAP MANAGEMENT)
+  // ----------------------------------------
+
+  onEscape(): void {
+    if (this.mapLocation()) {
+      this.mapClose()
+      return
+    }
+    this.close(true)
+  }
+
+  close(disabledOnEdit = false) {
+    // Quando l'utente può modificare, non chiude!
+    if ((disabledOnEdit && this.userService.user().editEnabled()) && (this.maskTouched() || this.dialogOpen()))
+      return
+
+    if (!this.maskTouched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.'))
+      this.closed.emit()
+  }
+
+  ngOnDestroy(): void {
+    this.offEscape?.()
   }
 
 }

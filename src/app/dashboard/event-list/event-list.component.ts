@@ -39,9 +39,9 @@ export class EventListComponent {
   displayedItems = computed(() => this.items().reduce((acc, item, i, arr) => {
     let currentLine = acc[acc.length - 1]
 
-    if (!currentLine.date) currentLine.date = new Date(item.start_date)
-    else if (currentLine.date.toDateString() !== new Date(item.start_date).toDateString()) {
-      currentLine = new EventLine(new Date(item.start_date))
+    if (!currentLine.date) currentLine.date = new Date(item.startDate)
+    else if (currentLine.date.toDateString() !== new Date(item.startDate).toDateString()) {
+      currentLine = new EventLine(new Date(item.startDate))
       acc.push(currentLine)
     }
     

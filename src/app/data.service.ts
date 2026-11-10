@@ -15,6 +15,13 @@ type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
 type EventPerson = Schema['EventPerson']['type']
 type Person = Schema['Person']['type']
+type Hypothesis = Schema['Hypothesis']['type']
+
+export type HypothesisActor = {
+  id: string
+  personId: string
+  role: string
+}
 
 type Filter = {
   personIds: string[]
@@ -46,11 +53,11 @@ export class DataService {
   // Segnali di stato per monitorare il caricamento e la paginazione
   readonly activeNextTokens: Signal<string | null>[] = []
   readonly hasMorePages: Signal<boolean>[] = []
-  readonly filterSubject = new BehaviorSubject<Filter | null>(null)
-  private readonly loadMoreSubject = new Subject<void>()
+  readonly eventFilterSubject = new BehaviorSubject<Filter | null>(null)
+  private readonly loadMoreEventsSubject = new Subject<void>()
 
   // Stato esposto alla UI
-  readonly isLoading = signal<boolean>(false)
+  readonly isLoadingEvents = signal<boolean>(false)
   readonly hasMore = signal<boolean>(false)
 
   private accumulatedEvents: Event[] = []
@@ -61,14 +68,35 @@ export class DataService {
     return count.data || 0;
   }
 
+  async loadPeople(): Promise<Person[]> {
+    const people: Person[] = []
+    let nextToken: string | null | undefined
+    do {
+      const { data, errors, nextToken: token } = await client.models.Person.list({ nextToken })
+      if (errors?.length) throw new Error('Errore nel caricamento delle persone: ' + errors[0]?.message)
+      people.push(...data)
+      nextToken = token
+    } while (nextToken)
+    return people
+  }
+
+
+  // ──────────────────────────────────────────────────────────────
+  //  Events
+  // ──────────────────────────────────────────────────────────────
+
+  // ---> Reactive methods <---
+  //
   /**
    * Load filtered events and append later pages as they are requested.
+   * 
+   * NB: Only for reactive usage!
    */
   readonly getEvents = toSignal(
-    this.filterSubject.pipe(
+    this.eventFilterSubject.pipe(
       debounceTime(750),
       tap(() => {
-        this.isLoading.set(true);
+        this.isLoadingEvents.set(true);
         // Ogni volta che i filtri cambiano, AZZERIAMO la memoria per ripartire da capo
         this.accumulatedEvents = [];
         this.personTokens = {};
@@ -76,22 +104,23 @@ export class DataService {
       }),
       switchMap(filter => merge(
         of(false),
-        this.loadMoreSubject.pipe(map(() => true))
+        this.loadMoreEventsSubject.pipe(map(() => true))
       ).pipe(
         exhaustMap(isLoadMore => {
           if (isLoadMore && !this.hasMore()) return of(this.accumulatedEvents)
 
           return this.fetchPage(filter, isLoadMore).pipe(
-            finalize(() => this.isLoading.set(false))
+            finalize(() => this.isLoadingEvents.set(false))
           )
         })
       ))
     ),
     { initialValue: [] }
   )
-  
-  setFilters(personIds: string[], from:Date, to:Date, viewportDisc:Coordinates | null):void {
-    this.isLoading.set(true)
+
+  /** Setting new filters triggers automatic reloading of data gathered throught getEvents */
+  setEventFilters(personIds: string[], from:Date, to:Date, viewportDisc:Coordinates | null):void {
+    this.isLoadingEvents.set(true)
     this.hasMore.set(false)
     const newFilter = { 
       personIds: personIds,
@@ -99,19 +128,17 @@ export class DataService {
       dateTo: to.toISOString(), 
       geoHash: viewportDisc ? this.geoService.computeGeoHash(viewportDisc) : null
     }
-    this.filterSubject.next(newFilter)
+    this.eventFilterSubject.next(newFilter)
   }
 
-  /** Trigger loading the next page when one is available. */
-  loadMore() {
-    if (!this.hasMore() || this.isLoading()) return
-    this.isLoading.set(true)
-    this.loadMoreSubject.next()
+  /** Trigger loading the next page for getEvents if is available. */
+  loadMoreEvents() {
+    if (!this.hasMore() || this.isLoadingEvents()) return
+    this.isLoadingEvents.set(true)
+    this.loadMoreEventsSubject.next()
   }
 
-  /**
-   * Gestisce la chiamata parallela a DynamoDB usando l'indice invertito (Data = Sort Key)
-   */
+  /* Gestisce la chiamata parallela su più persone a DynamoDB usando l'indice invertito (Data = Sort Key) */
   private fetchPage(filter: Filter | null, isLoadMore: boolean) {
     if (!filter || !filter.personIds || filter.personIds.length === 0) {
       return of([])
@@ -141,9 +168,9 @@ export class DataService {
           } : undefined,
           selectionSet: ['event.id', 'event.owner', 
             'event.type', 'event.name', 'event.description',
-            'event.start_date', 'event.end_date', 
-            'event.start_position.*', 'event.end_position.*',
-            'event.relevance', 'event.reliability'
+            'event.startDate', 'event.endDate', 
+            'event.startPosition.*', 'event.endPosition.*',
+            'event.relevance', 'event.reliability', 'event.coldCase'
           ],
           limit: 10,
           nextToken: tokenForPerson || undefined // Usiamo il token se esiste
@@ -168,7 +195,7 @@ export class DataService {
         this.accumulatedEvents = [...this.accumulatedEvents, ...newEvents]
         // 4. Rimuoviamo eventuali duplicati (stesso evento per più persone) e rioridiniamo per data di inizio
           .filter((event, index, self) => self.findIndex(e => e.id === event.id) === index)
-          .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
 
         // 5. Controlliamo se c'è ancora almeno una persona con pagine da leggere
         const moreDataAvailable = Object.values(this.personTokens).some(token => token !== null)
@@ -183,7 +210,10 @@ export class DataService {
       })
     )
   }
+  //
+  // ---> END Reactive methods <---
 
+  /** Load an event by id */
   async loadEvent(id: string): Promise<Event> {
     const { data, errors } = await client.models.Event.get({ id })
     if (errors?.length || !data?.id) {
@@ -192,12 +222,13 @@ export class DataService {
     return data as Event
   }
 
+  /** Load all event actors from the lazy loading relation */
   async loadEventActors(event: Event): Promise<EventPerson[]> {
     const data: EventPerson[] = []
     let token: string | null | undefined = null
     do {
       const page = await event.actors({ nextToken: token })
-      data.push(...page.data)
+      data.push(...page.data as EventPerson[])
       token = page.nextToken
     } while (token)
     return data as EventPerson[]
@@ -222,7 +253,7 @@ export class DataService {
       const { errors: actorErrors } = await client.models.EventPerson.create({
         eventId: data.id,
         eventName: data.name,
-        eventStartDate: data.start_date,
+        eventStartDate: data.startDate,
         eventGeoHash: data.geoHash,
         personId: actor.personId,
         role: actor.role.trim(),
@@ -233,6 +264,10 @@ export class DataService {
     }
 
     return data as Event
+  }
+
+  async getPerson(id: string):Promise<Person> {
+    return (await client.models.Person.get({ id })).data as Person
   }
 
   async deleteEvent(id: string, eventActors: string[]): Promise<void> {
@@ -261,6 +296,77 @@ export class DataService {
     const { errors } = await client.models.Person.delete({ id })
     if (errors?.length) {
       throw new Error(errors[0]?.message || 'Errore sconosciuto durante l’eliminazione della persona')
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────
+  //  Hypotheses
+  // ──────────────────────────────────────────────────────────────
+
+  async loadHypotheses(eventId?: string): Promise<Hypothesis[]> {
+    const filter = eventId ? { eventId: { eq: eventId } } : undefined
+    const hypotheses: Hypothesis[] = []
+    let nextToken: string | null | undefined
+    do {
+      const { data, errors, nextToken: token } = await client.models.Hypothesis.list({ filter, nextToken })
+      if (errors?.length) throw new Error('Errore nel caricamento delle ipotesi: ' + errors[0]?.message)
+      hypotheses.push(...data)
+      nextToken = token
+    } while (nextToken)
+    return hypotheses
+  }
+
+  async loadHypothesisActors(hypothesisId: string): Promise<HypothesisActor[]> {
+    const { data, errors } = await client.models.HypothesisPerson.list({
+      filter: { hypothesisId: { eq: hypothesisId } },
+    })
+    if (errors?.length) throw new Error('Errore nel caricamento degli attori: ' + errors[0]?.message)
+    return data.map(a => ({ id: a.id, personId: a.personId, role: a.role }))
+  }
+
+  async saveHypothesis(hypothesis: any, previousActors: string[], actors: SelectedActor[]): Promise<Hypothesis> {
+    const { data, errors } = hypothesis.id
+      ? await client.models.Hypothesis.update(hypothesis as any)
+      : await client.models.Hypothesis.create(hypothesis as any)
+    if (errors?.length || !data?.id) {
+      throw new Error('Errore durante il salvataggio dell’ipotesi')
+    }
+
+    // refresh associated actors
+    if (hypothesis.id) {
+      for (const id of previousActors) {
+        await client.models.HypothesisPerson.delete({ id })
+      }
+    }
+    for (const actor of actors) {
+      const { errors: actorErrors } = await client.models.HypothesisPerson.create({
+        hypothesisId: data.id,
+        hypothesisName: data.name,
+        personId: actor.personId,
+        role: actor.role.trim(),
+      })
+      if (actorErrors?.length) {
+        throw new Error(`L’ipotesi è stata salvata, ma non è stato possibile associare ${actor.personQuery}: ${actorErrors[0].message}`)
+      }
+    }
+
+    return data as Hypothesis
+  }
+
+  async deleteHypothesis(id: string, actorIds: string[]): Promise<void> {
+    const { errors } = await client.models.Hypothesis.delete({ id })
+    if (errors?.length) {
+      throw new Error(errors[0]?.message || 'Errore durante l’eliminazione dell’ipotesi')
+    }
+    for (const id of actorIds) {
+      await client.models.HypothesisPerson.delete({ id })
+    }
+  }
+
+  async submitPublicationRequest(hypothesisId: string): Promise<void> {
+    const { errors } = await client.models.PublicationRequest.create({ hypothesisId } as any)
+    if (errors?.length) {
+      throw new Error('Errore durante l’invio della richiesta di pubblicazione: ' + errors[0]?.message)
     }
   }
 

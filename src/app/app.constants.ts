@@ -21,3 +21,4 @@ export const DEFAULT_COORDINATES = {
     longitude: 8.9247,
     radius: 1000,
 }
+

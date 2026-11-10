@@ -52,8 +52,8 @@ for nome_file in file_sorgenti:
                 item['id'] = str(uuid.uuid4())
                 
                 # 2. Estrazione coordinate e calcolo del GeoHash
-                lat = item['start_position']['latitude']
-                lon = item['start_position']['longitude']
+                lat = item['startPosition']['latitude']
+                lon = item['startPosition']['longitude']
                 
                 # Genera il prefisso (es: "u0n35" per Garlasco)
                 item['geoHash'] = calcola_geohash(lat, lon, precision=5)

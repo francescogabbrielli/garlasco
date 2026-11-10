@@ -7,14 +7,33 @@
         <div>
             <p class="heading-note">Ipotesi, correlazioni e pattern, in un'unica vista.</p>
             <div class="context-controls">
+                @if (userService.user().editEnabled()) {
+                <button 
+                    class="context-button" 
+                    type="button" 
+                    aria-label="Elabora un nuova ipotesi" 
+                    title="Elabora una nuovo ipotesi"
+                    (click)="createNewHypothesis()">＋</button>
+                }
                 <button
-                class="context-button"
-                type="button"
-                aria-label="Apri aiuto"
-                title="Apri aiuto"
-                (click)="main.help.set({page: 'analysis/analysis', title: 'Dashboard di analisi'})">?</button>
+                    class="context-button"
+                    type="button"
+                    aria-label="Apri aiuto"
+                    title="Apri aiuto"
+                    (click)="main.help.set({page: 'analysis/analysis', title: 'Dashboard di analisi'})">?</button>
             </div>      
         </div>
     </header>
+
+    <div class="hypotheses">
+        <app-hypothesis-list></app-hypothesis-list>
+        @if (selectedHypothesis(); as hypothesis) {
+            @if (isEditing()) {
+                <app-hypothesis-mask [hypothesis]="hypothesis"></app-hypothesis-mask>
+            } @else {
+                <app-hypothesis-card [hypothesis]="hypothesis"></app-hypothesis-card>
+            }
+        }
+    </div>
     
 </main>

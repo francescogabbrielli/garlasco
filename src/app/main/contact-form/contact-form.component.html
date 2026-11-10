@@ -20,7 +20,7 @@
           <span class="field-error">{{ sendError() }}</span>
         }
 
-        <div class="dialog-scrollable">
+        <div class="scrollable">
             <form class="event-form" [formGroup]="contactForm" (ngSubmit)="submitEvent()" novalidate>
                 
                 <p>Inviato come: <strong>{{ user()?.getEmail() }}</strong></p>

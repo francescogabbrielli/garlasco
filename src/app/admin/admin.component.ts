@@ -3,14 +3,13 @@ import { ImportComponent } from './import/import.component';
 import { ExportComponent } from './export/export.component';
 import { UsersComponent } from './users/users.component';
 import { MainComponent } from '../main/main.component';
-import { HypothesisListComponent } from '../analysis/hypothesis-list/hypothesis-list.component';
 
 type AdminSection = 'users' | 'data'
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [ImportComponent, ExportComponent, UsersComponent, HypothesisListComponent],
+  imports: [ImportComponent, ExportComponent, UsersComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css',
 })
