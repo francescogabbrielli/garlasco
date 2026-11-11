@@ -103,7 +103,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       },
       reliability: e.reliability ?? this.reliabilityOptions.length,
       relevance: e.relevance,
-      coldCase: e.coldCase
+      coldCase: e.coldCase ? true : false
     })
 
     if (this.event()?.id !== e.id) return
@@ -249,7 +249,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       sources: this.sources,
       reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
       relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
-      coldCase: this.isAdmin() ? this.eventForm.controls.coldCase.value : false
+      coldCase: this.isAdmin() ? (this.eventForm.controls.coldCase.value ? 'true' : null) : undefined
     }
 
     try {

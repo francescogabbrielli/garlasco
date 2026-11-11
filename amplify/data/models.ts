@@ -53,9 +53,10 @@ export const Event = a.model({
   
   //hypotheses
   hypothesis: a.hasMany('Hypothesis', 'eventId'),
-  coldCase: a.boolean().required().default(false)
+  coldCase: a.string()
 })
   .authorization(memberPermissions)
+  .secondaryIndexes(index => [index('coldCase')])
 
 export const EventRelated = a.model({
   relatesToId: a.id().required(),
