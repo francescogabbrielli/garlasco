@@ -1,7 +1,9 @@
+import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ContactFormComponent } from './contact-form.component';
 import { vi } from 'vitest';
 import { UserProfileService } from '../../user-profile.service';
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 
 describe('ContactFormComponent', () => {
   let component: ContactFormComponent
@@ -54,6 +56,9 @@ describe('ContactFormComponent', () => {
 
   it('should successfully submit when the form is valid', async () => {
     fixture.componentRef.setInput('user', mockUserData)
+    fixture.detectChanges()
+    const splash = fixture.debugElement.query(By.directive(SplashDialogComponent)).componentInstance as SplashDialogComponent;
+    const showSplash = vi.spyOn(splash, 'show').mockResolvedValue()
     
     component.contactForm.setValue({
       reason: 'Richiesta informazioni',
@@ -75,6 +80,7 @@ describe('ContactFormComponent', () => {
     expect(closeEmitSpy).not.toHaveBeenCalled()
     expect(component.sendError()).toBe('')
     expect(component.isSending()).toBe(false)
+    expect(showSplash).toHaveBeenCalledOnce()
   })
 
   it('should handle errors returned in the GraphQL errors array correctly', async () => {

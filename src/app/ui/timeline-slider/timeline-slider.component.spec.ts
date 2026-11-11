@@ -17,7 +17,6 @@ describe('TimelineSliderComponent', () => {
     fixture.componentRef.setInput('initialMax', new Date(2024, 1, 1));
     fixture.componentRef.setInput('minimum', new Date(2024, 0, 1));
     fixture.componentRef.setInput('maximum', new Date(2024, 1, 1));
-    fixture.componentRef.setInput('active', true)
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -36,7 +35,6 @@ describe('TimelineSliderComponent', () => {
     zeroFixture.componentRef.setInput('initialMax', new Date(2 * zeroComponent.ONE_DAY));
     zeroFixture.componentRef.setInput('minimum', new Date(-2 * zeroComponent.ONE_DAY));
     zeroFixture.componentRef.setInput('maximum', new Date(2 * zeroComponent.ONE_DAY));
-    zeroFixture.componentRef.setInput('active', true);
     zeroFixture.detectChanges();
 
     expect(zeroComponent.minTimestamp).toBe(0);
@@ -52,9 +50,13 @@ describe('TimelineSliderComponent', () => {
     fixture.componentRef.setInput('maximum', maximum);
     component.currentAbsoluteMin = minimum.getTime();
     component.currentAbsoluteMax = new Date(2024, 0, 6).getTime();
+    Object.defineProperties(component.slider.nativeElement, {
+      offsetLeft: { configurable: true, value: 0 },
+      offsetWidth: { configurable: true, value: 100 },
+    });
     const preventDefault = vi.fn();
 
-    component.onWheel({ ctrlKey: true, deltaY: 1, preventDefault } as unknown as WheelEvent);
+    component.onWheel({ ctrlKey: true, deltaY: 1, clientX: 50, preventDefault } as unknown as WheelEvent);
 
     expect(preventDefault).toHaveBeenCalledOnce();
     expect(component.currentAbsoluteMin).toBeGreaterThanOrEqual(minimum.getTime());
