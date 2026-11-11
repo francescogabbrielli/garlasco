@@ -44,12 +44,12 @@ export class EventMaskComponent extends CaseMaskComponent {
 
   constructor() {
     super()
-    effect(() => {
+    const delayed = effect(() => {
       // re-run once the people list is available so actor names can be resolved
       if (this.people().length === 0) return
       this.loadEvent() 
+      delayed.destroy()
     })
-    effect(() => this.modified.emit(this.isModified()))
   }
 
   loadedEventActors = [] as string[]
@@ -82,7 +82,7 @@ export class EventMaskComponent extends CaseMaskComponent {
 
   private async loadEvent(): Promise<void> {
     const id = this.event()?.id
-    if (!id) return
+    if (!id) return this.loadingComplete(value => this.modified.emit(value))
     const e = await this.dataService.getEvent(id)
     this.eventForm.patchValue({
       owner: e.owner,
@@ -124,8 +124,8 @@ export class EventMaskComponent extends CaseMaskComponent {
     )
 
     this.sources.set(e.sources ?? [])
-
-    this.eventForm.markAsPristine()
+    
+    this.loadingComplete(value => this.modified.emit(value))
   }
 
   geoService = inject(GeoService)
@@ -161,12 +161,6 @@ export class EventMaskComponent extends CaseMaskComponent {
     }),
     coldCase: new FormControl(false, { nonNullable: true })
   })
-
-  protected isModified = toSignal(this.eventForm.events.pipe(
-      filter((event) => event instanceof PristineChangeEvent),
-      map(event => !event.pristine),
-      distinctUntilChanged()
-    ), {initialValue: this.getForm().dirty})
 
   readonly isSaving = signal(false)
 

@@ -270,3 +270,10 @@
 }
 
 <app-splash-dialog #hypothesisSplash defaultMessage="Operazione sconosciuta"></app-splash-dialog>
+
+<!-- Caricamento principale (blocca tutto) -->
+@if (isLoading()) {
+  <div class="loading-backdrop">
+    <img src="assets/loading.gif" alt="Caricamento in corso..." />
+  </div>
+}

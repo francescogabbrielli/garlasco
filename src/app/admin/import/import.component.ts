@@ -150,6 +150,7 @@ export class ImportComponent {
 
         // AWS Amplify inserisce automaticamente l'ID univoco mancante
         const { data: createdEvent, errors: eventErrors } = await client.models.Event.create({
+          ...(event.id ? { id: event.id } : {}),
           owner: event.owner || ownerId,
           type: event.type,
           name: event.name,

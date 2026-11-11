@@ -87,10 +87,11 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
 
   constructor() {
     super()
-    effect(() => {
+    const delayed = effect(() => {
       // re-run once the people list is available so actor names can be resolved
       if (this.people().length === 0) return
       this.load()
+      delayed.destroy()
     })
   }
 
@@ -114,8 +115,9 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
         } : undefined,
       })
       this.sources.set(h.sources ? [...h.sources] : [])
-      this.loadActors(h)
+      await this.loadActors(h)      
     }
+    this.loadingComplete(value => this.modified.emit(value))
   }
 
   private async loadActors(hypothesis: Hypothesis): Promise<void> {
@@ -130,8 +132,8 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
           role: a.role,
         })),
       )
-    } catch {
-      // silently fail
+    } catch (e) {
+      console.log("Errore nel caricamento attori ipotesi", e)
     }
   }
 

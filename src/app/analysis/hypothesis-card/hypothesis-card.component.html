@@ -9,23 +9,17 @@
 
   <h3 class="card-title">{{ hypothesis().name }}</h3>
 
-  <p class="card-description">{{ hypothesis().description }}</p>
+  <pre class="card-description">{{ hypothesis().description }}</pre>
 
   <div class="card-meta">
-    @if (hypothesis().startDate; as d) {
-      <time [attr.datetime]="d">{{ d | date: 'MMM yyyy' }}</time>
-    }
-    @if (hypothesis().endDate) {
-      <span>–</span>
-      <time [attr.datetime]="hypothesis().endDate">{{ hypothesis().endDate | date: 'MMM yyyy' }}</time>
+    @if (hypothesis().updatedAt; as d) {
+      <time [attr.datetime]="d">{{ d | date: 'dd MMM yyyy' }}</time>
     }
   </div>
 
   <div class="card-actors">
-    <ul class="actor-list">
       @for (actor of actors(); track actor.id) {
-        <li class="actor-chip">{{ actor.name }} {{ actor.surname}}</li>
+        <span class="badge">{{ actor.name }} {{ actor.surname}}</span>
       }
-    </ul>
   </div>
 </article>

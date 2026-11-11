@@ -78,7 +78,8 @@ export class AnalysisComponent implements OnInit {
   }  
 
   /** Refresh person's list if a person has been created, updated, or deleted */
-  updatePeople(event: PersonCaseEvent) {
+  update(event: PersonCaseEvent) {
+    this.popupStatus.touched.set(false)
     if (event && event.personSaved.length) {
       this.people.update((list: Person[]) => {
         const savedMap = new Map(event.personSaved.map(p => [p.id, p]))
@@ -91,6 +92,7 @@ export class AnalysisComponent implements OnInit {
     if (event && event.personDeleted?.length) {
       this.people.update((list: Person[]) => list.filter(p => !event.personDeleted.includes(p.id)))
     }
+    this.loadColdCases()
   }
 
   createNewHypothesis() {
@@ -99,6 +101,7 @@ export class AnalysisComponent implements OnInit {
 
   openPopup(edit: Hypothesis | null = null) {
     this.selectedHypothesis.set(edit)
+    this.popupStatus.touched.set(false)
     this.offEscape = this.escapeStack.push(() => this.closePopup())
     if (this.isEditing()) {
       this.popupStatus.open.set(true)
@@ -106,8 +109,10 @@ export class AnalysisComponent implements OnInit {
   }
 
   closePopup() {
-    this.offEscape?.()
-    this.popupStatus.open.set(false)
+    if (!this.popupStatus.touched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.')) {
+      this.offEscape?.()
+      this.popupStatus.open.set(false)
+    }
   }
 
 }

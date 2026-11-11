@@ -569,11 +569,25 @@ html[data-theme="dark"] {
   --page: #0e1011;
   --surface: #141819;
   --border: #46534e;
-  --highlight: #5bb1b1;
+  --highlight: #51a3da;
   /**--lowlight: #175c94; */
   --text: #d8d8c8;
   --text-muted: #a0aaa6;
   --accent: #29c797;
   --danger: #df5762;
   --hover: #364444;
+  --backdrop: rgba(204, 201, 213, 0.46);;
+}
+
+.loading-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
 }

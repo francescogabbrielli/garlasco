@@ -1,6 +1,7 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MainComponent } from '../../main/main.component';
+import { DataService } from '../../data.service';
 
 import { EventPopupComponent } from './event-popup.component';
 import { UserData, UserProfileService } from '../../user-profile.service';
@@ -43,9 +44,24 @@ describe('EventPopupComponent', () => {
   }
 
   beforeEach(async () => {
+    vi.stubGlobal('IntersectionObserver', class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    });
+
     await TestBed.configureTestingModule({
       imports: [EventPopupComponent],
-      providers: [{ provide: MainComponent, useValue: { isLoading: signal(false) } }]
+      providers: [
+        { provide: MainComponent, useValue: { isLoading: signal(false) } },
+        {
+          provide: DataService,
+          useValue: {
+            getEvent: async () => ({ ...EVENT, sources: [] }),
+            loadEventActors: async () => [],
+          },
+        },
+      ]
     }).compileComponents();
   });
 

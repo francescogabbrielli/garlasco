@@ -241,26 +241,26 @@
         @if (isAdmin()) {
         <div class="event-admin-fields">
             <div class="form-field">
-            <label for="event-reliability">Attendibilità</label>
-            <select class="search-control" id="event-reliability" formControlName="reliability">
-                @for (option of reliabilityOptions; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-            </select>
+                <label for="event-reliability">Attendibilità</label>
+                <select class="search-control" id="event-reliability" formControlName="reliability">
+                    @for (option of reliabilityOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                    }
+                </select>
             </div>
 
             <div class="form-field">
-            <label for="event-relevance">Rilevanza</label>
-            <select class="search-control" id="event-relevance" formControlName="relevance">
-                @for (option of relevanceOptions; track option.value) {
-                <option [ngValue]="option.value">{{ option.label }}</option>
-                }
-            </select>
+                <label for="event-relevance">Rilevanza</label>
+                <select class="search-control" id="event-relevance" formControlName="relevance">
+                    @for (option of relevanceOptions; track option.value) {
+                    <option [ngValue]="option.value">{{ option.label }}</option>
+                    }
+                </select>
             </div>
 
             <div class="form-field">
-            <label for="event-cold-case">Cold case</label>
-            <input id="event-cold-case" type="checkbox" formControlName="coldCase">
+                <label for="event-cold-case">Cold case</label>
+                <input id="event-cold-case" type="checkbox" formControlName="coldCase">
             </div>
         </div>
         }
@@ -306,3 +306,10 @@
 }
 
 <app-splash-dialog #eventSplash defaultMessage="Operazione sconosciuta"></app-splash-dialog>
+
+<!-- Caricamento principale (blocca tutto) -->
+@if (isLoading()) {
+  <div class="loading-backdrop">
+    <img src="assets/loading.gif" alt="Caricamento in corso..." />
+  </div>
+}

@@ -1,4 +1,4 @@
-import { computed, inject, Signal, signal } from '@angular/core';
+import { computed, effect, inject, Injector, Signal, signal } from '@angular/core';
 import { UserProfileService } from '../../user-profile.service';
 import { FormGroup, PristineChangeEvent, } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
@@ -27,8 +27,20 @@ export abstract class CaseMaskComponent {
   protected COORDS_FORMAT = new Intl.NumberFormat('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
 
   userService = inject(UserProfileService)
+  private injector = inject(Injector)
 
   isAdmin = computed(() => this.userService.user().isAdmin())
+
+  isLoading = signal(true)
+
+  protected loadingComplete(callback: (val:boolean) => void):void {
+    this.isLoading.set(false)
+    this.getForm().markAsPristine()
+    this.getForm().events.pipe(
+      filter((event) => event instanceof PristineChangeEvent),
+      map(event => !event.pristine),
+      distinctUntilChanged()).subscribe(callback)
+  }
 
   onKeyDown(event: KeyboardEvent) {
     // Verifica se è stato premuto il tasto Invio

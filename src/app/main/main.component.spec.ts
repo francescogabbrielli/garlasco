@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { AuthenticatorService } from '@aws-amplify/ui-angular';
+import { DataService } from '../data.service';
 import { PREFERENCE_KEY_THEME, UserData, UserProfileService } from '../user-profile.service';
 import { MainComponent } from './main.component';
 
@@ -39,6 +40,7 @@ describe('MainComponent', () => {
       providers: [
         provideRouter([]),
         { provide: AuthenticatorService, useValue: { signOut } },
+        { provide: DataService, useValue: { getTableCount: vi.fn().mockResolvedValue(0) } },
         {
           provide: UserProfileService,
           useValue: {

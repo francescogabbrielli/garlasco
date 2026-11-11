@@ -25,16 +25,20 @@
         </div>
     </header>
 
-    <label for="cold-case-select">Caso</label>
-    <select
-        class="search-control"
-        id="cold-case-select"
-        [value]="selectedEvent()?.id ?? ''"
-        (change)="selectEvent($event)">
-        @for (event of coldCases(); track event.id) {
-        <option [value]="event.id">{{ event.name }}</option>
-        }
-    </select>
+    <div class="form-field">
+        <label for="cold-case-select">Caso</label>
+        <select
+            class="search-control"
+            id="cold-case-select"
+            [value]="selectedEvent()?.id ?? ''"
+            (change)="selectEvent($event)">
+            @for (event of coldCases(); track event.id) {
+            <option [value]="event.id">{{ event.name }}</option>
+            }
+        </select>
+    </div>
+
+    <hr>
 
     @if (selectedEvent(); as event) {
 
@@ -97,7 +101,7 @@
                         [people]="people()"
                         [(submitError)]="popupStatus.error"
                         (modified)="popupStatus.touched.set($event)"
-                        (saved)="closePopup()" ></app-hypothesis-mask>
+                        (saved)="update($event); closePopup()" ></app-hypothesis-mask>
                 </div>
             } @placeholder {
                 <div>Loading Hypothesis Mask...</div>
