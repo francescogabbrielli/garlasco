@@ -21,7 +21,7 @@
         }
 
         <div class="scrollable">
-            <form class="event-form" [formGroup]="contactForm" (ngSubmit)="submitEvent()" novalidate>
+            <form class="contact-form" [formGroup]="contactForm" (ngSubmit)="submitEvent()" novalidate>
                 
                 <p>Inviato come: <strong>{{ user()?.getEmail() }}</strong></p>
                 
@@ -39,8 +39,8 @@
                 </div>
 
                 <div class="form-field form-field-wide">
-                <label for="event-description">Messaggio</label>
-                <textarea class="search-control" id="event-description" rows="4" formControlName="message" required></textarea>
+                <label for="case-description">Messaggio</label>
+                <textarea class="search-control" id="case-description" rows="4" formControlName="message" required></textarea>
                 @if (contactForm.controls.message.invalid && (contactForm.controls.message.touched || contactForm.controls.message.dirty)) {
                     <span class="field-error">Inserisci una descrizione.</span>
                 }

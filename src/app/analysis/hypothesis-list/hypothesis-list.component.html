@@ -3,7 +3,13 @@
     <div class="scrollable">
         <ul>
             @for (item of list(); track item.id) {
-            <li>{{ item.name }}</li>
+            <li>
+                <app-hypothesis-card
+                    [hypothesis]="item"
+                    [selected]="item === selectedItem()"
+                    [people]="people()"
+                ></app-hypothesis-card>
+            </li>
             }
         </ul>
     </div>

@@ -1,14 +1,14 @@
 
-    <form class="event-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" (keydown)="onKeyDown($event)" novalidate>
+    <form class="case-form" [formGroup]="eventForm" (ngSubmit)="submitEvent()" (keydown)="onKeyDown($event)" novalidate>
 
         @if (isAdmin()) {
             <div class="form-field">
-                <label for="event-id">ID</label>
-                <input type="text" class="search-control" id="event-id" readonly disabled [value]="event()?.id || ''">
+                <label for="case-id">ID</label>
+                <input type="text" class="search-control" id="case-id" readonly disabled [value]="event()?.id || ''">
             </div>
             <div class="form-field">
-                <label for="event-owner">Proprietario</label>
-                <input type="text" class="search-control" id="event-owner" readonly disabled [value]="event()?.owner">
+                <label for="case-owner">Proprietario</label>
+                <input type="text" class="search-control" id="case-owner" readonly disabled [value]="event()?.owner">
             </div>
         }
 
@@ -26,16 +26,16 @@
         </div>
 
         <div class="form-field">
-        <label for="event-name">Nome evento</label>
-        <input class="search-control" id="event-name" type="text" formControlName="name" required />
+        <label for="case-name">Nome evento</label>
+        <input class="search-control" id="case-name" type="text" formControlName="name" required />
         @if (eventForm.controls.name.invalid && (eventForm.controls.name.touched || eventForm.controls.name.dirty)) {
             <span class="field-error">Inserisci il nome dell'evento.</span>
         }
         </div>
 
         <div class="form-field form-field-wide">
-        <label for="event-description">Descrizione</label>
-        <textarea class="search-control" id="event-description" rows="4" formControlName="description" required></textarea>
+        <label for="case-description">Descrizione</label>
+        <textarea class="search-control" id="case-description" rows="4" formControlName="description" required></textarea>
         @if (eventForm.controls.description.invalid && (eventForm.controls.description.touched || eventForm.controls.description.dirty)) {
             <span class="field-error">Inserisci una descrizione.</span>
         }
@@ -60,21 +60,21 @@
                 <div class="actor-person-role-row">
                     <div class="actor-person-role-fields">
                         <div class="form-field">
-                            <label [for]="'event-person-' + actor.rowId">Persona</label>
-                            <div class="event-person">
+                            <label [for]="'case-person-' + actor.rowId">Persona</label>
+                            <div class="case-person">
                                 <input type="text" required
                                     class="search-control"
-                                    [id]="'event-person-' + actor.rowId"
+                                    [id]="'case-person-' + actor.rowId"
                                     [matAutocomplete]="personAutocomplete"
                                     [value]="actor.personQuery"
-                                    [attr.aria-invalid]="actorSelectionError && !isActorPersonValid(actor) ? 'true' : null"
+                                    [attr.aria-invalid]="actorStatus.selectionError() && !isActorPersonValid(actor) ? 'true' : null"
                                     [disabled]="!allPeople().length"
                                     #trigger="matAutocompleteTrigger"
                                     (blur)="closeAutocomplete(trigger)"
                                     (input)="updateActorPersonQuery(actor.rowId, $event)"
                                 />
                                 @if (isAdmin()) {
-                                <button type="button" class="context-button" (click)="openPersonDialog(actor.rowId)">✎</button>
+                                <button type="button" class="context-button" (click)="openPersonDialogFor(actor.rowId)">✎</button>
                                 }
                             </div>
                             <mat-autocomplete
@@ -84,30 +84,30 @@
                                 (optionSelected)="onPersonOptionSelected(actor.rowId, $event.option.value)"
                             >
                             @if (isAdmin() && !actor.personQuery) {
-                                <mat-option [value]="newPersonOption" class="new-person-option">+ Nuova persona…</mat-option>
+                                <mat-option [value]="NEW_PERSON_OPTION" class="new-person-option">+ Nuova persona…</mat-option>
                             }
                             @for (person of filteredPeople(actor); track person.id) {
                                 <mat-option [value]="person">{{ person.name }} {{ person.surname }}</mat-option>
                             }
                             </mat-autocomplete>
-                            @if (actorSelectionError && !isActorPersonValid(actor)) {
+                            @if (actorStatus.selectionError() && !isActorPersonValid(actor)) {
                             <span class="field-error">Seleziona una persona dall'elenco.</span>
                             }
                         </div>
 
                         <div class="form-field">
-                            <label [for]="'event-person-role-' + actor.rowId">Ruolo</label>
+                            <label [for]="'case-person-role-' + actor.rowId">Ruolo</label>
                             <input
                                 class="search-control"
-                                [id]="'event-person-role-' + actor.rowId"
+                                [id]="'case-person-role-' + actor.rowId"
                                 type="text"
                                 [value]="actor.role"
-                                [attr.aria-invalid]="actorRoleError && !actor.role.trim() ? 'true' : null"
+                                [attr.aria-invalid]="actorStatus.roleError() && !actor.role.trim() ? 'true' : null"
                                 (input)="updateActorRole(actor.rowId, $event)"
                                 (change)="modified.emit(true)"
                                 required
                             />
-                            @if (actorRoleError && !actor.role.trim()) {
+                            @if (actorStatus.roleError() && !actor.role.trim()) {
                             <span class="field-error">Indica il ruolo della persona.</span>
                             }
                         </div>
@@ -131,8 +131,8 @@
         <legend>Inizio</legend>
 
         <div class="form-field">
-            <label class="field-group-label" for="event-start-date">Data</label>
-            <input class="search-control" id="event-start-date" type="datetime-local" formControlName="date" required />
+            <label class="field-group-label" for="case-start-date">Data</label>
+            <input class="search-control" id="case-start-date" type="datetime-local" formControlName="date" required />
             @if (eventForm.controls.start.controls.date.invalid && (eventForm.controls.start.controls.date.touched || eventForm.controls.start.controls.date.dirty)) {
             <span class="field-error">Indica data e ora dell'evento.</span>
             }
@@ -174,8 +174,8 @@
         <legend>Fine</legend>
 
         <div class="form-field">
-            <label class="field-group-label" for="event-end-date">Data <span>(opzionale)</span></label>
-            <input class="search-control" id="event-end-date" type="datetime-local" formControlName="date" />
+            <label class="field-group-label" for="case-end-date">Data <span>(opzionale)</span></label>
+            <input class="search-control" id="case-end-date" type="datetime-local" formControlName="date" />
         </div>
 
         <div class="form-field">
@@ -212,16 +212,16 @@
                 <p>Seleziona una o più fonti.</p>
                 <button id="add-source-button" class="clear-control" type="button" 
                     (click)="addSource()"
-                    [disabled]="cannotAddSource()"
+                    [disabled]="sourceStatus.cannotAdd()"
                 >Aggiungi fonte</button>
             </div>
             <div class="source-list">
-                @for (source of sources; track source; let i=$index) {
+                @for (source of sources(); track source; let i=$index) {
                     <div class="source-row">
                         <div class="form-field">
-                            <label [for]="'event-source-' + i">Fonte {{i+1}}</label>
-                            <input class="search-control" type="text" required [id]="'event-source-' + i" [value]="source" (change)="updateSource(i, $event)">
-                            @if (sourceError === i) {
+                            <label [for]="'case-source-' + i">Fonte {{i+1}}</label>
+                            <input class="search-control" type="text" required [id]="'case-source-' + i" [value]="source" (change)="updateSource(i, $event)">
+                            @if (sourceStatus.error() === i) {
                                 <span class="field-error">Specifica la fonte.</span>
                             }
                         </div>
@@ -257,6 +257,11 @@
                 }
             </select>
             </div>
+
+            <div class="form-field">
+            <label for="event-cold-case">Cold case</label>
+            <input id="event-cold-case" type="checkbox" formControlName="coldCase">
+            </div>
         </div>
         }
 
@@ -280,9 +285,9 @@
     </form>
 
 
-@if (personDialogOpen()) {
+@if (isPersonDialogOpen()) {
     <app-person-popup 
-        [edited]="editPerson()"
+        [edited]="editPerson.person()"
         (saved)="onPersonSaved($event)"
         (deleted)="onPersonDeleted($event)" 
         (closed)="closePersonDialog()"/>

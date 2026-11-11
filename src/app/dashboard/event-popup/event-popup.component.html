@@ -46,6 +46,8 @@
 
     @if (isEditor()) {
 
+    <section class="mask">
+
       @defer (on viewport) {
 
         @if (submitError()) {
@@ -57,13 +59,13 @@
             [event]="event()" 
             [people]="people()"
             [(submitError)]="submitError"
-            (dialogOpen)="dialogOpen.set($event)"
             (modified)="maskTouched.set($event)"
             (saved)="saved.emit($event); closed.emit()" ></app-event-mask>
         </div>
       } @placeholder {
         <div>Loading Event Mask...</div>
       }
+    </section>
 
     } @else {
       

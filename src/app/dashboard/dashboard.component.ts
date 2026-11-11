@@ -15,7 +15,7 @@ import { UserProfileService, PREFERENCE_KEY_DASHBOARD_FILTERS } from '../user-pr
 
 import { MainComponent } from '../main/main.component';
 import { toObservable } from '@angular/core/rxjs-interop';
-import { EventMaskEvent } from './event-mask/event-mask.component';
+import { PersonCaseEvent } from '../forms/case-mask/case-mask.component';
 
 const client = generateClient<Schema>()
 
@@ -39,6 +39,8 @@ type Filter = {
 })
 export class DashboardComponent implements OnInit {
 
+  private readonly PEOPLE_SORTER = (a: Person, b: Person) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)
+
   protected dataService = inject(DataService)
   protected geoService = inject(GeoService)
   protected userService = inject(UserProfileService)
@@ -48,14 +50,11 @@ export class DashboardComponent implements OnInit {
   readonly MAX_DATE = new Date()
   readonly MIN_DATE = new Date(2007, 1, 1)
 
-  private readonly PEOPLE_SORTER = (a: Person, b: Person) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)
-
   // L'unico accumulatore locale per Mappa + Lista
   events = signal<Event[]>([])
 
   // Solo fatti
   facts = computed<Event[]>(() => this.events().filter(e => e.type === "Fatto"))
-
 
   readonly defaultFilters:Filter = {
     personIds: [],
@@ -95,7 +94,7 @@ export class DashboardComponent implements OnInit {
 
   private async loadPeople(): Promise<void> {
     try {
-      const peps = await this.dataService.loadPeople()
+      const peps = await this.dataService.loadPersons()
       this.people.set(peps.sort(this.PEOPLE_SORTER) ?? [])
     } catch {
       this.peopleError.set('Impossibile caricare le persone.')
@@ -107,7 +106,7 @@ export class DashboardComponent implements OnInit {
   constructor() {
     // Sincronizziamo il Signal 'getEvents' del Service con il nostro accumulatore locale.
     // Ogni volta che il Service completa il debounce e lo switchMap, resetta l'array iniziale.
-    effect(() => this.events.set(this.dataService.getEvents().filter(
+    effect(() => this.events.set(this.dataService.loadEvents().filter(
       e => e.reliability || e.owner === this.userService.user().getId() || this.userService.user().isAdmin())
     ))
 
@@ -127,7 +126,7 @@ export class DashboardComponent implements OnInit {
   }
 
   /** Refresh person's list if a person has been created, updated, or deleted */
-  updatePeople(event: EventMaskEvent) {
+  updatePeople(event: PersonCaseEvent) {
     if (event && event.personSaved.length) {
       this.people.update((list: Person[]) => {
         const savedMap = new Map(event.personSaved.map(p => [p.id, p]))

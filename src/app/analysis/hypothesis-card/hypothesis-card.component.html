@@ -22,14 +22,10 @@
   </div>
 
   <div class="card-actors">
-    @if (loading()) {
-      <span class="actors-loading">⋯</span>
-    } @else if (actors().length) {
-      <ul class="actor-list">
-        @for (actor of actors(); track actor.id) {
-          <li class="actor-chip">{{ actorLabel(actor) }}<span class="actor-role">{{ actor.role }}</span></li>
-        }
-      </ul>
-    }
+    <ul class="actor-list">
+      @for (actor of actors(); track actor.id) {
+        <li class="actor-chip">{{ actor.name }} {{ actor.surname}}</li>
+      }
+    </ul>
   </div>
 </article>

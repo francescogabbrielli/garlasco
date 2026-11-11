@@ -58,7 +58,7 @@ describe('ImportComponent', () => {
       type: 'Cronista' as const,
       initials: 'MR',
       profession: 'Studente',
-      events: ['event-person-link-123'],
+      events: ['case-person-link-123'],
     };
 
     expect(toPersonCreateInput(person)).toEqual({

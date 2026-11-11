@@ -12,16 +12,11 @@ import { GeoService } from './geo.service';
 const client = generateClient<Schema>();
 
 type Coordinates = Schema['Coordinates']['type']
+type Person = Schema['Person']['type']
 type Event = Schema['Event']['type']
 type EventPerson = Schema['EventPerson']['type']
-type Person = Schema['Person']['type']
 type Hypothesis = Schema['Hypothesis']['type']
-
-export type HypothesisActor = {
-  id: string
-  personId: string
-  role: string
-}
+type HypothesisPerson = Schema['HypothesisPerson']['type']
 
 type Filter = {
   personIds: string[]
@@ -36,12 +31,6 @@ interface Pagination {
   hasMore: boolean
 }
 
-export type SelectedActor = { 
-  rowId: number;
-  personId: string;
-  personQuery: string;
-  role: string
-}
 
 @Injectable({
   providedIn: 'root',
@@ -68,7 +57,12 @@ export class DataService {
     return count.data || 0;
   }
 
-  async loadPeople(): Promise<Person[]> {
+  async getPerson(id: string):Promise<Person> {
+    return (await client.models.Person.get({ id })).data as Person
+  }
+
+  /** Load all persons (no pagination) */
+  async loadPersons(): Promise<Person[]> {
     const people: Person[] = []
     let nextToken: string | null | undefined
     do {
@@ -85,14 +79,18 @@ export class DataService {
   //  Events
   // ──────────────────────────────────────────────────────────────
 
-  // ---> Reactive methods <---
-  //
+  // --------------------
+  // Reactive methods 
+  // |
+  // |
+  // V
+
   /**
    * Load filtered events and append later pages as they are requested.
    * 
    * NB: Only for reactive usage!
    */
-  readonly getEvents = toSignal(
+  readonly loadEvents = toSignal(
     this.eventFilterSubject.pipe(
       debounceTime(750),
       tap(() => {
@@ -210,14 +208,17 @@ export class DataService {
       })
     )
   }
-  //
-  // ---> END Reactive methods <---
+  // |
+  // |
+  // V
+  // END Reactive methods
+  // ---------------------
 
   /** Load an event by id */
-  async loadEvent(id: string): Promise<Event> {
+  async getEvent(id: string): Promise<Event> {
     const { data, errors } = await client.models.Event.get({ id })
     if (errors?.length || !data?.id) {
-      throw new Error('Errore durante il caricamento dell’evento: '+ (errors?.[0]?.message || 'Errore sconosciuto'));
+      throw new Error('Errore durante il caricamento dell’evento "' + id + '":' + (errors?.[0]?.message || 'Errore sconosciuto'));
     }
     return data as Event
   }
@@ -234,7 +235,7 @@ export class DataService {
     return data as EventPerson[]
   }
 
-  async saveEvent(event: any, previousEventActors:  string[], actors: SelectedActor[]): Promise<Event> {
+  async saveEvent(event: any, previousEventActors:  string[], actors: {role: string, personId: string}[]): Promise<Event> {
     // create / save event
     const { data, errors } = event.id
       ? await client.models.Event.update(event)
@@ -259,15 +260,11 @@ export class DataService {
         role: actor.role.trim(),
       })
       if (actorErrors?.length) {
-        throw new Error(`L’evento è stato creato, ma non è stato possibile associare ${actor.personQuery}: ${actorErrors[0].message}`)
+        throw new Error(`L’evento è stato creato, ma non è stato possibile associare ${actor.personId}: ${actorErrors[0].message}`)
       }
     }
 
     return data as Event
-  }
-
-  async getPerson(id: string):Promise<Person> {
-    return (await client.models.Person.get({ id })).data as Person
   }
 
   async deleteEvent(id: string, eventActors: string[]): Promise<void> {
@@ -303,6 +300,15 @@ export class DataService {
   //  Hypotheses
   // ──────────────────────────────────────────────────────────────
 
+  /** Load an hypthesis by id */
+  async getHypothesis(id: string): Promise<Hypothesis> {
+    const { data, errors } = await client.models.Hypothesis.get({ id })
+    if (errors?.length || !data?.id) {
+      throw new Error('Errore durante il caricamento dell’ipotesi "' + id + '": '+ (errors?.[0]?.message || 'Errore sconosciuto'));
+    }
+    return data as Hypothesis
+  }
+
   async loadHypotheses(eventId?: string): Promise<Hypothesis[]> {
     const filter = eventId ? { eventId: { eq: eventId } } : undefined
     const hypotheses: Hypothesis[] = []
@@ -316,15 +322,18 @@ export class DataService {
     return hypotheses
   }
 
-  async loadHypothesisActors(hypothesisId: string): Promise<HypothesisActor[]> {
-    const { data, errors } = await client.models.HypothesisPerson.list({
-      filter: { hypothesisId: { eq: hypothesisId } },
-    })
-    if (errors?.length) throw new Error('Errore nel caricamento degli attori: ' + errors[0]?.message)
-    return data.map(a => ({ id: a.id, personId: a.personId, role: a.role }))
+  async loadHypothesisActors(hypothesis: Hypothesis): Promise<HypothesisPerson[]> {
+    const data: HypothesisPerson[] = []
+    let token: string | null | undefined = null
+    do {
+      const page = await hypothesis.actors({ nextToken: token })
+      data.push(...page.data as HypothesisPerson[])
+      token = page.nextToken
+    } while (token)
+    return data as HypothesisPerson[]
   }
 
-  async saveHypothesis(hypothesis: any, previousActors: string[], actors: SelectedActor[]): Promise<Hypothesis> {
+  async saveHypothesis(hypothesis: any, previousActorsIds: string[], actors: {role: string, personId: string}[]): Promise<Hypothesis> {
     const { data, errors } = hypothesis.id
       ? await client.models.Hypothesis.update(hypothesis as any)
       : await client.models.Hypothesis.create(hypothesis as any)
@@ -334,7 +343,7 @@ export class DataService {
 
     // refresh associated actors
     if (hypothesis.id) {
-      for (const id of previousActors) {
+      for (const id of previousActorsIds) {
         await client.models.HypothesisPerson.delete({ id })
       }
     }
@@ -346,7 +355,7 @@ export class DataService {
         role: actor.role.trim(),
       })
       if (actorErrors?.length) {
-        throw new Error(`L’ipotesi è stata salvata, ma non è stato possibile associare ${actor.personQuery}: ${actorErrors[0].message}`)
+        throw new Error(`L’ipotesi è stata salvata, ma non è stato possibile associare ${actor.personId}: ${actorErrors[0].message}`)
       }
     }
 

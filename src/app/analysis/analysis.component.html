@@ -26,14 +26,73 @@
     </header>
 
     <div class="hypotheses">
-        <app-hypothesis-list></app-hypothesis-list>
-        @if (selectedHypothesis(); as hypothesis) {
-            @if (isEditing()) {
-                <app-hypothesis-mask [hypothesis]="hypothesis"></app-hypothesis-mask>
-            } @else {
-                <app-hypothesis-card [hypothesis]="hypothesis"></app-hypothesis-card>
-            }
-        }
+        <app-hypothesis-list
+            [people]="people()"
+            [(selectedItem)]="selectedHypothesis"
+        ></app-hypothesis-list>
     </div>
+
+    @if (isPopupOpen()) {
+    <div class="dialog-backdrop" (click)="closePopup()">
+        
+        <section 
+            class="dialog" 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="event-popup-title"
+            (click)="$event.stopPropagation()"
+        >
+            <header>
+
+            <div>
+                <p class="eyebrow">{{ selectedHypothesis() ? 'Modifica' : 'Creazione' }}</p>
+                <h1 id="event-popup-title">
+                {{ 'Ipotesi' }}
+                @if (popupMaskTouched()) { <small>&nbsp;(*)</small> }
+                </h1>
+            </div>
+
+            <div class="context-controls">
+                <button
+                    class="context-button"
+                    type="button"
+                    aria-label="Apri aiuto"
+                    title="Apri aiuto"
+                    (click)="main.help.set({page: 'analysis/hypothesis', title: 'Ipotesi'})">?</button>
+                <button 
+                    class="context-button" 
+                    type="button" 
+                    aria-label="Chiudi" 
+                    title="Chiudi" 
+                    (click)="closePopup()"><b>&times;</b></button>
+            </div>
+            </header>
+
+            <section class="mask">
+
+            @defer (on viewport) {
+
+                @if (popupError()) {
+                <span class="mask-error">{{ popupError() }}</span>
+                }
+
+                <div class="scrollable">
+                    <app-hypothesis-mask id="hypothesis-mask" 
+                        [hypothesis]="selectedHypothesis()" 
+                        [people]="people()"
+                        [(submitError)]="popupError"
+                        (modified)="popupMaskTouched.set($event)"
+                        (saved)="closePopup()" ></app-hypothesis-mask>
+                </div>
+            } @placeholder {
+                <div>Loading Hypothesis Mask...</div>
+            }
+
+            </section>
+
+        </section>
+
+    </div>
+    }
     
 </main>

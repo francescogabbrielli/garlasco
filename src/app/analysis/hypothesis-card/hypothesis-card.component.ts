@@ -1,9 +1,10 @@
-import { Component, inject, input, OnInit, output, signal } from '@angular/core';
+import { Component, inject, input, OnInit, computed, output, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { DataService, type HypothesisActor } from '../../data.service';
+import { DataService } from '../../data.service';
 import type { Schema } from '../../../../amplify/data/resource';
 
 type Hypothesis = Schema['Hypothesis']['type']
+type HypothesisPerson = Schema['HypothesisPerson']['type']
 type Person = Schema['Person']['type']
 
 @Component({
@@ -17,36 +18,24 @@ export class HypothesisCardComponent implements OnInit {
   private dataService = inject(DataService)
 
   hypothesis = input.required<Hypothesis>()
-  people = input<Person[]>([])
+  people = input.required<Person[]>()
   selected = input(false)
   clicked = output<void>()
-
-  readonly actors = signal<HypothesisActor[]>([])
-  readonly loading = signal(true)
+  
+  readonly loadedActors = signal<HypothesisPerson[]>([])
+  readonly actors = computed(() => this.people().filter(p => this.loadedActors().some(a => a.personId === p.id)))
 
   ngOnInit(): void {
     this.loadActors()
   }
 
   private async loadActors(): Promise<void> {
-    const id = this.hypothesis().id
-    if (!id) {
-      this.loading.set(false)
-      return
-    }
     try {
-      // this.actors.set(await this.hypothesis.actors())
-    } catch {
-      // silently fail — actors just won't show
-    } finally {
-      this.loading.set(false)
+      this.loadedActors.set(
+        await this.dataService.loadHypothesisActors(this.hypothesis()))
+    } catch (e) {
+      console.error('Errore nel caricmento degli attori', e)
     }
-  }
-
-  actorLabel(actor: HypothesisActor): string {
-    const person = this.people().find(p => p.id === actor.personId)
-    if (!person) return actor.personId
-    return `${person.name} ${person.surname}`
   }
 
 }

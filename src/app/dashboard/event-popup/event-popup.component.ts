@@ -11,11 +11,12 @@ import { EscapeStack } from '../../escape-stack.service';
 import { GeoService } from '../../geo.service';
 import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
 
-import { EventMaskComponent, EventMaskEvent } from '../event-mask/event-mask.component';
+import { EventMaskComponent } from '../event-mask/event-mask.component';
 import { TickbarComponent } from '../../ui/tickbar/tickbar.component';
 
 import { DEFAULT_COORDINATES } from '../../app.constants';
 import { DataService } from '../../data.service';
+import { PersonCaseEvent } from '../../forms/case-mask/case-mask.component';
 
 type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
@@ -65,7 +66,7 @@ export class EventPopupComponent implements OnInit, OnDestroy {
 
   event = input.required<Event>()
   closed = output<void>()
-  saved = output<EventMaskEvent>()
+  saved = output<PersonCaseEvent>()
 
   maskTouched = signal(false)
   dialogOpen = signal(false)
@@ -88,7 +89,7 @@ export class EventPopupComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(async () => {
-      const e = await this.dataService.loadEvent(this.event().id)
+      const e = await this.dataService.getEvent(this.event().id)
       if (e) {
         this.sources.set(e.sources)
         const actors = await this.dataService.loadEventActors(e)

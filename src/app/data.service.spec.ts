@@ -31,7 +31,7 @@ describe('DataService', () => {
   });
 
   it('starts with no events and no pending load', () => {
-    expect(service.getEvents()).toEqual([]);
+    expect(service.loadEvents()).toEqual([]);
     expect(service.isLoadingEvents()).toBe(false);
     expect(service.hasMore()).toBe(false);
   });
@@ -54,7 +54,7 @@ describe('DataService', () => {
 
     expect(service.hasMore()).toBe(false);
     expect(service.isLoadingEvents()).toBe(false);
-    expect(service.getEvents()).toEqual([]);
+    expect(service.loadEvents()).toEqual([]);
   });
 
   it('clears the loading state after an empty filter result', async () => {
@@ -62,7 +62,7 @@ describe('DataService', () => {
     await vi.advanceTimersByTimeAsync(750);
 
     expect(service.isLoadingEvents()).toBe(false);
-    expect(service.getEvents()).toEqual([]);
+    expect(service.loadEvents()).toEqual([]);
     expect(service.hasMore()).toBe(false);
   });
 });

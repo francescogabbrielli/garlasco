@@ -128,6 +128,9 @@ body {
 
   input {
     accent-color: var(--accent);
+    &::placeholder {
+      font-style: italic;
+    }
   }
 
   app-root {
@@ -213,7 +216,6 @@ body {
   .scrollable {
       border: 1px inset var(--border);
       border-radius: 5px;
-      border-top: 3px solid var(--highlight);
       overflow-y: auto;
       padding: 0.4rem;
     }
@@ -306,12 +308,26 @@ body {
   }
 
   .mask { 
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
     padding: 1.35rem 1.5rem 1rem; 
+    margin-top: 0.5rem;
     border: 1px solid var(--border); 
     border-top: 3px solid var(--highlight);
     border-radius: 5px; 
     background: var(--surface); 
     box-shadow: 0 5px 18px rgba(25, 49, 44, .05);
+  }
+
+  .dialog .mask {
+    padding: 0;
+  }
+
+  .mask-error {
+    color: var(--danger);
+    padding: 0.5rem;
   }
 
   .badge {
@@ -398,6 +414,9 @@ body {
   textarea.search-control {
       min-height: 7.5rem;
       resize: vertical;
+      &::placeholder {
+        font-style: italic;
+      }
     }
 
   .event-admin-fields {
