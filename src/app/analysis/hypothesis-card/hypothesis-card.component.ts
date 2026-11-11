@@ -17,10 +17,11 @@ export class HypothesisCardComponent implements OnInit {
 
   private dataService = inject(DataService)
 
+  caseTitle = input.required<string>()
   hypothesis = input.required<Hypothesis>()
   people = input.required<Person[]>()
   selected = input(false)
-  clicked = output<void>()
+  click = output<void>()
   
   readonly loadedActors = signal<HypothesisPerson[]>([])
   readonly actors = computed(() => this.people().filter(p => this.loadedActors().some(a => a.personId === p.id)))

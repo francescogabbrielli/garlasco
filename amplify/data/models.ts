@@ -56,7 +56,9 @@ export const Event = a.model({
   coldCase: a.string()
 })
   .authorization(memberPermissions)
-  .secondaryIndexes(index => [index('coldCase')])
+  .secondaryIndexes(index => [
+    index('coldCase')
+  ])
 
 export const EventRelated = a.model({
   relatesToId: a.id().required(),
@@ -131,8 +133,13 @@ export const Hypothesis = a.model({
 
   eventId: a.id(),
   event: a.belongsTo('Event', 'eventId'),
+  eventName: a.string(),
+  eventRelevance: a.integer()
 })
   .authorization(hypothesisPermissions)
+  .secondaryIndexes((index) => [
+    index('eventId').sortKeys(['eventRelevance'])
+  ])
 
 export const HypothesisPerson = a.model(
   {

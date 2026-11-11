@@ -12,6 +12,7 @@ import { CaseMaskComponent, PersonCaseEvent } from '../../forms/case-mask/case-m
 
 type Hypothesis = Schema['Hypothesis']['type']
 type Person = Schema['Person']['type']
+type Event = Schema['Event']['type']
 type Coordinates = Schema['Coordinates']['type']
 
 @Component({
@@ -24,9 +25,9 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
 
   private dataService = inject(DataService)
 
-  people = input<Person[]>([])
+  people = input.required<Person[]>()
+  event = input.required<Event>()
   hypothesis = input<Hypothesis | null>(null)
-  eventId = input<string | null>(null)
 
   saved = output<PersonCaseEvent>()
   deleted = output<string>()
@@ -149,7 +150,9 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
 
     const payload = {
       ...(this.hypothesis()?.id ? { id: this.hypothesis()!.id } : {}),
-      ...(this.eventId() ? { eventId: this.eventId() } : {}),
+      eventId: this.event().id,
+      eventName: this.event().name,
+      eventRelevance: this.event().relevance,
       name: this.form.controls.name.value.trim(),
       description: this.form.controls.description.value.trim(),
       startDate: new Date(this.form.controls.start.controls.date.value).toISOString(),

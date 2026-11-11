@@ -3,9 +3,9 @@
   [class.selected]="selected()"
   role="button"
   tabindex="0"
-  (click)="clicked.emit()"
-  (keydown.enter)="clicked.emit()"
-  (keydown.space)="$event.preventDefault(); clicked.emit()">
+  (click)="click.emit()"
+  (keydown.enter)="click.emit()"
+  (keydown.space)="$event.preventDefault(); click.emit()">
 
   <h3 class="card-title">{{ hypothesis().name }}</h3>
 

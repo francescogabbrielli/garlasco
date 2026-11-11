@@ -13,6 +13,7 @@ import { HypothesisListComponent } from './hypothesis-list/hypothesis-list.compo
 
 type Hypothesis = Schema['Hypothesis']['type']
 type Person = Schema['Person']['type']
+type Event = Schema['Event']['type']
 
 @Component({
   selector: 'app-analysis',
@@ -30,6 +31,8 @@ export class AnalysisComponent implements OnInit {
   main = inject(MainComponent)
 
   people = signal<Person[]>([])
+  coldCases = signal<Event[]>([])
+  selectedEvent = signal<Event | null>(null)
 
   isEditing = computed(() => this.userService.user().editEnabled())
 
@@ -41,14 +44,28 @@ export class AnalysisComponent implements OnInit {
     error: signal('')
   }
 
-  isPopupOpen = signal(false)
-  popupMaskTouched = signal(false)
-  popupError = signal('')
-
   private offEscape?: () => void
 
   async ngOnInit(): Promise<void> {
     this.loadPeople()
+    this.loadColdCases()
+  }
+
+  private async loadColdCases(): Promise<void> {
+    try {
+      const events = await this.dataService.loadColdCaseEvents()
+      this.coldCases.set(events)
+      this.selectedEvent.set(events[0] ?? null)
+    } catch (e) {
+      console.error('Impossibile caricare i casi freddi.', e)
+    }
+  }
+
+  selectEvent(event: globalThis.Event): void {
+    if (!(event.target instanceof HTMLSelectElement)) return
+    const target = event.target as HTMLSelectElement
+    const selectedEvent = this.coldCases().find(item => item.id === target?.value) ?? null
+    this.selectedEvent.set(selectedEvent)
   }
 
   private async loadPeople(): Promise<void> {
@@ -80,14 +97,17 @@ export class AnalysisComponent implements OnInit {
     this.openPopup()
   }
 
-  openPopup() {
+  openPopup(edit: Hypothesis | null = null) {
+    this.selectedHypothesis.set(edit)
     this.offEscape = this.escapeStack.push(() => this.closePopup())
-    this.isPopupOpen.set(true)
+    if (this.isEditing()) {
+      this.popupStatus.open.set(true)
+    }
   }
 
   closePopup() {
     this.offEscape?.()
-    this.isPopupOpen.set(false)
+    this.popupStatus.open.set(false)
   }
 
 }

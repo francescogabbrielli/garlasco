@@ -1,17 +1,26 @@
 <section>
+
+    @if (!list().length) {
+
+        <p>Nessuna ipotesi al riguardo per il momento</p>
+
+    } @else {
     
     <div class="scrollable">
-        <ul>
+        <ul class="hypothesis-grid">
             @for (item of list(); track item.id) {
             <li>
                 <app-hypothesis-card
+                    [caseTitle]="event().name"
                     [hypothesis]="item"
                     [selected]="item === selectedItem()"
                     [people]="people()"
+                    (click)="selectedItem.set(item); selected.emit(item)"
                 ></app-hypothesis-card>
             </li>
             }
         </ul>
     </div>
+    }
 
 </section>

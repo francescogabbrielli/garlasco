@@ -74,7 +74,6 @@ export class DataService {
     return people
   }
 
-
   // ──────────────────────────────────────────────────────────────
   //  Events
   // ──────────────────────────────────────────────────────────────
@@ -222,6 +221,22 @@ export class DataService {
     }
     return data as Event
   }
+  
+  /** Load all events with a cold-case marker */
+  async loadColdCaseEvents(): Promise<Event[]> {
+    const events: Event[] = []
+    let nextToken: string | null | undefined
+    do {
+      const { data, errors, nextToken: token } = await client.models.Event.listEventByColdCase(
+        { coldCase: "true" },
+        { nextToken }
+      )
+      if (errors?.length) throw new Error('Errore nel caricamento dei casi freddi: ' + errors[0]?.message)
+      events.push(...data.filter(event => Boolean(event.coldCase)))
+      nextToken = token
+    } while (nextToken)
+    return events
+  }
 
   /** Load all event actors from the lazy loading relation */
   async loadEventActors(event: Event): Promise<EventPerson[]> {
@@ -309,12 +324,17 @@ export class DataService {
     return data as Hypothesis
   }
 
-  async loadHypotheses(eventId?: string): Promise<Hypothesis[]> {
-    const filter = eventId ? { eventId: { eq: eventId } } : undefined
+  async loadHypotheses(eventId: string): Promise<Hypothesis[]> {
     const hypotheses: Hypothesis[] = []
     let nextToken: string | null | undefined
     do {
-      const { data, errors, nextToken: token } = await client.models.Hypothesis.list({ filter, nextToken })
+      const { data, errors, nextToken: token } = await client.models.Hypothesis.listHypothesisByEventIdAndEventRelevance(
+        { eventId: eventId },
+        { 
+          sortDirection: "DESC",
+          nextToken 
+        }
+      )
       if (errors?.length) throw new Error('Errore nel caricamento delle ipotesi: ' + errors[0]?.message)
       hypotheses.push(...data)
       nextToken = token

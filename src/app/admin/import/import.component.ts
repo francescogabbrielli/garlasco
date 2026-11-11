@@ -166,7 +166,7 @@ export class ImportComponent {
           // --- admin managed ---
           relevance: event.relevance || 0,
           reliability: event.reliability || 0,
-          coldCase: event.coldCase
+          coldCase: event.coldCase ? "true" : null
         });
 
         if (eventErrors?.length || !createdEvent?.id) {

@@ -11,8 +11,12 @@
                 <input type="text" class="search-control" id="case-owner" readonly disabled [value]="hypothesis()?.owner">
             </div>
         }
+        <div class="form-field">
+          <label for="case-title">Caso</label>
+          <input class="search-control" id="case-title" type="text" readonly disabled [value]="event().name"/>
+        </div>
 
-        <div class="form-field form-field-wide">
+        <div class="form-field">
           <label for="case-name">Nome ipotesi</label>
           <input class="search-control" id="case-name" type="text" formControlName="name" required placeholder="Un nome descrittivo ma sintetico" />
           @if (form.controls.name.invalid && (form.controls.name.touched || form.controls.name.dirty)) {
