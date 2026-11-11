@@ -230,7 +230,7 @@
         </fieldset>
 
         <div class="actions-panel">
-            @if (isAdmin() && hypothesis()?.id) {
+            @if (hypothesis()?.id) {
             <button class="danger-button" type="button" [disabled]="isSaving()" (click)="deleteHypothesis()">
                 <span aria-hidden="true">✖</span>
                 'Elimina'

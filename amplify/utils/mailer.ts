@@ -118,7 +118,7 @@ async function sendEmailInternal(to: string, replyTo: string | undefined, subjec
         },
     })
 
-    console.log(`Invio email`, command)
+    console.log(`Invio email to`, to)
 
     return sesClient.send(command)
 

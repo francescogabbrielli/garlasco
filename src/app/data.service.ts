@@ -169,7 +169,7 @@ export class DataService {
             'event.startPosition.*', 'event.endPosition.*',
             'event.relevance', 'event.reliability', 'event.coldCase'
           ],
-          limit: 10,
+          limit: 100,
           nextToken: tokenForPerson || undefined // Usiamo il token se esiste
         }
       ).then((res: any) => ({ ...res, personId: id }));

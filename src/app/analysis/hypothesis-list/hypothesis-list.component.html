@@ -6,21 +6,19 @@
 
     } @else {
     
-    <div class="scrollable">
-        <ul class="hypothesis-grid">
-            @for (item of list(); track item.id) {
-            <li>
-                <app-hypothesis-card
-                    [caseTitle]="event().name"
-                    [hypothesis]="item"
-                    [selected]="item === selectedItem()"
-                    [people]="people()"
-                    (clicked)="selectedItem.set(item); selected.emit(item)"
-                ></app-hypothesis-card>
-            </li>
-            }
-        </ul>
-    </div>
+    <ul class="hypothesis-grid">
+        @for (item of list(); track item.id) {
+        <li>
+            <app-hypothesis-card
+                [caseTitle]="event().name"
+                [hypothesis]="item"
+                [selected]="item === selectedItem()"
+                [people]="people()"
+                (clicked)="selectedItem.set(item); selected.emit(item)"
+            ></app-hypothesis-card>
+        </li>
+        }
+    </ul>
     }
 
 </section>

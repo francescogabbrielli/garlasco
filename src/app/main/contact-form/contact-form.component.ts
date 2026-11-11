@@ -52,7 +52,10 @@ export class ContactFormComponent implements OnInit, OnDestroy {
 
     try {
 
-      if (user.isAdmin()) return
+      if (user.isAdmin()) {
+        await this.splash.show("Sei tu l'amministratore!")
+        return
+      }
 
       const formValues = this.contactForm.getRawValue()
       const { data, errors } = await this.userService.sendAdminEmail(formValues.reason, formValues.message)
