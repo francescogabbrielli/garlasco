@@ -14,8 +14,7 @@ import { PersonDialogComponent } from '../../forms/person-popup/person-popup.com
 import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component'
 
 import { CaseMaskComponent, PersonCaseEvent } from '../../forms/case-mask/case-mask.component'
-import { toSignal } from '@angular/core/rxjs-interop'
-import { distinctUntilChanged, filter, map } from 'rxjs'
+import { ClientErrorService } from '../../client-error.service'
 
 type EventModel = Schema['Event']['type']
 type EventType = Schema['Event']['type']['type']
@@ -31,6 +30,7 @@ type Coordinates = Schema['Coordinates']['type']
 export class EventMaskComponent extends CaseMaskComponent {
 
   private readonly dataService = inject(DataService)
+  private readonly logService = inject(ClientErrorService)
 
   people = input<Person[]>([])
   event = input<EventModel | null>(null)
@@ -263,6 +263,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       console.error('Error saving Event', payload, error)
       const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
       this.setError(message)
+      this.logService.report(error)
     } finally {
       this.isSaving.set(false)
     }
@@ -284,6 +285,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       this.saved.emit(this.personCaseEvent())
     } catch(error) {
       this.submitError.set('Errore durante l’eliminazione dell’evento! Contattare l’amministratore.')
+      this.logService.report(error)
     } finally {
       this.isSaving.set(false)
     }

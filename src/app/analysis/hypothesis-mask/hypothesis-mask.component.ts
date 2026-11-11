@@ -9,6 +9,7 @@ import { PersonDialogComponent } from '../../forms/person-popup/person-popup.com
 import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 
 import { CaseMaskComponent, PersonCaseEvent } from '../../forms/case-mask/case-mask.component';
+import { ClientErrorService } from '../../client-error.service';
 
 type Hypothesis = Schema['Hypothesis']['type']
 type Person = Schema['Person']['type']
@@ -24,6 +25,7 @@ type Coordinates = Schema['Coordinates']['type']
 export class HypothesisMaskComponent extends CaseMaskComponent {
 
   private dataService = inject(DataService)
+  private logService = inject(ClientErrorService)
 
   people = input.required<Person[]>()
   event = input.required<Event>()
@@ -133,6 +135,7 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
         })),
       )
     } catch (e) {
+      this.logService.report(e)
       console.log("Errore nel caricamento attori ipotesi", e)
     }
   }
@@ -182,7 +185,8 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
         personDeleted: this.deletedPeopleIds(),
       })
     } catch (e) {
-      this.setError(e instanceof Error ? e.message : 'Errore durante il salvataggio dell’ipotesi.')
+      this.setError(e instanceof Error ? e.message : 'Errore durante il salvataggio dell’ipotesi')
+      this.logService.report(e)
     } finally {
       this.isSaving.set(false)
     }
@@ -200,6 +204,7 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
       this.deleted.emit(id)
     } catch (e) {
       this.setError(e instanceof Error ? e.message : 'Errore durante l’eliminazione.')
+      this.logService.report(e)
     } finally {
       this.isSaving.set(false)
     }

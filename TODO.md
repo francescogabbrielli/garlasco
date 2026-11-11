@@ -1,6 +1,7 @@
-NEXT
-----
-- configure client ErrorHandler and backend Lambda -> CloudWatch
+TODO: 0.2.1
+-----------
+- configure client ErrorHandler and backend Lambda -> CloudWatch &check;
+- hypothesis publication
 - review layout & CSS
 - review routing guards when the user role is not synced
 - implement notification system

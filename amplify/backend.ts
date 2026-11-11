@@ -9,6 +9,7 @@ import { authPostConfirmationFn } from './functions/auth-post-confirmation/resou
 import { getTableCountFn } from './functions/get-table-count/resource';
 import { listUsersFn } from './functions/list-users/resource';
 import { updateUserGroupsFn } from './functions/update-user-groups/resource';
+import { reportClientErrorFn } from './functions/report-client-error/resource';
 
 const backend = defineBackend({
   
@@ -23,6 +24,7 @@ const backend = defineBackend({
   getTableCountFn,
   listUsersFn,
   updateUserGroupsFn,
+  reportClientErrorFn,
   
 })
 

@@ -10,6 +10,7 @@ import { analyst, detective, researcher } from './bots-defs';
 import { getTableCountFn } from '../functions/get-table-count/resource';
 import { listUsersFn } from '../functions/list-users/resource';
 import { updateUserGroupsFn } from '../functions/update-user-groups/resource';
+import { reportClientErrorFn } from '../functions/report-client-error/resource';
 
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
@@ -72,6 +73,20 @@ const getTableCount = a.query()
   .handler(a.handler.function(getTableCountFn))
   .authorization(allow => allow.authenticated())
 
+const reportClientError = a.mutation()
+  .arguments({
+    fingerprint: a.string().required(),
+    message: a.string().required(),
+    stack: a.string(),
+    url: a.string(),
+    count: a.integer().required(),
+    occurredAt: a.datetime().required(),
+    lastOccurredAt: a.datetime().required()
+  })
+  .returns(a.boolean())
+  .handler(a.handler.function(reportClientErrorFn))
+  .authorization(allow => allow.authenticated())
+
 // ---- Cognito user management (Admin only) ----
 
 const CognitoUser = a.customType({
@@ -121,6 +136,7 @@ const schema = a.schema({
   RequestStatus,
 
   getTableCount,
+  reportClientError,
 
   CognitoUser,
   listUsers,
