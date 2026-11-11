@@ -21,7 +21,7 @@ export class HypothesisCardComponent implements OnInit {
   hypothesis = input.required<Hypothesis>()
   people = input.required<Person[]>()
   selected = input(false)
-  click = output<void>()
+  clicked = output<void>()
   
   readonly loadedActors = signal<HypothesisPerson[]>([])
   readonly actors = computed(() => this.people().filter(p => this.loadedActors().some(a => a.personId === p.id)))

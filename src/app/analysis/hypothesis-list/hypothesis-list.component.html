@@ -15,7 +15,7 @@
                     [hypothesis]="item"
                     [selected]="item === selectedItem()"
                     [people]="people()"
-                    (click)="selectedItem.set(item); selected.emit(item)"
+                    (clicked)="selectedItem.set(item); selected.emit(item)"
                 ></app-hypothesis-card>
             </li>
             }

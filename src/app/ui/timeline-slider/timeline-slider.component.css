@@ -32,7 +32,7 @@ mat-slider.range-slider {
 .tick-line {
   width: 1px;
   height: 6px;
-  background-color: var(--amplify-colors-border-primary, #ccc);
+  background-color: var(--text-muted, #ccc);
   margin-bottom: 4px;
 }
 
@@ -40,20 +40,20 @@ mat-slider.range-slider {
 .january-line {
   width: 2px;
   height: 10px;
-  background-color: var(--amplify-colors-brand-primary-80, #047d95);
+  background-color: var(--highlight);
 }
 
 .tick-label-day, .tick-label-sunday {
-  color: var(--amplify-colors-font-secondary-40, #AAA);
+  color: var(--text-muted);
   font-size: 0.6rem;
 }
 
 .tick-label-sunday {
-  color: var(--amplify-colors-font-secondary-40, red);
+  color: var(--danger);
 }
 
 .tick-label-month {
-  color: var(--amplify-colors-font-secondary, #666);
+  color: gray;
   text-transform: capitalize;
   font-size: 0.9rem;
 }
@@ -61,12 +61,12 @@ mat-slider.range-slider {
 .tick-label-year {
   font-size: 0.75rem;
   font-weight: bold;
-  color: var(--amplify-colors-brand-primary-80, #047d95);
+  color: var(--highlight);
   margin-top: 1px;
 }
 
 .time-display-container {
-  color: var(--amplify-colors-font-primary);
+  color: var(--text-muted, #666);
   text-align: center;
   padding: 1em;
   font-size: 0.9rem;

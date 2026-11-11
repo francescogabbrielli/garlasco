@@ -1,8 +1,9 @@
 <div class="changelog">
-    <h2>0.2.0 - Elaborazione/Analisi di Ipotesi</h2>
+    <h2>0.2.0 - Prima bozza sezione "Analisi / Ipotesi"</h2>
     <ul>
         <li>Introduzione pannello ipotesi</li>
         <li>Aggiunto tema scuro</li>
+        <li>Migliorie dati e grafiche</li>
     </ul>
     <h2>0.1.5 - Bugfixes</h2>
     <ul>

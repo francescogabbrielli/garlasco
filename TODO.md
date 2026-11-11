@@ -6,6 +6,7 @@ NEXT
 - implement notification system
 - turn some bots into agents that can alter data
 - add reason field in registration
+- add import/export for new data
 
 TODO: 0.2.0
 -----------
@@ -13,20 +14,20 @@ TODO: 0.2.0
     - mermaid docs &check;
     - models &check;
 - add edit capability for Persons &check;
-- design a minimal 'Dashboard di Analisi' ...
-- add import/export for new data
+- design a minimal 'Dashboard di Analisi' &check;
 - save user preferences in user service &check;
 - create dark theme & link to system theme &check;
 - tune dark theme:
     - maps+places &check;
     - authenticator (maybe next) &cross;
     - website (event list, main menu, etc) &check;
-- restructure filters:
-    - move title and activation to parent component
-    - map: make it usable as "view only"
-    - timeline-slider: check colors (Material setup and dark theme compatibility)
+    - material &check;
 - splash message &check;
 - restructure Admin Dashboard, with users management &check;
+- restructure filters:
+    - move title and activation to parent component &check;
+    - map: make it usable as "view only" &check;
+    - timeline: fix usability / bugs &check;
 
 TODO: 0.1.5
 -----------

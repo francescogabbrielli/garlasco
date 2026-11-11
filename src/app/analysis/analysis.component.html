@@ -1,4 +1,5 @@
 <main class="main-view" aria-label="Ricerca eventi">
+    
     <header class="page-heading">
         <div>
             <p class="eyebrow">Analisi</p>
@@ -61,29 +62,28 @@
             (click)="$event.stopPropagation()"
         >
             <header>
+                <div>
+                    <p class="eyebrow">{{ selectedHypothesis() ? 'Modifica' : 'Creazione' }}</p>
+                    <h1 id="event-popup-title">
+                    {{ 'Ipotesi' }}
+                    @if (popupStatus.touched()) { <small>&nbsp;(*)</small> }
+                    </h1>
+                </div>
 
-            <div>
-                <p class="eyebrow">{{ selectedHypothesis() ? 'Modifica' : 'Creazione' }}</p>
-                <h1 id="event-popup-title">
-                {{ 'Ipotesi' }}
-                @if (popupStatus.touched()) { <small>&nbsp;(*)</small> }
-                </h1>
-            </div>
-
-            <div class="context-controls">
-                <button
-                    class="context-button"
-                    type="button"
-                    aria-label="Apri aiuto"
-                    title="Apri aiuto"
-                    (click)="main.help.set({page: 'analysis/hypothesis', title: 'Ipotesi'})">?</button>
-                <button 
-                    class="context-button" 
-                    type="button" 
-                    aria-label="Chiudi" 
-                    title="Chiudi" 
-                    (click)="closePopup()"><b>&times;</b></button>
-            </div>
+                <div class="context-controls">
+                    <button
+                        class="context-button"
+                        type="button"
+                        aria-label="Apri aiuto"
+                        title="Apri aiuto"
+                        (click)="main.help.set({page: 'analysis/hypothesis', title: 'Gestione Ipotesi'})">?</button>
+                    <button 
+                        class="context-button" 
+                        type="button" 
+                        aria-label="Chiudi" 
+                        title="Chiudi" 
+                        (click)="closePopup()"><b>&times;</b></button>
+                </div>
             </header>
 
             <section class="mask">
@@ -101,7 +101,7 @@
                         [people]="people()"
                         [(submitError)]="popupStatus.error"
                         (modified)="popupStatus.touched.set($event)"
-                        (saved)="update($event); closePopup()" ></app-hypothesis-mask>
+                        (saved)="update($event); closePopup()"></app-hypothesis-mask>
                 </div>
             } @placeholder {
                 <div>Loading Hypothesis Mask...</div>

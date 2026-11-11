@@ -1,4 +1,4 @@
-import { Component, effect, input, model, OnInit, output } from '@angular/core';
+import { Component, ElementRef, input, OnInit, output, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatSliderModule } from '@angular/material/slider';
 import { CommonModule } from '@angular/common';
@@ -41,7 +41,8 @@ export class TimelineSliderComponent implements OnInit {
   
   rangeChange = output<{from: Date, to: Date, min: Date, max: Date}>();
 
-  active = model(true)
+  @ViewChild('slider')
+  slider!: ElementRef<HTMLElement>
 
   ngOnInit(): void {
     this.minTimestamp = this.initialFrom()?.getTime() ?? 0
@@ -55,8 +56,8 @@ export class TimelineSliderComponent implements OnInit {
     this.generateTimeline()
   }
 
-  private updateViewRange(viewHalfWidth: number): void {
-    const viewCenter = (this.currentAbsoluteMin + this.currentAbsoluteMax) / 2;
+  private updateViewRange(viewHalfWidth: number, middlePoint: number): void {
+    const viewCenter = (this.currentAbsoluteMax - this.currentAbsoluteMin) * middlePoint + this.currentAbsoluteMin; 
 
     const availableMin = this.minimum().getTime();
     const availableMax = this.maximum().getTime();
@@ -91,7 +92,7 @@ export class TimelineSliderComponent implements OnInit {
     if (!event.ctrlKey) return
     event.preventDefault()
     
-    let viewHalfWidth = Math.abs(this.currentAbsoluteMax - this.currentAbsoluteMin) / 2;
+    let viewHalfWidth = Math.abs(this.currentAbsoluteMax - this.currentAbsoluteMin) / 2
 
     if (event.deltaY > 0) {
       viewHalfWidth = viewHalfWidth * (1 + this.ZOOM_FACTOR); // Zoom Out
@@ -99,7 +100,8 @@ export class TimelineSliderComponent implements OnInit {
       viewHalfWidth = viewHalfWidth * (1 - this.ZOOM_FACTOR); // Zoom In
     }
 
-    this.updateViewRange(viewHalfWidth)
+    const mouseOffset = (event.clientX-this.slider.nativeElement.offsetLeft) / this.slider.nativeElement.offsetWidth
+    this.updateViewRange(viewHalfWidth, mouseOffset)
   }
 
   private initialTouchDistance: number = 0
@@ -118,12 +120,15 @@ export class TimelineSliderComponent implements OnInit {
       event.preventDefault()
 
       const currentDistance = this.getTouchDistance(event.touches[0], event.touches[1])
+
+      const middle = (event.touches[0].clientX + event.touches[1].clientX) / 2
       
       // Calcoliamo il nuovo half-width basato sul rapporto rispetto all'inizio del pinch
       const scale = this.initialTouchDistance / currentDistance
       const viewHalfWidth = this.initialViewHalfWidth * scale
 
-      this.updateViewRange(viewHalfWidth)
+      const middlePoint = (middle - this.slider.nativeElement.offsetLeft) / this.slider.nativeElement.offsetWidth
+      this.updateViewRange(viewHalfWidth, middlePoint / 2 + .25) //TODO: improve for mobile
     }
   }
 

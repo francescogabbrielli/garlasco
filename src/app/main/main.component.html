@@ -65,13 +65,13 @@
         class="user-label"
         type="button"
         [attr.aria-label]="user().getFullName()"
-        [attr.aria-expanded]="isUserMenuOpen"
+        [attr.aria-expanded]="isUserMenuOpen()"
         aria-haspopup="menu"
         (click)="toggleUserMenu()"
       >
         {{ user().getFullName() }}
       </button>
-      @if (isUserMenuOpen) {
+      @if (isUserMenuOpen()) {
         <div class="user-dropdown" role="menu">
           <button id="contact_button" type="button" 
             role="menuitem" 
@@ -123,7 +123,7 @@
   <router-outlet />
 </main>
 
-@if (isAboutDialogOpen) {
+@if (isAboutDialogOpen()) {
   <div class="dialog-backdrop" (click)="closeAboutDialog()">
     <section
       class="dialog"

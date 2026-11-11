@@ -3,17 +3,26 @@
   [class.selected]="selected()"
   role="button"
   tabindex="0"
-  (click)="click.emit()"
-  (keydown.enter)="click.emit()"
-  (keydown.space)="$event.preventDefault(); click.emit()">
+  (click)="clicked.emit()"
+  (keydown.enter)="clicked.emit()"
+  (keydown.space)="$event.preventDefault(); clicked.emit()">
 
   <h3 class="card-title">{{ hypothesis().name }}</h3>
 
   <pre class="card-description">{{ hypothesis().description }}</pre>
 
   <div class="card-meta">
-    @if (hypothesis().updatedAt; as d) {
+    @if (hypothesis().createdAt; as d) {
+      <span>
+      Creata:
       <time [attr.datetime]="d">{{ d | date: 'dd MMM yyyy' }}</time>
+      </span>
+    }
+    @if (hypothesis().updatedAt; as d) {
+      <span>
+      Ultima modifica:
+      <time [attr.datetime]="d">{{ d | date: 'dd MMM yyyy' }}</time>
+      </span>
     }
   </div>
 

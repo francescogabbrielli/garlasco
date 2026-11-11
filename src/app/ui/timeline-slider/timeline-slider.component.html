@@ -1,26 +1,10 @@
-<section class="control-section" aria-labelledby="timeline-selection">
-
-  <div class="section-heading">
-    <div>
-      <div class="filter-heading">
-        <input type="checkbox" 
-            [checked]="active()"
-            (change)="active.set($event.target.checked)"
-            aria-label="Mostra timeline"
-            title="Mostra timeline" />
-        <h3 id="timeline-selection" class="filter-title" (click)="active.set(!active())">Timeline</h3>
-      </div>
-      <p [style.display]="active() ? 'block' : 'none'">Seleziona un intervallo temporale</p>
-    </div>
-  </div>
-
-@if (active()) {
 
   <div class="time-display-container">
     <span class="current-time-range">{{ getFormattedInterval() }}</span>
   </div>
   
   <div class="slider-wrapper" 
+    #slider
     (wheel)="onWheel($event)"
     (touchstart)="onTouchStart($event)"
     (touchmove)="onTouchMove($event)"
@@ -44,6 +28,3 @@
 
   </div>
 
-}
-
-</section>

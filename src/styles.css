@@ -1,4 +1,5 @@
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import '@angular/material/prebuilt-themes/azure-blue.css';
+@import './assets/material.css';
 
 html {
   font-size: 15px;
@@ -131,6 +132,9 @@ body {
     &::placeholder {
       font-style: italic;
     }
+    &:disabled {
+      color: var(--text-muted);
+    }
   }
 
   app-root {
@@ -215,7 +219,7 @@ body {
 
   .scrollable {
       border: 1px inset var(--border);
-      border-radius: 5px;
+      border-radius: 3px;
       overflow-y: auto;
       padding: 0.4rem;
     }
@@ -328,6 +332,7 @@ body {
   .mask-error {
     color: var(--danger);
     padding: 0.5rem;
+    background-color: var(--page);
   }
 
   .badge {
@@ -576,7 +581,7 @@ html[data-theme="dark"] {
   --accent: #29c797;
   --danger: #df5762;
   --hover: #364444;
-  --backdrop: rgba(204, 201, 213, 0.46);;
+  --backdrop: rgba(204, 201, 213, 0.46);
 }
 
 .loading-backdrop {

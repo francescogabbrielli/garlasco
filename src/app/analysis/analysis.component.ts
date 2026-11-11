@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Schema } from '../../../amplify/data/resource';
 
 import { UserProfileService } from '../user-profile.service';
@@ -21,7 +21,7 @@ type Event = Schema['Event']['type']
   templateUrl: './analysis.component.html',
   styleUrl: './analysis.component.css',
 })
-export class AnalysisComponent implements OnInit {
+export class AnalysisComponent implements OnInit, OnDestroy {
 
   private readonly PEOPLE_SORTER = (a: Person, b: Person) => a.surname.localeCompare(b.surname) || a.name.localeCompare(b.name)
 
@@ -41,7 +41,12 @@ export class AnalysisComponent implements OnInit {
   readonly popupStatus = {
     open: signal(false),
     touched: signal(false),
-    error: signal('')
+    error: signal(''),
+    toggle: (visible: boolean) => {
+      this.popupStatus.touched.set(false)
+      this.popupStatus.error.set('')
+      this.popupStatus.open.set(visible)
+    }
   }
 
   private offEscape?: () => void
@@ -100,19 +105,27 @@ export class AnalysisComponent implements OnInit {
   }
 
   openPopup(edit: Hypothesis | null = null) {
-    this.selectedHypothesis.set(edit)
-    this.popupStatus.touched.set(false)
-    this.offEscape = this.escapeStack.push(() => this.closePopup())
+    if (this.popupStatus.open())
+      return
+    if (edit)
+      this.selectedHypothesis.set(edit)
     if (this.isEditing()) {
-      this.popupStatus.open.set(true)
+      this.offEscape = this.escapeStack.push(() => this.closePopup())
+      console.log("OPEN", this.escapeStack.toString())
+      this.popupStatus.toggle(true)
     }
   }
 
   closePopup() {
     if (!this.popupStatus.touched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.')) {
       this.offEscape?.()
-      this.popupStatus.open.set(false)
+      console.log("CLOSE", this.escapeStack.toString())
+      this.popupStatus.toggle(false)
     }
+  }
+
+  ngOnDestroy() {
+    this.offEscape?.()
   }
 
 }

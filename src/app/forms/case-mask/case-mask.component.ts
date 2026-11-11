@@ -40,6 +40,7 @@ export abstract class CaseMaskComponent {
       filter((event) => event instanceof PristineChangeEvent),
       map(event => !event.pristine),
       distinctUntilChanged()).subscribe(callback)
+    return
   }
 
   onKeyDown(event: KeyboardEvent) {
@@ -91,14 +92,14 @@ export abstract class CaseMaskComponent {
     return person ? `${person.surname} ${person.name}` : ''
   }
 
-  checkForm() {
+  checkForm():boolean {
 
     this.getForm().markAllAsTouched()
     this.setError('')
 
     if (this.getForm().invalid) {
       this.setError('Completa tutti i campi obbligatori prima di salvare l’evento.')
-      return
+      return false
     }
 
     this.actorStatus.selectionError.set(this.selectedActors().length === 0
@@ -112,20 +113,22 @@ export abstract class CaseMaskComponent {
             ? 'Seleziona una persona in ogni riga.'
             : 'Seleziona una persona valida dall’elenco in ogni riga.',
       )
-      return
+      return false
     }
 
     this.actorStatus.roleError.set(this.selectedActors().some((actor) => !actor.role.trim()))
     if (this.actorStatus.roleError()) {
       this.setError('Indica il ruolo per ogni persona selezionata.')
-      return
+      return false
     }
 
     this.sourceStatus.error.set(this.sources().findIndex((source) => !source.trim()))
     if (this.sourceStatus.error() !== -1) {
       this.setError('Specifica la fonte per ogni riga.')
-      return
+      return false
     }
+
+    return true
   }
 
   //-----------------------------------------------------------------------------

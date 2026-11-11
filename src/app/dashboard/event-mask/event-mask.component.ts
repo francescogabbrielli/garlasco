@@ -81,7 +81,7 @@ export class EventMaskComponent extends CaseMaskComponent {
   }
 
   private async loadEvent(): Promise<void> {
-    const id = this.event()?.id
+    const id = this.event()?.id    
     if (!id) return this.loadingComplete(value => this.modified.emit(value))
     const e = await this.dataService.getEvent(id)
     this.eventForm.patchValue({
@@ -196,8 +196,7 @@ export class EventMaskComponent extends CaseMaskComponent {
 
     const user = this.userService.user()
     if (!user) return
-
-    super.checkForm()
+    if (!super.checkForm()) return
 
     const start = this.eventForm.controls.start.getRawValue()
     const end = this.eventForm.controls.end.getRawValue()
@@ -207,8 +206,6 @@ export class EventMaskComponent extends CaseMaskComponent {
       this.setError('Seleziona la tipologia dell’evento.')
       return
     }
-
-    this.isSaving.set(true)
 
     const startPosition:Coordinates | null = start.latitude ? {
       latitude: Number(start.latitude),
@@ -246,6 +243,8 @@ export class EventMaskComponent extends CaseMaskComponent {
       coldCase: this.isAdmin() ? (this.eventForm.controls.coldCase.value ? 'true' : null) : undefined
     }
 
+    this.isSaving.set(true)
+
     try {
       
       const data = await this.dataService.saveEvent(payload, this.loadedEventActors, this.selectedActors())
@@ -263,9 +262,9 @@ export class EventMaskComponent extends CaseMaskComponent {
     } catch (error) {
       console.error('Error saving Event', payload, error)
       const message = error instanceof Error ? error.message : 'Errore durante il salvataggio dell’evento.';
-      this.setError(message);
+      this.setError(message)
     } finally {
-      this.isSaving.set(false);
+      this.isSaving.set(false)
     }
   }
 

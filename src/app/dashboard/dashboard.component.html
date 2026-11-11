@@ -42,34 +42,86 @@
         </app-person-filter  >
       </div>
       <div class="filter-stack">
-        @defer (on idle) {
-          <app-timeline-slider
-            [initialFrom]="currentFilters.interval.from"
-            [initialTo]="currentFilters.interval.to"
-            [initialMin]="currentFilters.interval.min"
-            [initialMax]="currentFilters.interval.max"
-            [minimum]="MIN_DATE"
-            [maximum]="MAX_DATE"
-            [(active)]="showTimeline"
-            (rangeChange)="handleTimeFilter($event)">
-          </app-timeline-slider>
-        } @placeholder {
-          <div>Loading Timeline Slider...</div>
-        }
 
-        @defer (on idle) {
-          <app-map-filter 
-            [initialBounds]="currentFilters.bounds"
-            [markers]="facts()"
-            [highlightedId]="hoveredEventId()"
-            [(active)]="showMap"
-            (eventHover)="hoveredEventId.set($event)"
-            (eventClick)="openEventById($event)"
-            (mapChange)="handleMapFilter($event)">
-          </app-map-filter>
-        } @placeholder {
-          <div>Caricamento della mappa in corso...</div>
-        }
+        <!-- TIMELINE FILTER -->
+        <section class="control-section" aria-labelledby="timeline-selection">
+
+          <div class="section-heading">
+            <div>
+              <div class="filter-heading">
+                <input type="checkbox" 
+                    [checked]="showTimeline()"
+                    (change)="showTimeline.set($event.target.checked)"
+                    aria-label="Mostra timeline"
+                    title="Mostra timeline" />
+                <h3 id="timeline-selection" class="filter-title" (click)="showTimeline.set(!showTimeline())">Timeline</h3>
+              </div>
+              <p [style.display]="showTimeline() ? 'block' : 'none'">Seleziona un intervallo temporale</p>
+            </div>
+          </div>
+          @if (showTimeline()) {
+            @defer (on idle) {
+              <app-timeline-slider
+                [initialFrom]="currentFilters.interval.from"
+                [initialTo]="currentFilters.interval.to"
+                [initialMin]="currentFilters.interval.min"
+                [initialMax]="currentFilters.interval.max"
+                [minimum]="MIN_DATE"
+                [maximum]="MAX_DATE"
+                (rangeChange)="handleTimeFilter($event)">
+              </app-timeline-slider>
+            } @placeholder {
+              <div>Loading Timeline Slider...</div>
+            }
+          }
+          </section>
+
+          <!-- MAP FILTER -->
+          <section class="control-section" aria-labelledby="location-selection">
+
+            <div class="section-heading">
+              <div>
+                <div class="filter-heading">
+                  <input type="checkbox" 
+                      [checked]="showMap()"
+                      (change)="showMap.set($event.target.checked); triggerReload()"
+                      aria-label="Mostra mappa"
+                      title="Mostra mappa" />
+                  <h3 id="location-selection" class="filter-title" (click)="showMap.set(!showMap()); triggerReload()">Mappa</h3>
+                  @if (showMap()) {
+                    &nbsp;|&nbsp;
+                  <input type="checkbox" 
+                      [checked]="filterMap()"
+                      (change)="filterMap.set($event.target.checked); triggerReload()"
+                      aria-label="Filtra con la mappa"
+                      title="Filtra con la mappa" />
+                  <p id="location-selection" class="filter-title" (click)="filterMap.set(!filterMap()); triggerReload()">Filtra con la mappa</p>
+                  }
+                </div>
+                <p [style.display]="showMap() ? 'block' : 'none'">Seleziona un'area sulla mappa</p>
+              </div>
+            </div>
+
+            <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden">
+
+            @if (showMap()) {
+              @defer (on idle) {
+                <app-map-filter 
+                  [initialBounds]="currentFilters.bounds"
+                  [markers]="facts()"
+                  [highlightedId]="hoveredEventId()"
+                  (eventHover)="hoveredEventId.set($event)"
+                  (eventClick)="openEventById($event)"
+                  (mapChange)="handleMapFilter($event)">
+                </app-map-filter>
+              } @placeholder {
+                <div>Caricamento della mappa in corso...</div>
+              }
+            }
+
+            </div>
+          </section>
+
       </div>
     </div>
   </section>

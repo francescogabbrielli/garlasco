@@ -2,7 +2,7 @@ import { Component, effect, inject, input, model, output, signal } from '@angula
 import { DataService } from '../../data.service';
 
 import { Schema } from '../../../../amplify/data/resource';
-import { Hypothesis } from '../../../../amplify/data/models';
+
 import { HypothesisCardComponent } from '../hypothesis-card/hypothesis-card.component';
 
 type Hypothesis = Schema['Hypothesis']['type']

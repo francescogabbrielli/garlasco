@@ -1,20 +1,3 @@
-<section class="control-section" aria-labelledby="location-selection">
-
-  <div class="section-heading">
-    <div>
-      <div class="filter-heading">
-        <input type="checkbox" 
-            [checked]="active()"
-            (change)="active.set($event.target.checked)"
-            aria-label="Mostra mappa"
-            title="Mostra mappa" />
-        <h3 id="location-selection" class="filter-title" (click)="active.set(!active())">Mappa</h3>
-      </div>
-      <p [style.display]="active() ? 'block' : 'none'">Seleziona un'area sulla mappa</p>
-    </div>
-  </div>
-
-@if (active()) {
   @if (mapReady()) {
     <google-map
         height="500px"
@@ -46,6 +29,5 @@
   } @else {
     Impossibile caricare la mappa... ({{ mapError }})
   }
-}
 
-</section>
+

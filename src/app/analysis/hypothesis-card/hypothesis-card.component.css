@@ -86,3 +86,7 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+time {
+  white-space: nowrap;
+}

@@ -38,8 +38,8 @@ export class MainComponent implements OnDestroy {
   authenticator = inject(AuthenticatorService)
   userProfile = inject(UserProfileService)
 
-  isAboutDialogOpen = false
-  isUserMenuOpen = false
+  isAboutDialogOpen = signal(false)
+  isUserMenuOpen = signal(false)
   isAdminVisible = false
 
   help = signal<{page: string, title: string}>({page: '', title: ''})
@@ -87,7 +87,7 @@ export class MainComponent implements OnDestroy {
   }
 
   toggleUserMenu(): void {
-    this.isUserMenuOpen = !this.isUserMenuOpen;
+    this.isUserMenuOpen.update(val => !val)
   }
 
   toggleTheme(): void {
@@ -110,24 +110,24 @@ export class MainComponent implements OnDestroy {
 
   logout(force = false): void {
     if (force || confirm('Sei sicuro di voler uscire? Tutte le operazioni non salvate andranno perse.')) {
-      this.isUserMenuOpen = false
+      this.isUserMenuOpen.set(false)
       this.userProfile.logOut()
       this.authenticator.signOut()
     }
   }
 
   openContactForm(): void {
-    this.isUserMenuOpen = false
+    this.isUserMenuOpen.set(false)
     this.contacts.set(true)
   }
 
   openAboutDialog(): void {
-    this.isUserMenuOpen = false
-    this.isAboutDialogOpen = true
+    this.isUserMenuOpen.set(false)
+    this.isAboutDialogOpen.set(true)
   }
 
   closeAboutDialog(): void {  
-    this.isAboutDialogOpen = false
+    this.isAboutDialogOpen.set(false)
   }
 
   closeHelpPopup(): void {
@@ -143,7 +143,7 @@ export class MainComponent implements OnDestroy {
   onEscape(): void {
     if (this.escapeStack.isEmpty()) {
       this.closeAboutDialog()
-      this.isUserMenuOpen = false   
+      this.isUserMenuOpen.set(false)
     } else {
       this.botChatOpened.set(false)
     }

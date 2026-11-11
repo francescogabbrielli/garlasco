@@ -28,7 +28,8 @@ type Filter = {
   interval: {from: Date, to: Date, min: Date, max: Date},
   bounds: Coordinates,
   showTimeline: boolean,
-  showMap: boolean
+  showMap: boolean,
+  filterMap: boolean
 }
 
 @Component({
@@ -66,13 +67,16 @@ export class DashboardComponent implements OnInit {
     },
     bounds: DEFAULT_COORDINATES,
     showTimeline: true,
-    showMap: true
+    showMap: true,
+    filterMap: true
   }
 
   currentFilters!: Filter
 
   showTimeline = signal( true )
   showMap = signal( true )
+  filterMap = signal( true )
+
   private initialized = false
 
   // People are loaded once here and shared with the filter and the map
@@ -148,7 +152,7 @@ export class DashboardComponent implements OnInit {
       this.currentFilters.personIds,
       this.showTimeline() ? this.currentFilters.interval.from : this.MIN_DATE, 
       this.showTimeline() ? this.currentFilters.interval.to : this.MAX_DATE, 
-      this.showMap() ? this.currentFilters.bounds : null)
+      this.showMap() && this.filterMap() ? this.currentFilters.bounds : null)
   }
 
   ngOnInit(): void {
@@ -168,7 +172,8 @@ export class DashboardComponent implements OnInit {
       },
       bounds: savedFilters.bounds ? savedFilters.bounds : this.defaultFilters.bounds,
       showTimeline: savedFilters.showTimeline !== undefined ? savedFilters.showTimeline : this.defaultFilters.showTimeline,
-      showMap: savedFilters.showMap !== undefined ? savedFilters.showMap : this.defaultFilters.showMap
+      showMap: savedFilters.showMap !== undefined ? savedFilters.showMap : this.defaultFilters.showMap,
+      filterMap: savedFilters.filterMap !== undefined ? savedFilters.filterMap : this.defaultFilters.filterMap
     } : this.currentFilters = {...this.defaultFilters}
 
     this.showTimeline.set(this.currentFilters.showTimeline)
@@ -193,6 +198,7 @@ export class DashboardComponent implements OnInit {
 
   handleMapFilter(coords: Coordinates): void {
     this.currentFilters.bounds = coords
+    console.log("MAP CHANGE")
     this.triggerReload()
   }
 

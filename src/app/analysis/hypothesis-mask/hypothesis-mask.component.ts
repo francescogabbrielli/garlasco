@@ -140,7 +140,7 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
   // ── Submit ──
   async submit(): Promise<void> {
 
-    super.checkForm()
+    if (!super.checkForm()) return
 
     const start = this.form.controls.start.getRawValue()
     const end = this.form.controls.end.getRawValue()

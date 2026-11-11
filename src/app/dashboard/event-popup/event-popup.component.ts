@@ -89,12 +89,14 @@ export class EventPopupComponent implements OnInit, OnDestroy {
 
   constructor() {
     effect(async () => {
-      const e = await this.dataService.getEvent(this.event().id)
-      if (e) {
-        this.sources.set(e.sources)
-        const actors = await this.dataService.loadEventActors(e)
-        const lazyLoaders = actors.map(async (a) => (await a.person()).data as Person)
-        this.actors.set(await Promise.all(lazyLoaders))
+      if (!this.isEditor() && this.event().id) {
+        const e = await this.dataService.getEvent(this.event().id)
+        if (e) {
+          this.sources.set(e.sources)
+          const actors = await this.dataService.loadEventActors(e)
+          const lazyLoaders = actors.map(async (a) => (await a.person()).data as Person)
+          this.actors.set(await Promise.all(lazyLoaders))
+        }
       }
     })
   }
