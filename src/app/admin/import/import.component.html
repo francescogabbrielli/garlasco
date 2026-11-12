@@ -2,6 +2,20 @@
     <h2>Importazione JSON</h2>
     <hr>
     <div class="seed-container">
+        @if (progress().active) {
+            <section class="import-panel import-progress" aria-live="polite">
+                <h3>Importazione in corso</h3>
+                <progress [value]="progress().processed" [max]="progress().total || 1"></progress>
+                <p>
+                    {{ progress().processed }} / {{ progress().total }} record elaborati
+                    ({{ progress().imported }} importati, {{ progress().skipped }} ignorati,
+                    {{ progress().failed }} non riusciti)
+                </p>
+                @if (progress().currentItem) {
+                    <p class="import-note">Record corrente: {{ progress().currentItem }}</p>
+                }
+            </section>
+        }
 
         <div class="import-grid">
         <section class="import-panel" aria-labelledby="people-import-title">
@@ -46,6 +60,28 @@
                 </button>
             </div>
             <p class="import-note">Per associare persone già importate, indica <code>"actors": [&#123; "personId": "...", "role": "..." &#125;]</code>.</p>      
+        </section>
+
+        <section class="import-panel" aria-labelledby="hypotheses-import-title">
+            <h3 id="hypotheses-import-title">Ipotesi</h3>
+            <label for="hypotheses-json">JSON ipotesi</label>
+            <textarea id="hypotheses-json" rows="14" placeholder='[{ "owner": "...", "name": "Ipotesi", "description": "...", "startDate": "...", "sources": [] }]' [ngModel]="hypothesesJsonInput()"
+                (ngModelChange)="hypothesesJsonInput.set($event)" class="custom-textarea"></textarea>
+            <div class="actions-panel">
+                <button type="button"
+                    class="btn action-button"
+                    [disabled]="isWorking()"
+                    (click)="importaIpotesiDaTextarea()">
+                    {{ isWorking() ? 'Caricamento...' : 'Importa ipotesi' }}
+                </button>
+                <button type="button"
+                    class="btn secondary-button"
+                    [disabled]="isWorking()"
+                    (click)="cleanHypothesesInput()">
+                    Azzera
+                </button>
+            </div>
+            <p class="import-note">Le persone e l’evento collegato devono esistere già; gli ID owner vengono mantenuti. Le relazioni <code>actors</code> sono importate come collegamenti all’ipotesi. Ipotesi pubblicate e richieste di pubblicazione non sono incluse.</p>
         </section>
         </div>
     </div>

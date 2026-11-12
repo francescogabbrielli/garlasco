@@ -1,12 +1,16 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import {
   ImportComponent,
+} from './import.component';
+import {
   isValidEventActors,
   isValidEventType,
   isValidPersonType,
   toPersonCreateInput,
-} from './import.component';
+  ImportService,
+} from './import.service';
 
 describe('ImportComponent', () => {
   let component: ImportComponent;
@@ -14,7 +18,22 @@ describe('ImportComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ImportComponent]
+      imports: [ImportComponent],
+      providers: [{
+        provide: ImportService,
+        useValue: {
+          progress: signal({
+            active: false,
+            kind: null,
+            total: 0,
+            processed: 0,
+            imported: 0,
+            skipped: 0,
+            failed: 0,
+            currentItem: ''
+          })
+        }
+      }]
     })
     .compileComponents();
 
@@ -30,6 +49,7 @@ describe('ImportComponent', () => {
   it('should render independent event and person JSON inputs', () => {
     expect(fixture.nativeElement.querySelector('#events-json')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('#people-json')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('#hypotheses-json')).not.toBeNull();
   });
 
   it('should clear the JSON input', () => {
@@ -47,6 +67,16 @@ describe('ImportComponent', () => {
     component.cleanPeopleInput();
 
     expect(component.peopleJsonInput()).toBe('');
+    expect(component.jsonInput()).toBe('[{"name":"Evento"}]');
+  });
+
+  it('should clear the hypotheses JSON input independently', () => {
+    component.jsonInput.set('[{"name":"Evento"}]');
+    component.hypothesesJsonInput.set('[{"name":"Ipotesi"}]');
+
+    component.cleanHypothesesInput();
+
+    expect(component.hypothesesJsonInput()).toBe('');
     expect(component.jsonInput()).toBe('[{"name":"Evento"}]');
   });
 
@@ -94,6 +124,7 @@ describe('ImportComponent', () => {
     expect(isValidEventType('Sentenza', null)).toBe(true);
     expect(isValidEventType('Altro', null)).toBe(false);
     expect(isValidEventType('Fatto', null)).toBe(false);
+    expect(isValidEventType('Fatto', undefined)).toBe(false);
     expect(isValidEventType(undefined, null)).toBe(false);
   });
 

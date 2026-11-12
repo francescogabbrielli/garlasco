@@ -9,6 +9,28 @@ const client = generateClient<Schema>()
 
 type Event = Schema['Event']['type']
 type Person = Schema['Person']['type']
+type Hypothesis = Schema['Hypothesis']['type']
+
+export function toHypothesisExportRecords(
+  hypotheses: Hypothesis[],
+  actorsByHypothesis: ReadonlyMap<string, { personId: string; role: string }[]>
+) {
+  return hypotheses.map(hypothesis => ({
+    id: hypothesis.id,
+    owner: hypothesis.owner,
+    name: hypothesis.name,
+    description: hypothesis.description,
+    startDate: hypothesis.startDate,
+    endDate: hypothesis.endDate,
+    startPosition: hypothesis.startPosition,
+    endPosition: hypothesis.endPosition,
+    sources: hypothesis.sources,
+    eventId: hypothesis.eventId,
+    eventName: hypothesis.eventName,
+    eventRelevance: hypothesis.eventRelevance,
+    actors: actorsByHypothesis.get(hypothesis.id) ?? []
+  }));
+}
 
 @Component({
   selector: 'app-export',
@@ -18,7 +40,7 @@ type Person = Schema['Person']['type']
 })
 export class ExportComponent {
 
-  exported = signal([false, false])
+  exported = signal([false, false, false])
 
   isWorking = model(false)
 
@@ -26,6 +48,7 @@ export class ExportComponent {
   splash!: SplashDialogComponent
 
   async exportPeople(): Promise<void> {
+    this.isWorking.set(true);
     try {
       const people: Person[] = []
       let nextToken: string | null | undefined
@@ -48,13 +71,15 @@ export class ExportComponent {
       }))
 
       this.download(records, 'people.json')
-      this.exported.set([true, this.exported()[1]])
+      this.exported.set([true, this.exported()[1], this.exported()[2]])
       
     } catch (error) {
 
       console.error('Errore durante l\'esportazione delle persone:', error)
       this.splash.show('❌ Errore durante l\'esportazione delle persone.')
 
+    } finally {
+      this.isWorking.set(false);
     }
 
   }
@@ -91,7 +116,56 @@ export class ExportComponent {
       return events
   }
 
+  private async getHypothesisActors(): Promise<Map<string, { personId: string; role: string }[]>> {
+    const actorsByHypothesis = new Map<string, { personId: string; role: string }[]>();
+    let nextToken: string | null | undefined;
+    do {
+      const { data, errors, nextToken: token } = await client.models.HypothesisPerson.list({ nextToken });
+      if (errors?.length) {
+        throw new Error(errors.map(error => error.message).join(', '));
+      }
+      for (const { hypothesisId, personId, role } of data) {
+        const actors = actorsByHypothesis.get(hypothesisId) ?? [];
+        actors.push({ personId, role });
+        actorsByHypothesis.set(hypothesisId, actors);
+      }
+      nextToken = token;
+    } while (nextToken);
+    return actorsByHypothesis;
+  }
+
+  private async getHypotheses(): Promise<Hypothesis[]> {
+    const hypotheses: Hypothesis[] = [];
+    let nextToken: string | null | undefined;
+    do {
+      const { data, errors, nextToken: token } = await client.models.Hypothesis.list({ nextToken });
+      if (errors?.length) {
+        throw new Error(errors.map(error => error.message).join(', '));
+      }
+      hypotheses.push(...data);
+      nextToken = token;
+    } while (nextToken);
+    return hypotheses;
+  }
+
+  async exportHypotheses(): Promise<void> {
+    this.isWorking.set(true);
+    try {
+      const actorsByHypothesis = await this.getHypothesisActors();
+      const records = toHypothesisExportRecords(await this.getHypotheses(), actorsByHypothesis);
+
+      this.download(records, 'hypotheses.json');
+      this.exported.set([this.exported()[0], this.exported()[1], true]);
+    } catch (error) {
+      console.error('Errore durante l’esportazione delle ipotesi:', error);
+      this.splash.show('❌ Errore durante l’esportazione delle ipotesi.');
+    } finally {
+      this.isWorking.set(false);
+    }
+  }
+
   async exportEvents(): Promise<void> {
+    this.isWorking.set(true);
     try {
       const actorsByEvent = await this.getActorsByEvent()
       const records = (await this.getEvents()).map((event) => ({
@@ -111,10 +185,12 @@ export class ExportComponent {
       }))
 
       this.download(records, 'events.json')
-      this.exported.set([this.exported()[0], true])
+      this.exported.set([this.exported()[0], true, this.exported()[2]])
     } catch (error) {
       console.error('Errore durante l\'esportazione degli eventi:', error)
       this.splash.show('❌ Errore durante l\'esportazione degli eventi.')
+    } finally {
+      this.isWorking.set(false);
     }
   }
 
@@ -134,15 +210,20 @@ export class ExportComponent {
 
   async deleteAll(): Promise<void> {
     if (confirm('Tutto scaricato. Adesso cancelliamo i dati.')) {
+      this.isWorking.set(true);
       try {
+        await this.deleteAllFrom(client.models.HypothesisPerson)
+        await this.deleteAllFrom(client.models.Hypothesis)
         await this.deleteAllFrom(client.models.EventPerson)
         await this.deleteAllFrom(client.models.Event)
         await this.deleteAllFrom(client.models.Person)      
-        this.exported.set([false, false])
-        this.splash.show(`🎉 Cancellazione completata! Il database è ora fantasticamente vuoto!`)
+        this.exported.set([false, false, false])
+        this.splash.show('🎉 Cancellazione completata.')
       } catch (error) {
         console.error('Errore durante la cancellazione dei dati:', error)
         this.splash.show('❌ Errore durante la cancellazione dei dati.')
+      } finally {
+        this.isWorking.set(false);
       }
     }
   }

@@ -13,12 +13,18 @@
                 [disabled]="isWorking()"
                 (click)="exportEvents()"
                 >Esporta eventi</button>
+            <button type="button"
+                class="action-button"
+                [disabled]="isWorking()"
+                (click)="exportHypotheses()"
+                >Esporta ipotesi</button>
             <button type="button" 
                 class="danger-button"
                 [disabled]="!canDelete()"
                 (click)="deleteAll()"
                 >Cancella tutto</button>
         </div>
+        <p class="import-note">L’esportazione delle ipotesi include i collegamenti alle persone; ipotesi pubblicate e richieste di pubblicazione non sono incluse.</p>
     </div>
     
     <app-splash-dialog #exportSplash defaultMessage="Esportazione"></app-splash-dialog>

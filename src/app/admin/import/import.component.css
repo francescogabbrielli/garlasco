@@ -30,6 +30,14 @@
     background: var(--surface);
 }
 
+.import-progress {
+    margin-bottom: 1rem;
+}
+
+.import-progress progress {
+    width: 100%;
+}
+
 .import-panel h2 {
     margin: 0 0 .9rem;
     color: var(--text);

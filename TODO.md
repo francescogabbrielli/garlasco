@@ -1,3 +1,5 @@
+NEXT
+
 TODO: 0.2.1
 -----------
 - configure client ErrorHandler and backend Lambda -> CloudWatch &check;
@@ -6,8 +8,11 @@ TODO: 0.2.1
 - review routing guards when the user role is not synced
 - implement notification system
 - turn some bots into agents that can alter data
+    - create a tool that can create Event records
+    - fuse Archivista and Ricercatore into and give
+    - add A bot presentation
 - add reason field in registration
-- add import/export for new data
+- add import/export for new data &check;
 
 TODO: 0.2.0
 -----------

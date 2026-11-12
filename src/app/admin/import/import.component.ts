@@ -1,80 +1,9 @@
-import { Component, inject, model, signal, ViewChild} from '@angular/core'
-import { CommonModule } from '@angular/common'
-import { FormsModule } from '@angular/forms'
+import { Component, inject, model, signal, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-import { generateClient } from 'aws-amplify/data'
-
-import { EVENT_TYPES, PERSON_TYPES } from '../../../../amplify/data/enums'
-import type { Schema } from '../../../../amplify/data/resource'
-
-import { UserProfileService } from '../../user-profile.service'
-import { GeoService } from '../../geo.service'
-
-import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component'
-
-const client = generateClient<Schema>()
-
-interface EventActorImport {
-  personId: string
-  role: string
-}
-
-type EventImportRecord = Omit<Schema['Event']['type'], 'actors'> & {
-  actors?: unknown
-};
-
-type EventType = Schema['Event']['type']['type']
-const eventTypes: readonly EventType[] = EVENT_TYPES
-type PersonType = Schema['Person']['type']['type']
-const personTypes: readonly PersonType[] = PERSON_TYPES
-
-interface PersonImportRecord {
-  id?: string;
-  name?: string;
-  surname?: string;
-  type?: PersonType;
-  profession?: string | null;
-  initials?: string;
-  events?: unknown;
-}
-
-type PersonCreateInput = Parameters<typeof client.models.Person.create>[0];
-
-export function isValidEventActors(actors: unknown): actors is EventActorImport[] {
-  return Array.isArray(actors) && actors.every((actor) =>
-    typeof actor === 'object'
-    && actor !== null
-    && 'personId' in actor
-    && typeof actor.personId === 'string'
-    && actor.personId.trim().length > 0
-    && 'role' in actor
-    && typeof actor.role === 'string'
-    && actor.role.trim().length > 0,
-  );
-}
-
-export function isValidEventType(type: unknown, startPosition: unknown): type is EventType {
-  return typeof type === 'string' 
-    && eventTypes.some((eventType) => eventType === type) 
-    && (startPosition !== null || type !== 'Fatto');
-}
-
-export function isValidPersonType(type: unknown): type is PersonType {
-  return typeof type === 'string' && personTypes.some((personType) => personType === type);
-}
-
-export function toPersonCreateInput(
-  person: PersonImportRecord & { type: PersonType },
-): PersonCreateInput {
-  return {
-    ...(person.id ? { id: person.id } : {}),
-    name: person.name!,
-    surname: person.surname!,
-    type: person.type,
-    initials: person.initials!,
-    ...(person.profession ? { profession: person.profession } : {}),
-  };
-}
+import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
+import { ImportService, type ImportSummary } from './import.service';
 
 @Component({
   selector: 'app-import',
@@ -83,183 +12,85 @@ export function toPersonCreateInput(
   styleUrl: './import.component.css',
 })
 export class ImportComponent {
+  private readonly importService = inject(ImportService);
 
-  userProfile = inject(UserProfileService)
-  mapsService = inject(GeoService)
-
-  jsonInput = signal<string>('');
-  peopleJsonInput = signal<string>('');
-  isWorking = model<boolean>(false);
+  readonly progress = this.importService.progress;
+  jsonInput = signal('');
+  peopleJsonInput = signal('');
+  hypothesesJsonInput = signal('');
+  isWorking = model(false);
 
   @ViewChild('importSplash')
-  splash!: SplashDialogComponent
+  splash!: SplashDialogComponent;
 
-  async eseguiUploadDaTextarea() {
-    const rawText = this.jsonInput().trim();
-    
-    if (!rawText) {
-      this.splash.show("⚠️ L'area di testo è vuota. Incolla prima un JSON valido.")
-      return
-    }
-
-    let dataset: EventImportRecord[];
-    
-    // 1. Validazione sintattica del JSON inserito
-    try {
-      const parsing = JSON.parse(rawText);
-      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as EventImportRecord[];
-    } catch (e) {
-      this.splash.show("❌ Errore di sintassi nel JSON. Verifica che le virgolette e le virgole siano corrette.");
-      console.error(e);
-      return;
-    }
-
-    this.isWorking.set(true);
-    console.log(`Avvio importazione di ${dataset.length} elementi da textarea...`);
-
-    const ownerId = (await this.userProfile.logIn()).getId()
-
-    let contatoreSuccessi = 0;
-
-    try {
-      for (const event of dataset) {
-        // Valida la presenza dei campi minimi prima dell'invio
-        if (!event.name || !event.startDate || !isValidEventType(event.type, event.startPosition)) {
-          console.warn("Elemento saltato per mancanza di campi obbligatori:", event);
-          continue;
-        }
-
-        if (event.actors !== undefined && !isValidEventActors(event.actors)) {
-          console.warn('Evento ignorato: actors deve essere una lista di oggetti { personId, role }.', event);
-          continue;
-        }
-
-        const actors = event.actors ?? [];
-        const actorPeople = await Promise.all(actors.map(async ({ personId }) => {
-          const { data, errors } = await client.models.Person.get({ id: personId });
-          if (errors?.length) {
-            throw new Error(`Impossibile verificare la persona ${personId}: ${errors.map((error) => error.message).join(', ')}`);
-          }
-          return data;
-        }));
-
-        if (actorPeople.some((person) => !person)) {
-          console.warn('Evento ignorato: uno o più personId in actors non corrispondono a persone esistenti.', event);
-          continue;
-        }
-
-        // AWS Amplify inserisce automaticamente l'ID univoco mancante
-        const { data: createdEvent, errors: eventErrors } = await client.models.Event.create({
-          ...(event.id ? { id: event.id } : {}),
-          owner: event.owner || ownerId,
-          type: event.type,
-          name: event.name,
-          description: event.description,
-          startDate: event.startDate,
-          startPosition: event.startPosition,
-          endDate: event.endDate,
-          endPosition: event.endPosition,
-          geoHash: this.mapsService.computeGeoHash(
-            this.mapsService.computeCenterPosition(
-              event.startPosition, event.endPosition)),
-          sources: event.sources,
-          
-          // --- admin managed ---
-          relevance: event.relevance || 0,
-          reliability: event.reliability || 0,
-          coldCase: event.coldCase ? "true" : null
-        });
-
-        if (eventErrors?.length || !createdEvent?.id) {
-          console.error('Errore durante la creazione dell’evento:', event, eventErrors);
-          continue;
-        }
-
-        for (const { personId, role } of actors) {
-          const { errors } = await client.models.EventPerson.create({
-            eventId: createdEvent.id,
-            eventName: createdEvent.name,
-            eventStartDate: createdEvent.startDate,
-            eventGeoHash: createdEvent.geoHash,
-            personId,
-            role,
-          });
-
-          if (errors?.length) {
-            throw new Error(`Impossibile associare la persona ${personId} all’evento ${createdEvent.id}: ${errors.map((error) => error.message).join(', ')}`);
-          }
-        }
-        
-        console.log("Creato", createdEvent)
-
-        contatoreSuccessi++;
-      }
-      
-      this.splash.show(`🎉 Importazione completata! Caricati con successo ${contatoreSuccessi} su ${dataset.length} eventi.`)
-      this.cleanInputData()
-    } catch (errore) {
-      console.error("Errore durante l'invio a DynamoDB:", errore)
-      this.splash.show("❌ Ops! Si è verificato un errore di comunicazione con AWS. Controlla la console degli sviluppatori.")
-    } finally {
-      this.isWorking.set(false);
-    }
-  }
-
-  cleanInputData() {
-    this.jsonInput.set('');
+  async eseguiUploadDaTextarea(): Promise<void> {
+    await this.import(
+      'eventi',
+      this.jsonInput(),
+      json => this.importService.importEvents(json),
+      () => this.cleanInputData()
+    );
   }
 
   async importaPersoneDaTextarea(): Promise<void> {
-    const rawText = this.peopleJsonInput().trim();
+    await this.import(
+      'persone',
+      this.peopleJsonInput(),
+      json => this.importService.importPeople(json),
+      () => this.cleanPeopleInput()
+    );
+  }
 
-    if (!rawText) {
-      this.splash.show('Incolla prima il JSON delle persone.')
-      return;
-    }
+  async importaIpotesiDaTextarea(): Promise<void> {
+    await this.import(
+      'ipotesi',
+      this.hypothesesJsonInput(),
+      json => this.importService.importHypotheses(json),
+      () => this.cleanHypothesesInput()
+    );
+  }
 
-    let dataset: PersonImportRecord[]
-    try {
-      const parsing: unknown = JSON.parse(rawText)
-      dataset = (Array.isArray(parsing) ? parsing : [parsing]) as PersonImportRecord[]
-    } catch (error) {
-      this.splash.show('JSON delle persone non valido.')
-      console.error(error)
-      return
-    }
-
-    this.isWorking.set(true)
-    let importedCount = 0
-
-    try {
-      for (const person of dataset) {
-        const type = person.type
-        if (!person.name || !person.surname || !person.initials || !isValidPersonType(type)) {
-          console.warn('Persona ignorata: nome, cognome, iniziali e tipologia valida sono obbligatori.', person)
-          continue
-        }
-
-        const { errors } = await client.models.Person.create(toPersonCreateInput({ ...person, type }))
-
-        if (errors?.length) {
-          console.error('Errore durante la creazione della persona:', person, errors)
-          continue
-        }
-
-        importedCount++
-      }
-
-      this.splash.show(`🎉 Importazione completata! Importate ${importedCount} persone su ${dataset.length}.`)
-      this.cleanPeopleInput()
-    } catch (error) {
-      console.error('Errore durante l’importazione delle persone:', error)
-      this.splash.show('❌ Impossibile importare le persone. Controlla la console degli sviluppatori.')
-    } finally {
-      this.isWorking.set(false);
-    }
+  cleanInputData(): void {
+    this.jsonInput.set('');
   }
 
   cleanPeopleInput(): void {
     this.peopleJsonInput.set('');
   }
 
+  cleanHypothesesInput(): void {
+    this.hypothesesJsonInput.set('');
+  }
+
+  private async import(
+    label: string,
+    json: string,
+    operation: (json: string) => Promise<ImportSummary>,
+    clearInput: () => void
+  ): Promise<void> {
+    if (!json.trim()) {
+      this.splash.show(`Incolla prima il JSON ${label}.`);
+      return;
+    }
+
+    this.isWorking.set(true);
+    try {
+      const summary = await operation(json);
+      this.splash.show(this.formatSummary(label, summary));
+      if (summary.failed === 0 && summary.skipped === 0) clearInput();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.splash.show(`Importazione ${label} non riuscita: ${message}`);
+    } finally {
+      this.isWorking.set(false);
+    }
+  }
+
+  private formatSummary(label: string, summary: ImportSummary): string {
+    const message =
+      `Importazione ${label} completata: ${summary.imported} importati, ` +
+      `${summary.skipped} ignorati, ${summary.failed} non riusciti su ${summary.total}.`;
+    const firstIssue = summary.issues[0];
+    return firstIssue ? `${message} ${firstIssue}` : message;
+  }
 }
