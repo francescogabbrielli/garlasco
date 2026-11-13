@@ -76,13 +76,13 @@ export class EventMaskComponent extends CaseMaskComponent {
     this.splash.show(message)
   }
 
-  override maskModified(): void {
-    this.modified.emit(true)
+  override maskModified(val: boolean): void {
+    this.modified.emit(val)
   }
 
   private async loadEvent(): Promise<void> {
     const id = this.event()?.id    
-    if (!id) return this.loadingComplete(value => this.modified.emit(value))
+    if (!id) return this.loadingComplete()
     const e = await this.dataService.getEvent(id)
     this.eventForm.patchValue({
       owner: e.owner,
@@ -102,7 +102,7 @@ export class EventMaskComponent extends CaseMaskComponent {
         radius: e.endPosition?.radius == null ? null : String(e.endPosition?.radius),
       },
       reliability: e.reliability ?? this.reliabilityOptions.length,
-      relevance: e.relevance,
+      relevance: e.relevance || 0,
       coldCase: e.coldCase ? true : false
     })
 
@@ -125,7 +125,7 @@ export class EventMaskComponent extends CaseMaskComponent {
 
     this.sources.set(e.sources ?? [])
     
-    this.loadingComplete(value => this.modified.emit(value))
+    this.loadingComplete()
   }
 
   geoService = inject(GeoService)
@@ -188,7 +188,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       }
     })
     this.sources.set(g.sources ?? [])
-    this.maskModified()
+    this.maskModified(true)
     this.eventForm.markAsTouched()
   }
   
@@ -237,7 +237,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       endPosition: endPosition,
       geoHash: this.geoService.computeGeoHash(
         this.geoService.computeCenterPosition(startPosition, endPosition)),
-      sources: this.sources,
+      sources: this.sources(),
       reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
       relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,
       coldCase: this.isAdmin() ? (this.eventForm.controls.coldCase.value ? 'true' : null) : undefined

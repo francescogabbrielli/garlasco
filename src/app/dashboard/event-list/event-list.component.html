@@ -28,7 +28,7 @@
                                     (click)="onClick($event, fact)">
                                     <span>{{ fact.name }}</span>
                                     <span class="reliability">
-                                        <app-tickbar [level]="fact.relevance"></app-tickbar>
+                                        <app-tickbar [level]="fact.relevance ?? 0"></app-tickbar>
                                     </span>
                                 </li>
                             } @empty {
@@ -40,7 +40,7 @@
                                 <li class="clickable" (click)="onClick($event, communication)">
                                     <span>{{ communication.name }}</span>
                                     <span class="reliability">
-                                        <app-tickbar [level]="communication.relevance"></app-tickbar>
+                                        <app-tickbar [level]="communication.relevance ?? 0"></app-tickbar>
                                     </span>
                                 </li>
                             } @empty {
@@ -52,7 +52,7 @@
                                 <li class="clickable" (click)="onClick($event, document)">
                                     <span>{{ document.name }}</span>
                                     <span class="reliability">
-                                        <app-tickbar [level]="document.relevance"></app-tickbar>
+                                        <app-tickbar [level]="document.relevance ?? 0"></app-tickbar>
                                     </span>
                                 </li>
                             } @empty {

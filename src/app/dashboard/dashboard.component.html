@@ -98,28 +98,26 @@
                   <p id="location-selection" class="filter-title" (click)="filterMap.set(!filterMap()); triggerReload()">Filtra con la mappa</p>
                   }
                 </div>
-                <p [style.display]="showMap() ? 'block' : 'none'">Seleziona un'area sulla mappa</p>
               </div>
             </div>
 
-            <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden">
-
             @if (showMap()) {
-              @defer (on idle) {
-                <app-map-filter 
-                  [initialBounds]="currentFilters.bounds"
-                  [markers]="facts()"
-                  [highlightedId]="hoveredEventId()"
-                  (eventHover)="hoveredEventId.set($event)"
-                  (eventClick)="openEventById($event)"
-                  (mapChange)="handleMapFilter($event)">
-                </app-map-filter>
-              } @placeholder {
-                <div>Caricamento della mappa in corso...</div>
-              }
+              <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden">
+                @defer (on idle) {
+                  <app-map-filter 
+                    [initialBounds]="currentFilters.bounds"
+                    [markers]="facts()"
+                    [highlightedId]="hoveredEventId()"
+                    (eventHover)="hoveredEventId.set($event)"
+                    (eventClick)="openEventById($event)"
+                    (mapChange)="handleMapFilter($event)">
+                  </app-map-filter>
+                } @placeholder {
+                  <div>Caricamento della mappa in corso...</div>
+                }
+              </div>
             }
 
-            </div>
           </section>
 
       </div>

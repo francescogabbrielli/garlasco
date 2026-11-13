@@ -1,5 +1,6 @@
 import { a } from '@aws-amplify/backend';
 import { EVENT_TYPES, PERSON_TYPES, REQUEST_STATUS } from './enums';
+import { createBotEventFn } from '../functions/create-bot-event/resource';
 
 export const Coordinates = a.customType({
   latitude: a.float().required(),
@@ -11,7 +12,7 @@ export const EventType = a.enum(EVENT_TYPES);
 export const PersonType = a.enum(PERSON_TYPES);
 export const RequestStatus = a.enum(REQUEST_STATUS);
 
-const memberPermissions = (allow:any) => [
+const memberPermissions = (allow: any) => [
   allow.groups(['Member', 'Editor', 'Admin'])
 ]
 
@@ -45,7 +46,7 @@ export const Event = a.model({
   ...caseFields('Event', 'eventId'),
 
   reliability: a.integer(),
-  relevance: a.integer().required().default(0),
+  relevance: a.integer().default(0),
 
   //linked events
   relatesTo: a.hasMany('EventRelated', 'relatesToId'),
@@ -53,7 +54,7 @@ export const Event = a.model({
   
   //hypotheses
   hypothesis: a.hasMany('Hypothesis', 'eventId'),
-  coldCase: a.string()
+  coldCase: a.string(),
 })
   .authorization(memberPermissions)
   .secondaryIndexes(index => [

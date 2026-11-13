@@ -4,7 +4,6 @@ import { FormGroup, PristineChangeEvent, } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 
 import { Schema } from '../../../../amplify/data/resource';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, filter, map } from 'rxjs';
 
 type Person = Schema['Person']['type']
@@ -33,13 +32,13 @@ export abstract class CaseMaskComponent {
 
   isLoading = signal(true)
 
-  protected loadingComplete(callback: (val:boolean) => void):void {
+  protected loadingComplete():void {
     this.isLoading.set(false)
     this.getForm().markAsPristine()
     this.getForm().events.pipe(
       filter((event) => event instanceof PristineChangeEvent),
       map(event => !event.pristine),
-      distinctUntilChanged()).subscribe(callback)
+      distinctUntilChanged()).subscribe(val => this.maskModified(val))
     return
   }
 
@@ -59,7 +58,7 @@ export abstract class CaseMaskComponent {
 
   protected abstract getForm(): FormGroup
 
-  protected abstract maskModified(): void
+  protected abstract maskModified(value: boolean): void
 
   protected abstract showSplash(message: string): void
 
@@ -209,7 +208,7 @@ export abstract class CaseMaskComponent {
         : actor,
     ))
     this.actorStatus.selectionError.set(false)
-    this.maskModified()
+    this.maskModified(true)
   }
 
   removeActor(rowId: number): void {
@@ -217,7 +216,7 @@ export abstract class CaseMaskComponent {
     this.selectedActors.update(actors => actors.filter((actor) => actor.rowId !== rowId))
     this.actorStatus.selectionError.set(false)
     this.actorStatus.roleError.set(false)
-    this.maskModified()
+    this.maskModified(true)
   }
 
   updateActorRole(rowId: number, event: Event): void {
@@ -304,18 +303,18 @@ export abstract class CaseMaskComponent {
     }
 
   updateSource(i:number, event: Event): void {
-    if (this.sources.length <= i) return
+    if (this.sources().length <= i) return
     const target = event.target
     if (!(target instanceof HTMLInputElement)) return
     this.sources.update(a => [...a.slice(0, i), target.value, ...a.slice(i+1)])
     this.sourceStatus.cannotAdd.update(this.cannotAddTrigger)
-    this.maskModified()
+    this.maskModified(true)
   }
 
   removeSource(i: number): void {
     this.sources.update(a => [...a.slice(0, i), ...a.slice(i+1)])
     this.sourceStatus.cannotAdd.update(this.cannotAddTrigger)
-    this.maskModified()
+    this.maskModified(true)
   }
 
 
@@ -349,7 +348,7 @@ export abstract class CaseMaskComponent {
       this.getForm().controls[target].markAsDirty()
     }
     this.pickerTarget.set(null)
-    this.maskModified()
+    this.maskModified(true)
   }
 
   cancelPosition(target: 'start' | 'end'): void {
@@ -359,7 +358,7 @@ export abstract class CaseMaskComponent {
       radius: null,
     })
     this.getForm().controls[target].markAsDirty()
-    this.maskModified()
+    this.maskModified(true)
   }
 
   closePicker(): void {

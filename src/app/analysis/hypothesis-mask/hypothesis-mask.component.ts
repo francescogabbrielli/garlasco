@@ -64,8 +64,8 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
     this.splash.show(message)
   }
 
-  override maskModified(): void {
-    this.modified.emit(true)
+  override maskModified(val: boolean): void {
+    this.modified.emit(val)
   }
 
   readonly isSaving = signal(false)
@@ -119,7 +119,7 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
       this.sources.set(h.sources ? [...h.sources] : [])
       await this.loadActors(h)      
     }
-    this.loadingComplete(value => this.modified.emit(value))
+    this.loadingComplete()
   }
 
   private async loadActors(hypothesis: Hypothesis): Promise<void> {
@@ -172,7 +172,7 @@ export class HypothesisMaskComponent extends CaseMaskComponent {
         longitude: Number(end.longitude),
         radius: Number(end.radius),
       } : null,
-      sources: this.sources().filter(s => s.trim()),
+      sources: this.sources(),
     }
 
     this.isSaving.set(true)

@@ -119,7 +119,6 @@ export class AnalysisComponent implements OnInit, OnDestroy {
   closePopup() {
     if (!this.popupStatus.touched() || confirm('Sei sicuro di voler chiudere? Potrebbero esserci modifiche non salvate.')) {
       this.offEscape?.()
-      console.log("CLOSE", this.escapeStack.toString())
       this.popupStatus.toggle(false)
     }
   }

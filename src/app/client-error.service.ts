@@ -2,6 +2,7 @@ import { InjectionToken, Injectable, inject, signal } from '@angular/core';
 import { generateClient, type Client } from 'aws-amplify/data';
 
 import type { Schema } from '../../amplify/data/resource';
+import { UserProfileService } from './user-profile.service';
 
 export const CLIENT_ERROR_CLIENT = new InjectionToken<Client<Schema>>(
   'CLIENT_ERROR_CLIENT',
@@ -11,7 +12,7 @@ export const CLIENT_ERROR_CLIENT = new InjectionToken<Client<Schema>>(
   }
 );
 
-const DEDUPLICATION_WINDOW_MS = 60_000;
+const DEDUPLICATION_WINDOW_MS = 60_000
 
 interface ClientErrorDetails {
   message: string;
@@ -66,35 +67,39 @@ function getErrorDetails(error: unknown): ClientErrorDetails {
 
 @Injectable({ providedIn: 'root' })
 export class ClientErrorService {
-  private readonly client = inject(CLIENT_ERROR_CLIENT);
-  private readonly pendingReports = new Map<string, PendingReport>();
-  readonly consoleLoggingEnabled = signal(true);
+  private readonly client = inject(CLIENT_ERROR_CLIENT)
+  private readonly userService = inject(UserProfileService)
+  private readonly pendingReports = new Map<string, PendingReport>()
+  readonly consoleLoggingEnabled = signal(true)
 
   setConsoleLoggingEnabled(enabled: boolean): void {
-    this.consoleLoggingEnabled.set(enabled);
+    this.consoleLoggingEnabled.set(enabled)
   }
 
   report(error: unknown): void {
-    const details = getErrorDetails(error);
+    const details = getErrorDetails(error)
 
     if (this.consoleLoggingEnabled()) {
-      console.error('[Application error]', error);
+      console.error('[Application error]', error)
     }
 
+    if (!this.userService.user()?.getId())
+      return
+
     void this.queueReport(details).catch((hashError: unknown) => {
-      console.warn('Unable to hash application error for reporting.', hashError);
-    });
+      console.warn('Unable to hash application error for reporting.', hashError)
+    })
   }
 
   private async queueReport(details: ClientErrorDetails): Promise<void> {
-    const fingerprint = await hashMessage(details.message);
-    const now = new Date().toISOString();
-    const pending = this.pendingReports.get(fingerprint);
+    const fingerprint = await hashMessage(details.message)
+    const now = new Date().toISOString()
+    const pending = this.pendingReports.get(fingerprint)
 
     if (pending) {
-      pending.count += 1;
-      pending.lastOccurredAt = now;
-      return;
+      pending.count += 1
+      pending.lastOccurredAt = now
+      return
     }
 
     const report: PendingReport = {
@@ -103,12 +108,12 @@ export class ClientErrorService {
       count: 1,
       occurredAt: now,
       lastOccurredAt: now
-    };
-    this.pendingReports.set(fingerprint, report);
+    }
+    this.pendingReports.set(fingerprint, report)
     setTimeout(() => {
-      this.pendingReports.delete(fingerprint);
-      void this.sendReport(fingerprint, report);
-    }, DEDUPLICATION_WINDOW_MS);
+      this.pendingReports.delete(fingerprint)
+      void this.sendReport(fingerprint, report)
+    }, DEDUPLICATION_WINDOW_MS)
   }
 
   private async sendReport(fingerprint: string, report: PendingReport): Promise<void> {
@@ -121,13 +126,13 @@ export class ClientErrorService {
         count: report.count,
         occurredAt: report.occurredAt,
         lastOccurredAt: report.lastOccurredAt
-      });
+      })
 
       if (errors?.length) {
-        console.warn('Unable to report application error to CloudWatch.', errors);
+        console.warn('Unable to report application error to CloudWatch.', errors)
       }
     } catch (reportingError: unknown) {
-      console.warn('Unable to report application error to CloudWatch.', reportingError);
+      console.warn('Unable to report application error to CloudWatch.', reportingError)
     }
   }
 }

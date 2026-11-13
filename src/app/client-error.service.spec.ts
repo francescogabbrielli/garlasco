@@ -1,9 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLIENT_ERROR_CLIENT, ClientErrorService } from './client-error.service';
+import { UserData, UserProfileService } from './user-profile.service';
+import { signal } from '@angular/core';
 
 describe('ClientErrorService', () => {
-  const reportClientError = vi.fn();
+  const reportClientError = vi.fn()
+
+  const userData = new UserData(
+    { sub: 'user-123', given_name: 'Mario', family_name: 'Rossi' },
+    ['Member'],
+  );
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -13,6 +20,9 @@ describe('ClientErrorService', () => {
       providers: [{
         provide: CLIENT_ERROR_CLIENT,
         useValue: { mutations: { reportClientError } }
+      }, {
+        provide: UserProfileService,
+        useValue: { user: signal(userData) }
       }]
     });
   });

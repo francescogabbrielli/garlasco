@@ -198,7 +198,6 @@ export class DashboardComponent implements OnInit {
 
   handleMapFilter(coords: Coordinates): void {
     this.currentFilters.bounds = coords
-    console.log("MAP CHANGE")
     this.triggerReload()
   }
 

@@ -240,6 +240,7 @@
 
         @if (isAdmin()) {
         <div class="event-admin-fields">
+
             <div class="form-field">
                 <label for="event-reliability">Attendibilità</label>
                 <select class="search-control" id="event-reliability" formControlName="reliability">
@@ -259,9 +260,12 @@
             </div>
 
             <div class="form-field">
-                <label for="event-cold-case">Cold case</label>
-                <input id="event-cold-case" type="checkbox" formControlName="coldCase">
+                <label for="event-cold-case">
+                    <input id="event-cold-case" type="checkbox" formControlName="coldCase">
+                    Cold case
+                </label>
             </div>
+            <span></span>
         </div>
         }
 

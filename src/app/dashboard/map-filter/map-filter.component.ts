@@ -4,6 +4,7 @@ import { GoogleMap, MapAdvancedMarker, MapPolyline } from '@angular/google-maps'
 import { Schema } from '../../../../amplify/data/resource';
 import { GeoService } from '../../geo.service';
 import { GoogleMapsLoaderService } from '../../google-maps-loader.service';
+import { ClientErrorService } from '../../client-error.service';
 
 type Coordinates = Schema['Coordinates']['type']
 type Event = Schema['Event']['type']
@@ -18,6 +19,7 @@ export class MapFilterComponent implements OnInit {
 
   private geoService = inject(GeoService)
   private mapsLoader = inject(GoogleMapsLoaderService)
+  private logService = inject(ClientErrorService)
 
   initialBounds = input<Coordinates | null>(null)
   mapId = window.__appConfig?.googleMapsMapId
@@ -26,6 +28,12 @@ export class MapFilterComponent implements OnInit {
     isFractionalZoomEnabled: false, 
     renderingType: 'RASTER' as google.maps.RenderingType, // Fractional zoom only works on vector maps
   }
+
+  private mapColorsReady = signal(false)
+  private mapInstance?: google.maps.Map
+  private mapLoaderReady = signal(false)
+  mapError: string = ''
+  mapReady = signal(false)
 
   computedMapOptions = computed(() => ({
     ...this.mapOptions,
@@ -44,13 +52,15 @@ export class MapFilterComponent implements OnInit {
   constructor() {
     // L'effect monitora il tema globale e tocca CHIRURGICAMENTE la mappa nativa
     effect(() => {
-      this.mapReady.set(false)      
+      this.mapColorsReady.set(false)
       this.mapsLoader.colorScheme()
       setTimeout(() => {
-        this.mapReady.set(true)
-      }, 100)
+        this.mapColorsReady.set(true)
+      }, 250)
     })
-  }  
+
+    effect(() => this.mapReady.set(this.mapColorsReady() && this.mapLoaderReady()))
+  }
 
   private pinElements = new Map<string, HTMLElement[]>()
 
@@ -125,16 +135,15 @@ export class MapFilterComponent implements OnInit {
     })
   })
 
-  private mapInstance?: google.maps.Map
-  mapError: string = ''
-  mapReady = signal(false)
 
   async ngOnInit() {
  
     try {
       await this.mapsLoader.load()
-      this.mapReady.set(true)
-    } catch {
+      this.mapLoaderReady.set(true)
+    } catch(e) {
+      console.error(e)
+      this.logService.report(e)
       this.mapError = 'Impossibile caricare Google Maps.'
     }
 

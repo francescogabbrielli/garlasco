@@ -137,7 +137,7 @@
       }
 
       <dt>Rilevanza</dt>
-      <dd><app-tickbar [level]="event().relevance"></app-tickbar></dd>
+      <dd><app-tickbar [level]="event().relevance || 0"></app-tickbar></dd>
 
       <dt>Affidabilità</dt>
       <dd><app-tickbar [level]="event().reliability || 0"></app-tickbar></dd>
