@@ -1,4 +1,14 @@
-import { OnDestroy, computed, effect, signal, inject, model } from '@angular/core';
+import {
+  afterRenderEffect,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  computed,
+  effect,
+  signal,
+  inject,
+  model
+} from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -21,6 +31,9 @@ interface BotSession {
   busy: boolean
   error: string
   activeAssistantId?: string
+  activeRequestId?: string
+  notice?: string
+  startNewConversation?: boolean
 }
 
 interface ChatMessage {
@@ -29,6 +42,7 @@ interface ChatMessage {
   text: string
   truncated?: boolean
   timedOut?: boolean
+  interrupted?: boolean
 }
 
 const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
@@ -46,6 +60,12 @@ export class BotChatComponent implements OnDestroy {
 
   private readonly escapeStack = inject(EscapeStack)
 
+  @ViewChild('messages') private messagesContainer?: ElementRef<HTMLDivElement>
+  @ViewChild('botMenuToggle') private botMenuToggle?: ElementRef<HTMLButtonElement>
+  @ViewChild('botDropdown') private botDropdown?: ElementRef<HTMLDivElement>
+
+  private shouldFollowMessages = true
+
   readonly opened = model(false)
   readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
   readonly text = signal('')
@@ -62,6 +82,16 @@ export class BotChatComponent implements OnDestroy {
       // if (!this.opened()) return
       // const unregister = this.escapeStack.push(() => this.opened.set(false))
       // onCleanup(unregister)
+    })
+
+    afterRenderEffect(() => {
+      const messages = this.session().messages
+      messages.at(-1)?.text
+
+      if (!this.opened() || !this.shouldFollowMessages) return
+
+      const container = this.messagesContainer?.nativeElement
+      if (container) container.scrollTop = container.scrollHeight
     })
   }
 
@@ -153,13 +183,38 @@ export class BotChatComponent implements OnDestroy {
   }
 
   toggleBotSelect(): void {
-    this.isBotMenuOpen.set(!this.isBotMenuOpen())
+    if (this.isBotMenuOpen()) {
+      this.closeBotMenu()
+    } else {
+      this.isBotMenuOpen.set(true)
+    }
+  }
+
+  closeBotMenu(): void {
+    if (!this.isBotMenuOpen()) return
+
+    const dropdown = this.botDropdown?.nativeElement
+    const activeElement = dropdown?.ownerDocument.activeElement
+    if (dropdown && activeElement && dropdown.contains(activeElement)) {
+      this.botMenuToggle?.nativeElement.focus()
+    }
+
+    this.isBotMenuOpen.set(false)
   }
 
   selectBot(id: BotId): void {
+    this.shouldFollowMessages = true
     this.botId.set(id)
-    this.isBotMenuOpen.set(false)
-  }  
+    this.closeBotMenu()
+  }
+
+  onMessagesScroll(event: Event): void {
+    const container = event.currentTarget
+    if (!(container instanceof HTMLElement)) return
+
+    this.shouldFollowMessages =
+      container.scrollHeight - container.scrollTop - container.clientHeight <= 50
+  }
 
   private createSession(): BotSession {
     return {
@@ -187,12 +242,15 @@ export class BotChatComponent implements OnDestroy {
     if (!text || session.busy) return
 
     this.text.set('');
+    this.shouldFollowMessages = true
 
     const localId = crypto.randomUUID();
 
     this.updateSession(id, {
       busy: true,
       error: '',
+      notice: undefined,
+      activeRequestId: localId,
       activeAssistantId: undefined,
       messages: [
         ...session.messages,
@@ -204,6 +262,11 @@ export class BotChatComponent implements OnDestroy {
 
       let conversation = session.conversation
 
+      if (!conversation && !session.startNewConversation) {
+        conversation = await this.restoreLatestConversation(id, localId)
+        if (this.destroyed || !this.isActiveRequest(id, localId)) return
+      }
+
       if (!conversation) {
 
         const { data, errors } =
@@ -211,7 +274,7 @@ export class BotChatComponent implements OnDestroy {
 
         if (errors?.length) throw new Error(errors.map(error => error.message).join('\n'))
         if (!data) throw new Error('Impossibile creare la conversazione.')
-        if (this.destroyed) return
+        if (this.destroyed || !this.isActiveRequest(id, localId)) return
 
         conversation = data
 
@@ -221,11 +284,13 @@ export class BotChatComponent implements OnDestroy {
             if (this.destroyed) return
             const botError = this.normalizeBotError(e)
             const session = this.sessions()[id]
+            if (!session?.busy) return
             const timeout = botError.code === 'RESPONSE_TIMEOUT'
             const assistantId = session?.activeAssistantId
             console.error('Errore nello streaming del messaggio.', e)
             this.updateSession(id, {
               busy: false,
+              activeRequestId: undefined,
               activeAssistantId: undefined,
               error: timeout && assistantId ? '' : botError.message,
               messages: (session?.messages ?? []).map(message =>
@@ -235,7 +300,11 @@ export class BotChatComponent implements OnDestroy {
           }
         })
 
-        this.updateSession(id, { conversation, subscription })
+        this.updateSession(id, {
+          conversation,
+          subscription,
+          startNewConversation: false
+        })
         
       }
 
@@ -249,18 +318,118 @@ export class BotChatComponent implements OnDestroy {
 
       // busy viene azzerato al termine dello streaming.
     } catch (error) {
-      if (this.destroyed) return
+      if (this.destroyed || !this.isActiveRequest(id, localId)) return
       const botError = this.normalizeBotError(error)
       console.error('Errore invio', botError)
       this.updateSession(id, {
         busy: false,
+        activeRequestId: undefined,
         error: botError.message
       })
     }
   }
 
+  private async restoreLatestConversation(
+    id: BotId,
+    requestId: string
+  ): Promise<Conversation | undefined> {
+    const { data: conversations, errors: listErrors } =
+      await this.client.conversations[id].list({ limit: 1 })
+
+    if (listErrors?.length) {
+      throw new Error(listErrors.map(error => error.message).join('\n'))
+    }
+
+    if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+
+    const latest = conversations?.[0]
+    if (!latest) return
+
+    const { data: conversation, errors: getErrors } =
+      await this.client.conversations[id].get({ id: latest.id })
+
+    if (getErrors?.length) {
+      throw new Error(getErrors.map(error => error.message).join('\n'))
+    }
+
+    if (!conversation) throw new Error('Impossibile ripristinare la conversazione.')
+    if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+
+    const persistedMessages: Schema[BotId]['messageType'][] = []
+    let nextToken: string | null | undefined
+
+    do {
+      const {
+        data,
+        errors: messageErrors,
+        nextToken: pageToken
+      } = await conversation.listMessages({ limit: 100, nextToken })
+
+      if (messageErrors?.length) {
+        throw new Error(messageErrors.map(error => error.message).join('\n'))
+      }
+
+      persistedMessages.push(...data)
+      nextToken = pageToken
+      if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+    } while (nextToken)
+
+    const messages = persistedMessages
+      .slice()
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map(message => ({
+        id: message.id,
+        role: message.role,
+        text: message.content
+          .map(content => 'text' in content && typeof content.text === 'string' ? content.text : '')
+          .join('')
+      }))
+      .filter(message => message.text.length > 0)
+
+    const pendingMessage = this.sessions()[id]?.messages.find(message => message.id === requestId)
+
+    this.updateSession(id, {
+      conversation,
+      startNewConversation: false,
+      messages: pendingMessage ? [...messages, pendingMessage] : messages
+    })
+
+    return conversation
+  }
+
+  stopResponse(): void {
+    const id = this.botId()
+    const session = this.sessions()[id]
+    if (!session?.busy) return
+
+    session.subscription?.unsubscribe()
+    if (session.activeAssistantId) {
+      this.chunks.delete(`${id}:${session.activeAssistantId}`)
+    }
+
+    this.updateSession(id, {
+      conversation: undefined,
+      subscription: undefined,
+      startNewConversation: true,
+      busy: false,
+      activeRequestId: undefined,
+      activeAssistantId: undefined,
+      notice: 'La prossima domanda inizierà una nuova conversazione.',
+      messages: session.messages.map(message =>
+        message.id === session.activeAssistantId
+          ? { ...message, interrupted: true }
+          : message
+      )
+    })
+  }
+
+  private isActiveRequest(id: BotId, requestId: string): boolean {
+    return this.sessions()[id]?.activeRequestId === requestId
+  }
+
   private onStream(botId: BotId, event: StreamEvent): void {
     if (this.destroyed) return
+    if (!this.sessions()[botId]?.busy) return
 
     const messageId = `assistant:${event.associatedUserMessageId}`
     const key = `${botId}:${messageId}`
@@ -314,6 +483,8 @@ if (
       const truncated = event.stopReason === 'max_tokens'
       this.updateSession(botId, { 
         busy: false,
+        activeRequestId: undefined,
+        activeAssistantId: undefined,
         messages: (this.sessions()[botId].messages ?? []).map(message =>
           message.id === messageId ? { ...message, truncated } : message
         )

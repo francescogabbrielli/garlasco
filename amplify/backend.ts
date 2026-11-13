@@ -10,6 +10,8 @@ import { getTableCountFn } from './functions/get-table-count/resource';
 import { listUsersFn } from './functions/list-users/resource';
 import { updateUserGroupsFn } from './functions/update-user-groups/resource';
 import { reportClientErrorFn } from './functions/report-client-error/resource';
+import { createBotEventFn } from './functions/create-bot-event/resource';
+import { searchEventsByPersonFn } from './functions/search-events-by-person/resource';
 
 const backend = defineBackend({
   
@@ -25,6 +27,8 @@ const backend = defineBackend({
   listUsersFn,
   updateUserGroupsFn,
   reportClientErrorFn,
+  createBotEventFn,
+  searchEventsByPersonFn,
   
 })
 

@@ -11,6 +11,71 @@ import { getTableCountFn } from '../functions/get-table-count/resource';
 import { listUsersFn } from '../functions/list-users/resource';
 import { updateUserGroupsFn } from '../functions/update-user-groups/resource';
 import { reportClientErrorFn } from '../functions/report-client-error/resource';
+import { createBotEventFn } from '../functions/create-bot-event/resource';
+import { searchEventsByPersonFn } from '../functions/search-events-by-person/resource';
+
+const BotEventActorInput = a.customType({
+  personId: a.id(),
+  role: a.string().required()
+});
+
+const BotEventCreated = a.customType({
+  id: a.id().required(),
+  owner: a.string().required(),
+  name: a.string().required(),
+  linkedPeople: a.integer().required()
+});
+
+const PersonEventSearchItem = a.customType({
+  eventId: a.id().required(),
+  role: a.string().required(),
+  owner: a.string(),
+  type: a.ref('EventType'),
+  name: a.string(),
+  description: a.string(),
+  startDate: a.datetime(),
+  endDate: a.datetime(),
+  startPosition: a.ref('Coordinates'),
+  endPosition: a.ref('Coordinates'),
+  sources: a.string().array()
+});
+
+const PersonEventSearchResult = a.customType({
+  events: a.ref('PersonEventSearchItem').array().required(),
+  nextToken: a.string()
+});
+
+const EventStartDateRangeInput = a.customType({
+  from: a.string().required(),
+  to: a.string().required()
+});
+
+const createEventByAnalyst = a.query()
+  .arguments({
+    type: a.ref('EventType').required(),
+    name: a.string().required(),
+    description: a.string().required(),
+    startDate: a.string().required(),
+    endDate: a.string(),
+    startPosition: a.ref('Coordinates'),
+    endPosition: a.ref('Coordinates'),
+    sources: a.string().required().array().required(),
+    actors: a.ref('BotEventActorInput').array()
+  })
+  .returns(a.ref('BotEventCreated'))
+  .handler(a.handler.function(createBotEventFn))
+  .authorization(allow => allow.groups(['Member', 'Editor', 'Admin']))
+
+const searchEventsByPerson = a.query()
+  .arguments({
+    personId: a.id().required(),
+    eventStartDate: a.ref('EventStartDateRangeInput'),
+    limit: a.integer(),
+    nextToken: a.string()
+  })
+  .returns(a.ref('PersonEventSearchResult'))
+  .handler(a.handler.function(searchEventsByPersonFn))
+  .authorization(allow => allow.groups(['Member', 'Editor', 'Admin']))
 
 // AI generation can't return required AWSDateTime fields, so dates are ISO 8601 strings
 const GeneratedEvent = a.customType({
@@ -59,6 +124,16 @@ const WebSearchResponse = a.customType({
     results: a.ref('WebSearchResult').array().required()
   })
 
+const WebsiteCrawlPage = a.customType({
+  url: a.string().required(),
+  content: a.string().required()
+})
+
+const WebsiteCrawlResponse = a.customType({
+  baseUrl: a.string().required(),
+  pages: a.ref('WebsiteCrawlPage').array().required()
+})
+
 const searchWeb = a.query()
     .arguments({
       query: a.string().required(),
@@ -67,6 +142,17 @@ const searchWeb = a.query()
     .returns(a.ref('WebSearchResponse'))
     .handler(a.handler.function(searchWebFn))
     .authorization(allow => allow.authenticated())
+
+const crawlWebsite = a.query()
+  .arguments({
+    url: a.string().required(),
+    instructions: a.string(),
+    maxDepth: a.integer(),
+    maxPages: a.integer()
+  })
+  .returns(a.ref('WebsiteCrawlResponse'))
+  .handler(a.handler.function(searchWebFn))
+  .authorization(allow => allow.authenticated())
 
 const getTableCount = a.query()
   .returns(a.integer())
@@ -137,6 +223,13 @@ const schema = a.schema({
 
   getTableCount,
   reportClientError,
+  BotEventActorInput,
+  BotEventCreated,
+  createEventByAnalyst,
+  PersonEventSearchItem,
+  PersonEventSearchResult,
+  EventStartDateRangeInput,
+  searchEventsByPerson,
 
   CognitoUser,
   listUsers,
@@ -151,11 +244,17 @@ const schema = a.schema({
   WebSearchResult,
   WebSearchResponse,
   searchWeb,
+  WebsiteCrawlPage,
+  WebsiteCrawlResponse,
+  crawlWebsite,
 
   analyst,
   researcher,
   detective
-});
+}).authorization(allow => [
+  allow.resource(createBotEventFn).to(['query', 'mutate']),
+  allow.resource(searchEventsByPersonFn).to(['query'])
+]);
 
 export type Schema = ClientSchema<typeof schema>;
 

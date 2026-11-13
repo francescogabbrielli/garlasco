@@ -10,7 +10,6 @@ import type { BotDefinition } from '../../../../amplify/data/bots';
 
 const bots = [
   { definition: 'analyst', name: 'Analista', capabilities: 'Analizza eventi nel database' },
-  { definition: 'researcher', name: 'Ricercatore', capabilities: 'Cerca riscontri sul web' },
   { definition: 'detective', name: 'Detective', capabilities: 'Analizza eventi e cerca riscontri sul web' }
 ] as const satisfies readonly BotDefinition[]
 
@@ -38,6 +37,10 @@ function createRouteMock() {
     data: { id: 'user-message' },
     errors: undefined
   })
+  const listMessages = vi.fn().mockResolvedValue({
+    data: [],
+    errors: undefined
+  })
 
   const onStreamEvent = vi.fn((value: StreamCallbacks) => {
     callbacks = value;
@@ -47,6 +50,7 @@ function createRouteMock() {
   const conversation = {
     id: 'conversation-id',
     sendMessage,
+    listMessages,
     onStreamEvent
   }
 
@@ -54,12 +58,24 @@ function createRouteMock() {
     data: conversation,
     errors: undefined
   })
+  const list = vi.fn().mockResolvedValue({
+    data: [],
+    errors: undefined
+  })
+  const get = vi.fn().mockResolvedValue({
+    data: conversation,
+    errors: undefined
+  })
 
   return {
     create,
+    get,
+    list,
+    listMessages,
     sendMessage,
     onStreamEvent,
     unsubscribe,
+    conversation,
 
     emit(event: MockStreamEvent) {
       if (!callbacks) throw new Error('Subscription non inizializzata')
@@ -82,7 +98,6 @@ describe('BotChatComponent', () => {
   beforeEach(async () => {
     routes = {
       analyst: createRouteMock(),
-      researcher: createRouteMock(),
       detective: createRouteMock()
     }
 
@@ -206,6 +221,9 @@ describe('BotChatComponent', () => {
 
   it('changes bot via the selector', async () => {
     const selected = element.querySelector('button[id="btn-detective"]') as HTMLButtonElement
+    component.isBotMenuOpen.set(true)
+    fixture.detectChanges()
+    selected.focus()
 
     selected.click()
     fixture.detectChanges()
@@ -213,6 +231,8 @@ describe('BotChatComponent', () => {
 
     expect(component.botId()).toBe('detective');
     expect(component.bot()?.capabilities).toBe('Analizza eventi e cerca riscontri sul web')
+    expect(document.activeElement).toBe(element.querySelector('[aria-label="Seleziona bot"]'))
+    expect(element.querySelector('.bot-dropdown')?.hasAttribute('aria-hidden')).toBe(true)
 
     // Changing bot does not create a conversation yet.
     expect(routes.detective.create).not.toHaveBeenCalled()
@@ -314,6 +334,8 @@ describe('BotChatComponent', () => {
     await send()
 
     expect(component.session().busy).toBe(true)
+    expect(element.querySelector('.composer .stop-button')?.textContent?.trim())
+      .toBe('Interrompi')
 
     finish()
 
@@ -324,6 +346,76 @@ describe('BotChatComponent', () => {
 
     const input = element.querySelector<HTMLInputElement>('input[name="message"]')
     expect(input!.disabled).toBe(false)
+    expect(element.querySelector('.composer .action-button')?.textContent?.trim())
+      .toBe('Invia')
+  })
+
+  it('stops the visible stream and marks the partial answer as interrupted', async () => {
+    await send()
+
+    routes.analyst.emit({
+      associatedUserMessageId: 'u1',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: 'Risposta parziale'
+    })
+    fixture.detectChanges()
+
+    const stopButton = element.querySelector<HTMLButtonElement>(
+      '.composer button[aria-label="Interrompi risposta del bot"]'
+    )
+    expect(stopButton).not.toBeNull()
+    stopButton!.click()
+    fixture.detectChanges()
+
+    expect(component.session().busy).toBe(false)
+    expect(component.session().conversation).toBeUndefined()
+    expect(routes.analyst.unsubscribe).toHaveBeenCalledTimes(1)
+    expect(component.session().messages.at(-1)).toMatchObject({
+      role: 'assistant',
+      text: 'Risposta parziale',
+      interrupted: true
+    })
+    expect(element.textContent).toContain('La prossima domanda inizierà una nuova conversazione.')
+
+    routes.analyst.emit({
+      associatedUserMessageId: 'u1',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 1,
+      text: ' ignorata'
+    })
+
+    expect(component.session().messages.at(-1)?.text).toBe('Risposta parziale')
+  })
+
+  it('starts a new persisted conversation after stopping a response', async () => {
+    await send()
+    component.stopResponse()
+
+    await send('Nuova domanda')
+
+    expect(routes.analyst.list).toHaveBeenCalledTimes(1)
+    expect(routes.analyst.create).toHaveBeenCalledTimes(2)
+  })
+
+  it('ignores send failures that arrive after stopping the response', async () => {
+    let rejectSend!: (error: Error) => void
+    routes.analyst.sendMessage.mockImplementationOnce(
+      () => new Promise((_, reject) => {
+        rejectSend = reject
+      })
+    )
+
+    component.text.set('Domanda')
+    const sending = component.send()
+    await vi.waitFor(() => expect(routes.analyst.sendMessage).toHaveBeenCalledTimes(1))
+
+    component.stopResponse()
+    rejectSend(new Error('Request aborted locally'))
+    await sending
+
+    expect(component.session().busy).toBe(false)
+    expect(component.session().error).toBe('')
   })
 
   it('reuses the conversation for subsequent messages', async () => {
@@ -337,10 +429,92 @@ describe('BotChatComponent', () => {
     expect(routes.analyst.sendMessage).toHaveBeenCalledTimes(2);
   });
 
+  it('resumes the latest persisted conversation with its messages', async () => {
+    routes.analyst.list.mockResolvedValueOnce({
+      data: [{ id: 'conversation-id' }],
+      errors: undefined
+    })
+    routes.analyst.listMessages.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'previous-user',
+          role: 'user',
+          createdAt: '2026-01-01T10:00:00.000Z',
+          content: [{ text: 'Domanda precedente' }]
+        },
+        {
+          id: 'previous-assistant',
+          role: 'assistant',
+          createdAt: '2026-01-01T10:00:01.000Z',
+          content: [{ text: 'Risposta precedente' }]
+        }
+      ],
+      errors: undefined
+    })
+
+    await send('Domanda di seguito')
+
+    expect(routes.analyst.create).not.toHaveBeenCalled()
+    expect(routes.analyst.get).toHaveBeenCalledWith({ id: 'conversation-id' })
+    expect(routes.analyst.sendMessage).toHaveBeenCalledTimes(1)
+    expect(component.session().messages.map(message => message.text)).toEqual([
+      'Domanda precedente',
+      'Risposta precedente',
+      'Domanda di seguito'
+    ])
+  })
+
+  it('scrolls to the latest response while following the bottom', async () => {
+    component.opened.set(true)
+    await send()
+
+    const messages = element.querySelector<HTMLElement>('.messages')!
+    Object.defineProperties(messages, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 300 },
+      scrollTop: { configurable: true, writable: true, value: 0 }
+    })
+
+    routes.analyst.emit({
+      associatedUserMessageId: 'u1',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: 'Nuovo testo'
+    })
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(messages.scrollTop).toBe(1000)
+  })
+
+  it('does not pull the view down after the user scrolls up', async () => {
+    component.opened.set(true)
+    await send()
+
+    const messages = element.querySelector<HTMLElement>('.messages')!
+    Object.defineProperties(messages, {
+      scrollHeight: { configurable: true, value: 1000 },
+      clientHeight: { configurable: true, value: 300 },
+      scrollTop: { configurable: true, writable: true, value: 400 }
+    })
+    messages.dispatchEvent(new Event('scroll'))
+
+    routes.analyst.emit({
+      associatedUserMessageId: 'u1',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: 'Nuovo testo'
+    })
+    fixture.detectChanges()
+    await fixture.whenStable()
+
+    expect(messages.scrollTop).toBe(400)
+  })
+
   it('keeps messages and answers separate for each bot', async () => {
     await send('Domanda per Analista');
 
-    component.botId.set('researcher');
+    component.botId.set('detective');
     await send('Domanda per Ricercatore');
 
     // Analista risponde mentre è visibile Ricercatore.
@@ -362,7 +536,7 @@ describe('BotChatComponent', () => {
 
     expect(component.session().busy).toBe(false);
 
-    component.botId.set('researcher');
+    component.botId.set('detective');
     expect(component.session().busy).toBe(true);
   });
 
@@ -439,13 +613,9 @@ describe('BotChatComponent', () => {
   it('cancels all subscriptions when destroyed', async () => {
     await send();
 
-    component.botId.set('researcher');
-    await send();
-
     fixture.destroy();
 
     expect(routes.analyst.unsubscribe).toHaveBeenCalledTimes(1);
-    expect(routes.researcher.unsubscribe).toHaveBeenCalledTimes(1);
     expect(routes.detective.unsubscribe).not.toHaveBeenCalled();
   });
 
@@ -463,6 +633,7 @@ describe('BotChatComponent', () => {
     component.text.set('Domanda');
     const sending = component.send();
 
+    await vi.waitFor(() => expect(routes.analyst.create).toHaveBeenCalledTimes(1))
     fixture.destroy();
 
     resolveCreate({

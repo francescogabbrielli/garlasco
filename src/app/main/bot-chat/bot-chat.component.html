@@ -6,7 +6,7 @@
   [class.is-open]="opened()"
   [attr.inert]="opened() ? null : ''"
   [attr.aria-hidden]="!opened()"
-  (click)="isBotMenuOpen.set(false)"
+  (click)="closeBotMenu()"
 >
   <header class="chat-header">
     <div>
@@ -19,27 +19,29 @@
       
       <div class="context-controls">
         <button type="button"
+          #botMenuToggle
           class="context-button"
           aria-label="Seleziona bot"
           title="Seleziona bot"
           [attr.aria-expanded]="isBotMenuOpen()"
           aria-haspopup="menu"
-          (keydown.escape)="$event.stopPropagation(); isBotMenuOpen.set(false)"
+          (keydown.escape)="$event.stopPropagation(); closeBotMenu()"
           (click)="$event.stopPropagation(); toggleBotSelect()"
         >🤖</button>
-        <div class="bot-dropdown" role="menu"
+        <div #botDropdown class="bot-dropdown" role="menu"
           [class.is-open]="isBotMenuOpen()"
           [attr.inert]="isBotMenuOpen() ? null : ''"
           [attr.aria-hidden]="!isBotMenuOpen()"
+          (keydown.escape)="$event.preventDefault(); $event.stopPropagation(); closeBotMenu()"
         >
           @for (b of bots; track b.definition) {
             <button
               [id]="'btn-' + b.definition"
               role="menuitem"
               type="button"
-              [class.is-selected]="isBotSelected(b)"
-              [attr.aria-current]="isBotSelected(b) ? 'true' : null"
-              [attr.aria-selected]="isBotSelected(b) ? 'true' : 'false'"
+              [class.is-selected]="isBotMenuOpen() && isBotSelected(b)"
+              [attr.aria-current]="isBotMenuOpen() && isBotSelected(b) ? 'true' : null"
+              [attr.aria-selected]="isBotMenuOpen() && isBotSelected(b) ? 'true' : 'false'"
               (click)="isBotSelected(b) ? null : selectBot(b.definition)"
             >
               {{ b.name }}
@@ -65,7 +67,13 @@
 
   </header>
 
-  <div class="messages" role="log" aria-label="Messaggi">
+  <div
+    #messages
+    class="messages"
+    role="log"
+    aria-label="Messaggi"
+    (scroll)="onMessagesScroll($event)"
+  >
     @if (!session().messages.length) {
       <p class="empty">
         Inizia una conversazione con {{ bot()?.name }}.
@@ -88,13 +96,24 @@
         } @else if (message.truncated) {
           <small class="output-warning" role="status">Messaggio troncato per lunghezza massima raggiunta.</small>
         }
+        @if (message.interrupted) {
+          <small class="output-warning" role="status">
+            Risposta interrotta dall’utente; il testo è parziale.
+          </small>
+        }
       </article>
     }
 
     @if (session().busy) {
-      <p class="status" role="status">Elaborazione in corso<img src="assets/loading.gif" alt="Caricamento in corso" width="48px"></p>
+      <div class="response-status">
+        <p class="status" role="status">Elaborazione in corso<img src="assets/loading.gif" alt="Caricamento in corso" width="48px"></p>
+      </div>
     }
   </div>
+
+  @if (session().notice) {
+    <p class="output-warning interruption-notice" role="status">{{ session().notice }}</p>
+  }
 
   @if (session().error) {
     <p class="error" role="alert">{{ session().error }}</p>
@@ -111,12 +130,22 @@
       [disabled]="session().busy"
     >
 
-    <button
-      type="submit"
-      class="action-button"
-      [disabled]="!text().trim() || session().busy"
-    >
-      Invia
-    </button>
+    @if (session().busy) {
+      <button
+        type="button"
+        class="danger-button stop-button"
+        aria-label="Interrompi risposta del bot"
+        title="Interrompi risposta del bot"
+        (click)="stopResponse()"
+      >Interrompi</button>
+    } @else {
+      <button
+        type="submit"
+        class="action-button"
+        [disabled]="!text().trim()"
+      >
+        Invia
+      </button>
+    }
   </form>
 </section>

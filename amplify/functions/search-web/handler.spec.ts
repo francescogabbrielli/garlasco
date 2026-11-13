@@ -44,6 +44,63 @@ describe('search-web handler', () => {
     expect(body.max_results).toBe(5);
   });
 
+  it('crawls a requested site and maps page content', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({
+      base_url: 'https://example.com/',
+      results: [
+        { url: 'https://example.com/page', raw_content: 'Page content', extra: 'ignored' }
+      ]
+    }));
+
+    const result = await handler({
+      arguments: {
+        url: 'https://example.com',
+        instructions: 'Find pages about the event',
+        maxDepth: 3,
+        maxPages: 8
+      }
+    }, context);
+
+    expect(result).toEqual({
+      baseUrl: 'https://example.com/',
+      pages: [{ url: 'https://example.com/page', content: 'Page content' }]
+    });
+
+    expect(fetchMock.mock.calls[0][0]).toBe('https://api.tavily.com/crawl');
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      url: 'https://example.com/',
+      instructions: 'Find pages about the event',
+      max_depth: 3,
+      limit: 8,
+      allow_external: false,
+      extract_depth: 'basic',
+      format: 'markdown',
+      timeout: 45,
+      chunks_per_source: 3
+    });
+  });
+
+  it('bounds crawl depth and page count and rejects invalid URLs', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({
+      base_url: 'https://example.com/',
+      results: []
+    }));
+
+    await handler({
+      arguments: { url: 'https://example.com', maxDepth: 8, maxPages: 50 }
+    }, context);
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
+      max_depth: 3,
+      limit: 10
+    });
+
+    const details = await failure(handler({ arguments: { url: 'file:///etc/passwd' } }, context));
+
+    expect(details.code).toBe('INVALID_CRAWL_URL');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     [undefined, 5],
     [0, 1],

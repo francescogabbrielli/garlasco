@@ -24,13 +24,8 @@ export interface BotDefinition {
 export const bots = [
     { 
         name: 'Archivista', 
-        capabilities: 'Analizza eventi nel database', 
+        capabilities: 'Ricerca su internet, analizza e cataloga eventi nel database', 
         definition: 'analyst'
-    },
-    { 
-        name: 'Ricercatore', 
-        capabilities: 'Cerca riscontri sul web', 
-        definition: 'researcher'
     },
     { 
         name: 'Investigatore', 

@@ -6,7 +6,7 @@ export function classifyTavilyError(status: number): BotError {
       return {
         source: 'TAVILY',
         code: 'TAVILY_RATE_LIMITED',
-        message: 'La ricerca web è temporaneamente al limite.',
+        message: 'Il servizio web è temporaneamente al limite.',
         retryable: true
       };
 
@@ -32,7 +32,7 @@ export function classifyTavilyError(status: number): BotError {
       return {
         source: 'TAVILY',
         code: 'TAVILY_REQUEST_FAILED',
-        message: 'Impossibile completare la ricerca web.',
+        message: 'Impossibile completare la richiesta web.',
         retryable: status >= 500
       };
   }
