@@ -133,7 +133,7 @@ body {
       font-style: italic;
     }
     &:disabled {
-      color: var(--text-muted);
+      color: gray;
     }
   }
 
@@ -343,6 +343,7 @@ body {
     border-radius: 999px;
     background: var(--highlight);
     color: var(--lowlight);
+    text-shadow: 1px 1px 1px rgb(from var(--lowlight) calc(255 - r) calc(255 - g) calc(255 - b));;
     font-size: 11px;
     font-weight: 600;
     line-height: 1.2;
@@ -572,9 +573,9 @@ html[data-theme="light"] {
 html[data-theme="dark"] {
   color-scheme: dark;
   --page: #0e1011;
-  --surface: #141819;
+  --surface: #130c1f;
   --border: #46534e;
-  --highlight: #51a3da;
+  --highlight: #53549b;
   /**--lowlight: #175c94; */
   --text: #d8d8c8;
   --text-muted: #a0aaa6;

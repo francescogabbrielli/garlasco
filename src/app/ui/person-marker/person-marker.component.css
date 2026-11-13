@@ -20,9 +20,11 @@
 }
 
 .marker.selected {
-    border-color: var(--text-muted);
+    border-color: var(--highlight);
     background: var(--highlight);
     color: var(--lowlight);
+    /** use the opposite of lowlight for the text shadow to make it more readable */
+    text-shadow: 1px 1px 1px rgb(from var(--lowlight) calc(255 - r) calc(255 - g) calc(255 - b));;
 }
 
 .initials {

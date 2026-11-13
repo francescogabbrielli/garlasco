@@ -1,4 +1,22 @@
 <div class="changelog">
+    
+    <h2>0.2.2 - Bot potenziato per inserimento automatico di eventi</h2>
+    <ul>
+        <li>per il bot Archivista (sperimentale)
+        <ul>
+            <li>Miglioramento della ricerca web</li>
+            <li>Fix inserimento eventi</li>
+        </ul>
+        </li>
+        <li>Rivisitazione colori scuri</li>
+    </ul>
+
+    <h2>0.2.1 - Bot per inserimento automatico di eventi</h2>
+    <ul>
+        <li>Permesso di creazione eventi per il bot Archivista (sperimentale)</li>
+        <li>Migliorie e fix varie</li>
+    </ul>
+
     <h2>0.2.0 - Prima bozza sezione "Analisi / Ipotesi"</h2>
     <ul>
         <li>Introduzione pannello ipotesi</li>

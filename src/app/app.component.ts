@@ -91,7 +91,7 @@ export class AppComponent  implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.authSubscription = this.authenticatorService.subscribe(context => {
-      if (context.error && !context.error.toLowerCase().includes('password')) {
+      if (context.error && !context.error.toLowerCase().includes('password') && !context.error.toLocaleLowerCase().includes('utente')) {
         this.authError = context.error
         this.userService.clearPreferences([PREFERENCE_KEY_THEME])
         setTimeout(() => window.location.reload(), 1000)
