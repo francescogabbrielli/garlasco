@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core'
+import { Component, inject, OnInit, OnDestroy, NgZone, DestroyRef } from '@angular/core'
 import { AuthenticatorService } from '@aws-amplify/ui-angular'
 import { Router, RouterOutlet } from '@angular/router'
 import { Amplify } from 'aws-amplify'
@@ -6,7 +6,7 @@ import outputs from '../../amplify_outputs.json'
 
 import { AmplifyAuthenticatorModule, translations } from '@aws-amplify/ui-angular'
 
-import { I18n } from 'aws-amplify/utils'
+import { Hub, I18n } from 'aws-amplify/utils'
 
 import { PREFERENCE_KEY_THEME, UserProfileService } from './user-profile.service'
 
@@ -26,6 +26,8 @@ export class AppComponent  implements OnInit, OnDestroy {
   authenticatorService: AuthenticatorService = inject(AuthenticatorService)
 
   router: Router = inject(Router)
+  private ngZone = inject(NgZone)
+  private destroyRef = inject(DestroyRef)
 
   private authSubscription!: any
   authError: string = ''
@@ -95,6 +97,27 @@ export class AppComponent  implements OnInit, OnDestroy {
         setTimeout(() => window.location.reload(), 1000)
       }
     })
+
+    const cancelHub = Hub.listen('auth', ({ payload }) => {
+      // Fires ONLY on an active login (not on browser refresh)
+      if (payload.event === 'signedIn') {
+        this.ngZone.run(() => {
+          // Wait one tick so <router-outlet> inside <amplify-authenticator> mounts
+          setTimeout(() => {
+            this.router.navigateByUrl('/', { replaceUrl: true });
+          });
+        });
+      }
+
+      // Fires ONLY on sign out -> clears the last visited URL from the address bar
+      if (payload.event === 'signedOut') {
+        this.ngZone.run(() => {
+          this.router.navigateByUrl('/', { replaceUrl: true });
+        });
+      }
+    });
+
+    this.destroyRef.onDestroy(() => cancelHub());    
   }
 
   ngOnDestroy() {

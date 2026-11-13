@@ -13,8 +13,17 @@
       <!-- Questo renderizza automaticamente given_name, family_name, email, password ecc. -->
       <amplify-sign-up-form-fields></amplify-sign-up-form-fields>
 
+      <div class="amplify-flex amplify-field amplify-authenticator__column">
+        <div class="amplify-field amplify-flex amplify-passwordfield amplify-textfield">
+          <label class="amplify-label" for="reason">Motivo della registrazione</label>
+          <textarea class="amplify-input" name="custom:reason" id="reason" rows="4"
+            placeholder="Specifica brevemente i motivi della richiesta di accesso"
+            required amplifySignupFormField></textarea>
+        </div>
+      </div>
+
       <!-- La tua checkbox HTML nativa, pienamente supportata da Angular -->
-      <div class="privacy-container" style="margin-top: 15px; margin-bottom: 15px;">
+      <div style="margin-top: 15px; margin-bottom: 15px;">
         <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer;">
           <input 
             type="checkbox" 
