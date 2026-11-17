@@ -155,10 +155,26 @@ describe('BotChatComponent', () => {
     fixture.detectChanges()
   }
 
+  async function finishIntroduction(bot: BotId): Promise<void> {
+    await vi.waitFor(() => expect(routes[bot].sendMessage).toHaveBeenCalledTimes(1))
+    routes[bot].emit({
+      associatedUserMessageId: 'introduction-user',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: 'Ciao, sono il tuo assistente.'
+    })
+    routes[bot].emit({
+      associatedUserMessageId: 'introduction-user',
+      stopReason: 'end_turn'
+    })
+    fixture.detectChanges()
+  }
+
   it.each(bots)(
     'sends message to the route of bot $definition',
     async bot => {
       component.selectBot(bot.definition)
+      await finishIntroduction(bot.definition)
       component.text.set('Formula una ipotesi')
 
       await component.send()
@@ -166,7 +182,7 @@ describe('BotChatComponent', () => {
       expect(component.session().error).toBe('')
       expect(routes[bot.definition].create).toHaveBeenCalledTimes(1)
 
-      expect(routes[bot.definition].sendMessage).toHaveBeenCalledWith({
+      expect(routes[bot.definition].sendMessage).toHaveBeenLastCalledWith({
         content: [{ text: 'Formula una ipotesi' }]
       })
     }
@@ -227,15 +243,29 @@ describe('BotChatComponent', () => {
 
     selected.click()
     fixture.detectChanges()
-    await fixture.whenStable()
+    await vi.waitFor(() => expect(routes.detective.sendMessage).toHaveBeenCalledTimes(1))
 
     expect(component.botId()).toBe('detective');
     expect(component.bot()?.capabilities).toBe('Analizza eventi e cerca riscontri sul web')
     expect(document.activeElement).toBe(element.querySelector('[aria-label="Seleziona bot"]'))
     expect(element.querySelector('.bot-dropdown')?.hasAttribute('aria-hidden')).toBe(true)
+    expect(routes.detective.sendMessage).toHaveBeenCalledWith({
+      content: [{ text: expect.stringContaining('Presentati brevemente') }]
+    })
+    expect(element.querySelector('.message.user')).toBeNull()
 
-    // Changing bot does not create a conversation yet.
-    expect(routes.detective.create).not.toHaveBeenCalled()
+    routes.detective.emit({
+      associatedUserMessageId: 'introduction-user',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: 'Ciao, sono il tuo assistente.'
+    })
+    finish('detective', 'introduction-user')
+    expect(element.querySelector('.message:not(.user)')?.textContent)
+      .toContain('Ciao, sono il tuo assistente.')
+
+    component.selectBot('detective')
+    expect(routes.detective.sendMessage).toHaveBeenCalledTimes(1)
   })
 
   it('does not send empty messages or messages composed of spaces', async () => {
@@ -317,6 +347,26 @@ describe('BotChatComponent', () => {
     expect(element.querySelector('.message:not(.user)')?.textContent)
       .toContain('Secondo paragrafo');
   });
+
+  it('renders basic markdown while treating raw HTML as text', async () => {
+    await send()
+
+    routes.analyst.emit({
+      associatedUserMessageId: 'u1',
+      contentBlockIndex: 0,
+      contentBlockDeltaIndex: 0,
+      text: '**grassetto** *corsivo* `codice`\n<script>alert(1)</script>'
+    })
+    fixture.detectChanges()
+
+    const reply = element.querySelector<HTMLElement>('.message:not(.user) div')!
+    expect(reply.querySelector('strong')?.textContent).toBe('grassetto')
+    expect(reply.querySelector('em')?.textContent).toBe('corsivo')
+    expect(reply.querySelector('code')?.textContent).toBe('codice')
+    expect(reply.querySelector('br')).not.toBeNull()
+    expect(reply.querySelector('script')).toBeNull()
+    expect(reply.textContent).toContain('<script>alert(1)</script>')
+  })
 
   it('ignores fragments with missing indices', async () => {
     await send();
@@ -462,6 +512,42 @@ describe('BotChatComponent', () => {
       'Risposta precedente',
       'Domanda di seguito'
     ])
+  })
+
+  it('does not send another introduction when one is already in conversation history', async () => {
+    routes.analyst.list.mockResolvedValueOnce({
+      data: [{ id: 'conversation-id' }],
+      errors: undefined
+    })
+    routes.analyst.listMessages.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'previous-introduction',
+          role: 'user',
+          createdAt: '2026-01-01T10:00:00.000Z',
+          content: [{
+            text: "Presentati brevemente all'utente in italiano: spiega chi sei e in cosa puoi aiutarlo. Non menzionare questo messaggio interno."
+          }]
+        },
+        {
+          id: 'previous-answer',
+          role: 'assistant',
+          createdAt: '2026-01-01T10:00:01.000Z',
+          content: [{ text: 'Ciao, sono l’assistente.' }]
+        }
+      ],
+      errors: undefined
+    })
+
+    component.selectBot('analyst')
+    await vi.waitFor(() => expect(routes.analyst.listMessages).toHaveBeenCalledTimes(1))
+    await fixture.whenStable()
+    fixture.detectChanges()
+
+    expect(routes.analyst.sendMessage).not.toHaveBeenCalled()
+    expect(element.querySelector('.message.user')).toBeNull()
+    expect(element.querySelector('.message:not(.user)')?.textContent)
+      .toContain('Ciao, sono l’assistente.')
   })
 
   it('scrolls to the latest response while following the bottom', async () => {

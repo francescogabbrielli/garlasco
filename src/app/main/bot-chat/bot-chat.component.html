@@ -74,13 +74,13 @@
     aria-label="Messaggi"
     (scroll)="onMessagesScroll($event)"
   >
-    @if (!session().messages.length) {
+    @if (!visibleMessages().length && !session().busy) {
       <p class="empty">
         Inizia una conversazione con {{ bot()?.name }}.
       </p>
     }
 
-    @for (message of session().messages; track message.id) {
+    @for (message of visibleMessages(); track message.id) {
       <article
         class="message"
         [class.user]="message.role === 'user'"
@@ -88,7 +88,7 @@
         <small>
           {{ message.role === 'user' ? 'Tu' : bot()?.name }}
         </small>
-        <div>{{ message.text }}</div>
+        <div [innerHTML]="formatMarkdown(message.text)"></div>
         @if (message.timedOut) {
           <small class="output-warning" role="status">
             Tempo massimo di attesa superato. La risposta potrebbe essere incompleta.

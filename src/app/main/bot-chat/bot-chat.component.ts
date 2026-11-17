@@ -24,12 +24,16 @@ type BotId = (typeof bots)[number]['definition'];
 type Conversation = Schema[BotId]['type'];
 type StreamEvent = Schema[BotId]['streamEventType'];
 
+const INTRODUCTION_PROMPT =
+  "Presentati brevemente all'utente in italiano: spiega chi sei e in cosa puoi aiutarlo. Non menzionare questo messaggio interno.";
+
 interface BotSession {
   conversation?: Conversation
   subscription?: { unsubscribe(): void }
   messages: ChatMessage[]
   busy: boolean
   error: string
+  introductionSent?: boolean
   activeAssistantId?: string
   activeRequestId?: string
   notice?: string
@@ -40,6 +44,7 @@ interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   text: string
+  hidden?: boolean
   truncated?: boolean
   timedOut?: boolean
   interrupted?: boolean
@@ -104,12 +109,14 @@ export class BotChatComponent implements OnDestroy {
       }, {} as Record<string, BotSession>))
 
   readonly session = computed(() => this.sessions()[this.botId()] ?? EMPTY_SESSION)
+  readonly visibleMessages = computed(() => this.session().messages.filter(message => !message.hidden))
   readonly bots = bots
   readonly bot = computed(() => bots.find(bot => bot.definition == this.botId()))
   readonly isBotSelected = (b: typeof bots[number]) => b.definition === this.botId()
 
   // I frammenti possono arrivare fuori ordine o essere duplicati.
   private readonly chunks = new Map<string, Map<number, Map<number, string>>>();
+  private readonly introductionsRequested = new Set<BotId>()
   private destroyed = false;  
 
   main = inject(MainComponent)
@@ -130,6 +137,33 @@ export class BotChatComponent implements OnDestroy {
       typeof value['message'] === 'string' &&
       typeof value['retryable'] === 'boolean'
     );
+  }
+
+  formatMarkdown(text: string): string {
+    const htmlEntities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }
+    const escaped = text.replace(/[&<>"']/g, character => htmlEntities[character])
+
+    return escaped
+      .split(/(`[^`\n]+`)/g)
+      .map(part => {
+        if (part.startsWith('`') && part.endsWith('`')) {
+          return `<code>${part.slice(1, -1)}</code>`
+        }
+
+        return part
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+          .replace(/(^|[^\w])_([^_\n]+)_(?!\w)/g, '$1<em>$2</em>')
+      })
+      .join('')
+      .replace(/\r\n?|\n/g, '<br>')
   }
 
   normalizeBotError(error: unknown): BotError {
@@ -206,6 +240,17 @@ export class BotChatComponent implements OnDestroy {
     this.shouldFollowMessages = true
     this.botId.set(id)
     this.closeBotMenu()
+
+    const session = this.sessions()[id]
+    if (
+      !session?.busy &&
+      !session?.introductionSent &&
+      !this.introductionsRequested.has(id)
+    ) {
+      console.log("Sending intro message")
+      this.introductionsRequested.add(id)
+      void this.sendMessage(id, INTRODUCTION_PROMPT, true)
+    }
   }
 
   onMessagesScroll(event: Event): void {
@@ -243,6 +288,12 @@ export class BotChatComponent implements OnDestroy {
 
     this.text.set('');
     this.shouldFollowMessages = true
+    await this.sendMessage(id, text, false)
+  }
+
+  private async sendMessage(id: BotId, text: string, hidden: boolean): Promise<void> {
+    const session = this.sessions()[id] ?? this.createSession()
+    if (session.busy) return
 
     const localId = crypto.randomUUID();
 
@@ -254,7 +305,7 @@ export class BotChatComponent implements OnDestroy {
       activeAssistantId: undefined,
       messages: [
         ...session.messages,
-        { id: localId, role: 'user', text }
+        { id: localId, role: 'user', text, hidden }
       ]
     })
 
@@ -265,6 +316,15 @@ export class BotChatComponent implements OnDestroy {
       if (!conversation && !session.startNewConversation) {
         conversation = await this.restoreLatestConversation(id, localId)
         if (this.destroyed || !this.isActiveRequest(id, localId)) return
+      }
+
+      if (hidden && this.sessions()[id]?.introductionSent) {
+        this.updateSession(id, {
+          busy: false,
+          activeRequestId: undefined,
+          messages: this.sessions()[id].messages.filter(message => message.id !== localId)
+        })
+        return
       }
 
       if (!conversation) {
@@ -316,6 +376,8 @@ export class BotChatComponent implements OnDestroy {
         throw new Error(errors.map(error => error.message).join('\n'))
       }
 
+      if (hidden) this.updateSession(id, { introductionSent: true })
+
       // busy viene azzerato al termine dello streaming.
     } catch (error) {
       if (this.destroyed || !this.isActiveRequest(id, localId)) return
@@ -324,8 +386,12 @@ export class BotChatComponent implements OnDestroy {
       this.updateSession(id, {
         busy: false,
         activeRequestId: undefined,
-        error: botError.message
+        error: botError.message,
+        messages: hidden
+          ? this.sessions()[id].messages.filter(message => message.id !== localId)
+          : this.sessions()[id].messages
       })
+      if (hidden) this.introductionsRequested.delete(id)
     }
   }
 
@@ -377,13 +443,17 @@ export class BotChatComponent implements OnDestroy {
     const messages = persistedMessages
       .slice()
       .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-      .map(message => ({
-        id: message.id,
-        role: message.role,
-        text: message.content
+      .map(message => {
+        const text = message.content
           .map(content => 'text' in content && typeof content.text === 'string' ? content.text : '')
           .join('')
-      }))
+        return {
+          id: message.id,
+          role: message.role,
+          text,
+          hidden: message.role === 'user' && text === INTRODUCTION_PROMPT
+        }
+      })
       .filter(message => message.text.length > 0)
 
     const pendingMessage = this.sessions()[id]?.messages.find(message => message.id === requestId)
@@ -391,6 +461,7 @@ export class BotChatComponent implements OnDestroy {
     this.updateSession(id, {
       conversation,
       startNewConversation: false,
+      introductionSent: this.sessions()[id]?.introductionSent || messages.some(message => message.hidden),
       messages: pendingMessage ? [...messages, pendingMessage] : messages
     })
 

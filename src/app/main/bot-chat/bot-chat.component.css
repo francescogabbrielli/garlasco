@@ -108,15 +108,24 @@
   padding: 10px 14px;
   border-radius: 12px;
   overflow-wrap: anywhere;
+  color: var(--text);
 
   small {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
+    color: var(--text-muted)
   }
 
   div {
     white-space: pre-wrap;
+  }
+
+  code {
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    background: var(--page);
+    font-size: 0.9em;
   }
 
   &.user {

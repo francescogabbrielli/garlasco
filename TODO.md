@@ -1,9 +1,13 @@
 NEXT
 ----
-- improve bots capabilities and fine tune limitations &check;
 - implement notification system
 - hypothesis publication
 
+TODO: 0.2.2
+-----------
+- improve bots capabilities and fine tune limitations &check;
+- add bot presentation &check;
+- chat history prelaod ...
 
 TODO: 0.2.1
 -----------
