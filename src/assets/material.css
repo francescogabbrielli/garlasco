@@ -51,11 +51,11 @@ html[data-theme="light"] {
 }
 
 html[data-theme="dark"] {
-  --mat-sys-primary: #53549b;
-  --mat-sys-surface-tint: #53549b;
+  --mat-sys-primary: #585a9f;
+  --mat-sys-surface-tint: #585a9f;
   --mat-sys-on-primary: rgb(55 38 92);
   --mat-sys-primary-container: rgb(78 61 117);
-  --mat-sys-on-primary-container: #53549b;
+  --mat-sys-on-primary-container: #585a9f;
   --mat-sys-secondary: rgb(145 213 173);
   --mat-sys-on-secondary: rgb(0 56 34);
   --mat-sys-secondary-container: rgb(2 82 51);

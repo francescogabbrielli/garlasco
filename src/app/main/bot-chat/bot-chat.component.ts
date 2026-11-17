@@ -7,7 +7,8 @@ import {
   effect,
   signal,
   inject,
-  model
+  model,
+  OnInit
 } from '@angular/core';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -59,7 +60,7 @@ const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
   templateUrl: './bot-chat.component.html',
   styleUrl: './bot-chat.component.css'
 })
-export class BotChatComponent implements OnDestroy {
+export class BotChatComponent implements OnInit, OnDestroy {
 
   private readonly client = inject(CHAT_CLIENT)
 
@@ -561,6 +562,11 @@ if (
         )
       })
     }
+  }
+
+  ngOnInit(): void {
+    const id = this.bots[0]?.definition
+    if (id) this.selectBot(id)
   }
 
   ngOnDestroy(): void {

@@ -11,7 +11,7 @@
     background: var(--surface);
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 910;
     backdrop-filter: blur(8px);
   }
 
@@ -128,7 +128,7 @@ button.main-link {
     position: absolute;
     top: calc(100% + 0.25rem);
     right: 0;
-    z-index: 2;
+    z-index: 999;
     min-width: 13rem;
     padding: 0.35rem;
     border: 1px solid var(--border);

@@ -7,7 +7,7 @@ TODO: 0.2.2
 -----------
 - improve bots capabilities and fine tune limitations &check;
 - add bot presentation &check;
-- chat history prelaod ...
+- chat history prelaod &check;
 
 TODO: 0.2.1
 -----------

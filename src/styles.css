@@ -575,11 +575,11 @@ html[data-theme="dark"] {
   --page: #0e1011;
   --surface: #130c1f;
   --border: #46534e;
-  --highlight: #53549b;
+  --highlight: #585a9f;
   /**--lowlight: #175c94; */
   --text: #d8d8c8;
-  --text-muted: #a0aaa6;
-  --accent: #29c797;
+  --text-muted: #8da39a;
+  --accent: #0eb180;
   --danger: #df5762;
   --hover: #364444;
   --backdrop: rgba(204, 201, 213, 0.46);
