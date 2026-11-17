@@ -58,7 +58,7 @@ let dataClientPromise: Promise<DataClient> | undefined;
 function getDataClientEnvironment(): DataClientEnv {
   const required = (key: string): string => {
     const value = env[key];
-    if (!value) throw new Error(`Missing Lambda environment variable: ${key}`);
+    if (!value) throw new Error(`Manca la viariabile di ambiente: ${key}`);
     return value;
   };
   return {
@@ -84,14 +84,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function requireText(value: unknown, field: string, maxLength: number): string {
   if (typeof value !== 'string' || value.trim().length === 0 || value.length > maxLength) {
-    throw new Error(`Invalid ${field}: expected non-empty text up to ${maxLength} characters.`);
+    throw new Error(`Campo '${field}' non valido: atteso testo non vuoto di al massimo ${maxLength} caratteri.`);
   }
   return value.trim();
 }
 
 function normalizeDate(value: unknown, field: string): string {
   if (typeof value !== 'string' || !Number.isFinite(Date.parse(value))) {
-    throw new Error(`Invalid ${field}: expected an ISO date-time.`);
+    throw new Error(`Data non valida '${field}': attesa in formato ISO date-time.`);
   }
   return new Date(value).toISOString();
 }
@@ -110,7 +110,7 @@ function normalizeCoordinates(value: unknown, field: string): Coordinates | unde
     typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 ||
     typeof radius !== 'number' || !Number.isFinite(radius) || radius < 0
   ) {
-    throw new Error(`Invalid ${field}: latitude, longitude, and non-negative radius are required.`);
+    throw new Error(`Campo '${field}' non valido: latitude, longitudine, e raggio non-negativo sono richiesti.`);
   }
 
   return { latitude, longitude, radius };
@@ -119,11 +119,11 @@ function normalizeCoordinates(value: unknown, field: string): Coordinates | unde
 function normalizeActors(value: unknown): BotEventActor[] {
   if (value == null) return [];
   if (!Array.isArray(value) || value.length > MAX_ACTORS) {
-    throw new Error(`Invalid actors: expected at most ${MAX_ACTORS} entries.`);
+    throw new Error(`Attori non validi: attesi al massimo ${MAX_ACTORS}.`);
   }
 
   return value.map((actor, index) => {
-    if (!isRecord(actor)) throw new Error(`Invalid actor at position ${index + 1}.`);
+    if (!isRecord(actor)) throw new Error(`Attore n. ${index + 1} non valido`);
     const personId = actor['personId'];
     const role = requireText(actor['role'], `actors[${index}].role`, 200);
     if (personId !== undefined && (typeof personId !== 'string' || !personId.trim())) {
@@ -135,12 +135,12 @@ function normalizeActors(value: unknown): BotEventActor[] {
 
 function normalizeSources(value: unknown): string[] {
   if (!Array.isArray(value) || value.length > MAX_SOURCES) {
-    throw new Error(`Invalid sources: expected at most ${MAX_SOURCES} URLs.`);
+    throw new Error(`Fonti non valide: al massimo sono permessi ${MAX_SOURCES} URLs.`);
   }
 
   return value.map((source, index) => {
     if (typeof source !== 'string' || source.length > 2000) {
-      throw new Error(`Invalid source at position ${index + 1}.`);
+      throw new Error(`Fonte n. ${index + 1} non valida.`);
     }
     return source.trim();
   });
@@ -152,13 +152,13 @@ function isEventType(value: unknown): value is typeof EVENT_TYPES[number] {
 
 function validateInput(input: CreateBotEventInput) {
   if (!isEventType(input.type)) {
-    throw new Error(`Invalid event type. Expected one of: ${EVENT_TYPES.join(', ')}.`);
+    throw new Error(`Tipo di evento non valido. Atteso uno fra: ${EVENT_TYPES.join(', ')}.`);
   }
 
   const startPosition = normalizeCoordinates(input.startPosition, 'startPosition');
   const endPosition = normalizeCoordinates(input.endPosition, 'endPosition');
   if (input.type === 'Fatto' && !startPosition) {
-    throw new Error('A startPosition is required for type Fatto. Research the event location before retrying.');
+    throw new Error('La posizione iniziale è richiesta per gli eventi di tipo \'Fatto\'. Ricerca la posizione dell\'evento prima di riprovare.');
   }
 
   return {
@@ -179,7 +179,9 @@ async function resolveActorIds(
   actors: BotEventActor[],
   fallbackPersonId: string
 ): Promise<ResolvedBotEventActor[]> {
-  if (!fallbackPersonId) throw new Error('BOT_FALLBACK_PERSON_ID is not configured.');
+  
+  if (!fallbackPersonId)
+    throw new Error("BOT_FALLBACK_PERSON_ID non è configurata.")
 
   const resolved: ResolvedBotEventActor[] = [];
   let fallbackExists: boolean | undefined;
@@ -189,7 +191,7 @@ async function resolveActorIds(
     if (personId) {
       const { data, errors } = await client.models.Person.get({ id: personId });
       if (errors?.length) {
-        throw new Error(`Unable to verify person ${personId}: ${errors.map(error => error.message).join(', ')}`);
+        throw new Error(`Impossibile verificare la persona ${personId}: ${errors.map(error => error.message).join(', ')}`);
       }
       if (!data) personId = undefined;
     }
@@ -198,12 +200,12 @@ async function resolveActorIds(
       if (fallbackExists === undefined) {
         const { data, errors } = await client.models.Person.get({ id: fallbackPersonId });
         if (errors?.length) {
-          throw new Error(`Unable to verify fallback person: ${errors.map(error => error.message).join(', ')}`);
+          throw new Error(`Impossibile verificare la persona di fallback: ${errors.map(error => error.message).join(', ')}`);
         }
         fallbackExists = Boolean(data);
       }
       if (!fallbackExists) {
-        throw new Error(`Fallback person ${fallbackPersonId} was not found. Create the A A person before retrying.`);
+        throw new Error(`La persona di fallback ${fallbackPersonId} non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);
       }
       personId = fallbackPersonId;
     }
@@ -249,7 +251,7 @@ export async function createBotEvent(
   fallbackPersonId: string
 ): Promise<{ id: string; owner: string; name: string; linkedPeople: number }> {
   const owner = BOT_OWNER_BY_FIELD[event.info.fieldName];
-  if (!owner) throw new Error('Event creation is not enabled for this bot.');
+  if (!owner) throw new Error('La creazione di eventi non è abilitata per questo bot.');
 
   const normalized = validateInput(event.arguments);
   const actors = await resolveActorIds(client, normalized.actors, fallbackPersonId);
@@ -269,7 +271,7 @@ export async function createBotEvent(
   });
 
   if (createErrors?.length || !createdEvent?.id) {
-    throw new Error(`Unable to create event: ${createErrors?.map(error => error.message).join(', ') || 'no event returned'}`);
+    throw new Error(`Impossibile creare l'evento: ${createErrors?.map(error => error.message).join(', ') || 'nessun evento restituito'}`);
   }
 
   let createdLinks = 0;
@@ -284,8 +286,8 @@ export async function createBotEvent(
     });
     if (errors?.length) {
       throw new Error(
-        `Event ${createdEvent.id} was created, but linking person ${actor.personId} failed ` +
-        `after ${createdLinks} link(s): ${errors.map(error => error.message).join(', ')}`
+        `L'evento ${createdEvent.id} è stato creato, ma l'associazione della persona ${actor.personId} è fallita ` +
+        `dopo ${createdLinks} link(s): ${errors.map(error => error.message).join(', ')}`
       );
     }
     createdLinks++;

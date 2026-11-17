@@ -78,7 +78,8 @@ describe('create-bot-event handler', () => {
       owner: 'analyst',
       type: 'Fatto',
       name: 'Evento',
-      geoHash: expect.any(String)
+      geoHash: expect.any(String),
+      sources: ['https://example.test/source']
     }));
     expect(eventCreate.mock.calls[0][0]).not.toHaveProperty('relevance');
     expect(eventCreate.mock.calls[0][0]).not.toHaveProperty('reliability');
@@ -116,7 +117,7 @@ describe('create-bot-event handler', () => {
       resolverEvent(validInput({ startPosition: undefined })),
       client,
       FALLBACK_PERSON_ID
-    )).rejects.toThrow('A startPosition is required for type Fatto');
+    )).rejects.toThrow("La posizione iniziale è richiesta per gli eventi di tipo 'Fatto'. Ricerca la posizione dell'evento prima di riprovare.");
 
     expect(eventCreate).not.toHaveBeenCalled();
     expect(eventPersonCreate).not.toHaveBeenCalled();
@@ -129,7 +130,7 @@ describe('create-bot-event handler', () => {
       resolverEvent(validInput(), 'createEventByDetective'),
       client,
       FALLBACK_PERSON_ID
-    )).rejects.toThrow('Event creation is not enabled for this bot');
+    )).rejects.toThrow('La creazione di eventi non è abilitata per questo bot.');
 
     expect(eventCreate).not.toHaveBeenCalled();
   });
@@ -144,7 +145,7 @@ describe('create-bot-event handler', () => {
       resolverEvent(validInput({ actors: [{ role: 'testimone' }] })),
       client,
       FALLBACK_PERSON_ID
-    )).rejects.toThrow(`Fallback person ${FALLBACK_PERSON_ID} was not found`);
+    )).rejects.toThrow(`La persona di fallback 45f03321-c6f4-466b-8417-ba99fb785a86 non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);
 
     expect(eventCreate).not.toHaveBeenCalled();
   });

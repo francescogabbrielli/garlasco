@@ -3,10 +3,15 @@ import {
   Coordinates, EventType, PersonType, Person, Event, EventPerson, EventRelated,
   Hypothesis, HypothesisPerson, HypothesisPublished, HypothesisPublishedPerson, PublicationRequest, RequestStatus 
 } from './models';
+import { 
+  searchWeb, mapWebsite, extractWebContent,
+  WebSearchResult, WebSearchResponse, 
+  // WebsiteCrawlPage, WebsiteCrawlResponse, 
+  WebsiteMapResponse 
+} from './tavily';
+import { analyst, detective, researcher } from './bots-defs';
 import { generateEventFn } from '../functions/generate-event/resource';
 import { sendEmailFn } from '../functions/send-email/resource';
-import { searchWebFn } from '../functions/search-web/resource';
-import { analyst, detective, researcher } from './bots-defs';
 import { getTableCountFn } from '../functions/get-table-count/resource';
 import { listUsersFn } from '../functions/list-users/resource';
 import { updateUserGroupsFn } from '../functions/update-user-groups/resource';
@@ -59,7 +64,7 @@ const createEventByAnalyst = a.query()
     endDate: a.string(),
     startPosition: a.ref('Coordinates'),
     endPosition: a.ref('Coordinates'),
-    sources: a.string().required().array().required(),
+    sources: a.string().array().required(),
     actors: a.ref('BotEventActorInput').array()
   })
   .returns(a.ref('BotEventCreated'))
@@ -113,46 +118,6 @@ const sendEmail = a
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(sendEmailFn))
 
-const WebSearchResult = a.customType({
-    title: a.string().required(),
-    url: a.string().required(),
-    content: a.string().required()
-  })
-
-const WebSearchResponse = a.customType({
-    query: a.string().required(),
-    results: a.ref('WebSearchResult').array().required()
-  })
-
-const WebsiteCrawlPage = a.customType({
-  url: a.string().required(),
-  content: a.string().required()
-})
-
-const WebsiteCrawlResponse = a.customType({
-  baseUrl: a.string().required(),
-  pages: a.ref('WebsiteCrawlPage').array().required()
-})
-
-const searchWeb = a.query()
-    .arguments({
-      query: a.string().required(),
-      maxResults: a.integer()
-    })
-    .returns(a.ref('WebSearchResponse'))
-    .handler(a.handler.function(searchWebFn))
-    .authorization(allow => allow.authenticated())
-
-const crawlWebsite = a.query()
-  .arguments({
-    url: a.string().required(),
-    instructions: a.string(),
-    maxDepth: a.integer(),
-    maxPages: a.integer()
-  })
-  .returns(a.ref('WebsiteCrawlResponse'))
-  .handler(a.handler.function(searchWebFn))
-  .authorization(allow => allow.authenticated())
 
 const getTableCount = a.query()
   .returns(a.integer())
@@ -222,6 +187,7 @@ const schema = a.schema({
   RequestStatus,
 
   getTableCount,
+
   reportClientError,
   BotEventActorInput,
   BotEventCreated,
@@ -244,9 +210,12 @@ const schema = a.schema({
   WebSearchResult,
   WebSearchResponse,
   searchWeb,
-  WebsiteCrawlPage,
-  WebsiteCrawlResponse,
-  crawlWebsite,
+  // WebsiteCrawlPage,
+  // WebsiteCrawlResponse,
+  // crawlWebsite,
+  WebsiteMapResponse,
+  mapWebsite,
+  extractWebContent,
 
   analyst,
   researcher,

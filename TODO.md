@@ -1,5 +1,6 @@
 NEXT
 ----
+- improve bots capabilities and fine tune limitations &check;
 - implement notification system
 - hypothesis publication
 

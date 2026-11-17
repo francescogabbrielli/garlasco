@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyTavilyError } from './tavily-error';
+import { classifyTavilyError } from './tavily-utils';
 
 describe('classifyTavilyError', () => {
   it.each([

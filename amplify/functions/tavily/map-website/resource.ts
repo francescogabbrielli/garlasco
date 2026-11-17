@@ -1,7 +1,7 @@
 import { defineFunction, secret } from '@aws-amplify/backend';
 
-export const searchWebFn = defineFunction({
-  name: 'search-web',
+export const mapWebsiteFn = defineFunction({
+  name: 'map-website',
   entry: './handler.ts',
   timeoutSeconds: 120,
   logging: { retention: '1 month' },
