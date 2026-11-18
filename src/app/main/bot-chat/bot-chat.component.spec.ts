@@ -51,7 +51,7 @@ function createRouteMock() {
     id: 'conversation-id',
     sendMessage,
     listMessages,
-    onStreamEvent
+    onStreamEvent,
   }
 
   const create = vi.fn().mockResolvedValue({
@@ -122,7 +122,10 @@ describe('BotChatComponent', () => {
     
     component = fixture.componentInstance
     element = fixture.nativeElement
+    
+    const selectBot = vi.spyOn(component, 'selectBot').mockImplementation((id:BotId) => new Promise<void>(() => {}))
     fixture.detectChanges()
+    selectBot.mockRestore()
   })
 
   afterEach(() => {
@@ -188,6 +191,17 @@ describe('BotChatComponent', () => {
     }
   )
 
+  it('selects the default bot and sends its introduction on init', async () => {
+    component.ngOnInit()
+    await finishIntroduction('analyst')
+
+    expect(component.botId()).toBe('analyst')
+    expect(routes.analyst.create).toHaveBeenCalledTimes(1)
+    expect(routes.analyst.sendMessage).toHaveBeenCalledWith({
+      content: [{ text: expect.stringContaining('Presentati brevemente') }]
+    })
+  })
+
   it('starts closed with the Analyst bot selected', () => {
     expect(component.opened()).toBe(false);
     expect(component.botId()).toBe('analyst');
@@ -195,8 +209,6 @@ describe('BotChatComponent', () => {
     expect(panel().classList.contains('is-open')).toBe(false);
     expect(panel().hasAttribute('inert')).toBe(true);
     //expect(launcher().getAttribute('aria-expanded')).toBe('false');
-
-    expect(routes.analyst.create).not.toHaveBeenCalled();
   })
 
   it('opens and closes the panel from the button', () => {

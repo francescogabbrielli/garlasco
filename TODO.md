@@ -6,7 +6,7 @@ NEXT: 0.3.0
 TODO: 0.2.3
 -----------
 - bugfix:
-    - bot chat: first command is ignored
+    - bot chat: first command is ignored (session corrupted?) &check;
     - avoid splash for import jobs (will use notifications)
     - save person issue &check;
 

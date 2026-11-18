@@ -35,6 +35,7 @@ interface BotSession {
   busy: boolean
   error: string
   introductionSent?: boolean
+  restored: boolean
   activeAssistantId?: string
   activeRequestId?: string
   notice?: string
@@ -50,8 +51,6 @@ interface ChatMessage {
   timedOut?: boolean
   interrupted?: boolean
 }
-
-const EMPTY_SESSION: BotSession = { messages: [], busy: false, error: '' }
 
 @Component({
   selector: 'app-bot-chat',
@@ -103,13 +102,13 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
   private readonly sessions = signal<Record<string, BotSession>>(
     bots
-      .map(bot => [bot.definition, EMPTY_SESSION] as const)
+      .map(bot => [bot.definition, this.createSession()] as const)
       .reduce((acc, [key, value]) => {
         acc[key as string] = value;
         return acc;
       }, {} as Record<string, BotSession>))
 
-  readonly session = computed(() => this.sessions()[this.botId()] ?? EMPTY_SESSION)
+  readonly session = computed(() => this.sessions()[this.botId()])
   readonly visibleMessages = computed(() => this.session().messages.filter(message => !message.hidden))
   readonly bots = bots
   readonly bot = computed(() => bots.find(bot => bot.definition == this.botId()))
@@ -117,7 +116,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
   // I frammenti possono arrivare fuori ordine o essere duplicati.
   private readonly chunks = new Map<string, Map<number, Map<number, string>>>();
-  private readonly introductionsRequested = new Set<BotId>()
+  // private readonly introductionsRequested = new Set<BotId>()
   private destroyed = false;  
 
   main = inject(MainComponent)
@@ -237,19 +236,30 @@ export class BotChatComponent implements OnInit, OnDestroy {
     this.isBotMenuOpen.set(false)
   }
 
-  selectBot(id: BotId): void {
+  async selectBot(id: BotId): Promise<void> {
     this.shouldFollowMessages = true
     this.botId.set(id)
     this.closeBotMenu()
 
-    const session = this.sessions()[id]
+    const session = this.session()
+
+    if (session.busy && !session.restored) {
+      this.updateSession(id, {
+        busy: false,
+        error: '',
+        notice: undefined,
+        activeRequestId: crypto.randomUUID(),
+        activeAssistantId: undefined,
+        conversation: await this.restoreLatestConversation(id)
+      })
+    }
+
     if (
-      !session?.busy &&
-      !session?.introductionSent &&
-      !this.introductionsRequested.has(id)
+      !session.busy &&
+      !session.introductionSent
+      // !this.introductionsRequested.has(id)
     ) {
-      console.log("Sending intro message")
-      this.introductionsRequested.add(id)
+      // this.introductionsRequested.add(id)
       void this.sendMessage(id, INTRODUCTION_PROMPT, true)
     }
   }
@@ -265,8 +275,9 @@ export class BotChatComponent implements OnInit, OnDestroy {
   private createSession(): BotSession {
     return {
       messages: [],
-      busy: false,
-      error: ''
+      busy: true,
+      error: '',
+      restored: false
     }
   }
 
@@ -274,16 +285,17 @@ export class BotChatComponent implements OnInit, OnDestroy {
     this.sessions.update(sessions => ({
       ...sessions,
       [id]: {
-        ...(sessions[id] ?? this.createSession()),
+        ...(sessions[id]),
         ...patch
       }
     }))
+    console.log("UPDATE CHAT SESSION " + id, this.sessions()[id])
   }
 
   async send(): Promise<void> {
     const id = this.botId();
     const text = this.text().trim();
-    const session = this.sessions()[id] ?? this.createSession()
+    const session = this.sessions()[id]
 
     if (!text || session.busy) return
 
@@ -293,10 +305,10 @@ export class BotChatComponent implements OnInit, OnDestroy {
   }
 
   private async sendMessage(id: BotId, text: string, hidden: boolean): Promise<void> {
-    const session = this.sessions()[id] ?? this.createSession()
+    const session = this.sessions()[id]
+    console.log("MSG CHAT " + id, { text, busy: session.busy, hidden })
     if (session.busy) return
-
-    const localId = crypto.randomUUID();
+    const localId = crypto.randomUUID()
 
     this.updateSession(id, {
       busy: true,
@@ -314,19 +326,14 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
       let conversation = session.conversation
 
-      if (!conversation && !session.startNewConversation) {
-        conversation = await this.restoreLatestConversation(id, localId)
-        if (this.destroyed || !this.isActiveRequest(id, localId)) return
-      }
-
-      if (hidden && this.sessions()[id]?.introductionSent) {
-        this.updateSession(id, {
-          busy: false,
-          activeRequestId: undefined,
-          messages: this.sessions()[id].messages.filter(message => message.id !== localId)
-        })
-        return
-      }
+      // if (hidden && this.sessions()[id]?.introductionSent) {
+      //   this.updateSession(id, {
+      //     busy: false,
+      //     activeRequestId: undefined,
+      //     messages: this.sessions()[id].messages.filter(message => message.id !== localId)
+      //   })
+      //   return
+      // }
 
       if (!conversation) {
 
@@ -338,6 +345,9 @@ export class BotChatComponent implements OnInit, OnDestroy {
         if (this.destroyed || !this.isActiveRequest(id, localId)) return
 
         conversation = data
+      }
+
+      if (!session.subscription) {
 
         const subscription = conversation.onStreamEvent({
           next: event => this.onStream(id, event),
@@ -392,14 +402,16 @@ export class BotChatComponent implements OnInit, OnDestroy {
           ? this.sessions()[id].messages.filter(message => message.id !== localId)
           : this.sessions()[id].messages
       })
-      if (hidden) this.introductionsRequested.delete(id)
+      // if (hidden) this.introductionsRequested.delete(id)
     }
   }
 
   private async restoreLatestConversation(
-    id: BotId,
-    requestId: string
+    id: BotId
   ): Promise<Conversation | undefined> {
+  
+    console.log("RESTORE CHAT", id)
+
     const { data: conversations, errors: listErrors } =
       await this.client.conversations[id].list({ limit: 1 })
 
@@ -407,7 +419,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
       throw new Error(listErrors.map(error => error.message).join('\n'))
     }
 
-    if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+    if (this.destroyed) return
 
     const latest = conversations?.[0]
     if (!latest) return
@@ -420,7 +432,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
     }
 
     if (!conversation) throw new Error('Impossibile ripristinare la conversazione.')
-    if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+    if (this.destroyed) return
 
     const persistedMessages: Schema[BotId]['messageType'][] = []
     let nextToken: string | null | undefined
@@ -438,7 +450,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
       persistedMessages.push(...data)
       nextToken = pageToken
-      if (this.destroyed || !this.isActiveRequest(id, requestId)) return
+      if (this.destroyed) return
     } while (nextToken)
 
     const messages = persistedMessages
@@ -457,13 +469,12 @@ export class BotChatComponent implements OnInit, OnDestroy {
       })
       .filter(message => message.text.length > 0)
 
-    const pendingMessage = this.sessions()[id]?.messages.find(message => message.id === requestId)
-
     this.updateSession(id, {
       conversation,
       startNewConversation: false,
       introductionSent: this.sessions()[id]?.introductionSent || messages.some(message => message.hidden),
-      messages: pendingMessage ? [...messages, pendingMessage] : messages
+      messages,
+      restored: true
     })
 
     return conversation
@@ -500,18 +511,19 @@ export class BotChatComponent implements OnInit, OnDestroy {
   }
 
   private onStream(botId: BotId, event: StreamEvent): void {
+    console.log("ON STREAM "+ botId, event.associatedUserMessageId)
     if (this.destroyed) return
     if (!this.sessions()[botId]?.busy) return
 
     const messageId = `assistant:${event.associatedUserMessageId}`
     const key = `${botId}:${messageId}`
 
-if (
-  'text' in event &&
-  typeof event.text === 'string' &&
-  typeof event.contentBlockIndex === 'number' &&
-  typeof event.contentBlockDeltaIndex === 'number'
-) {
+    if (
+      'text' in event &&
+      typeof event.text === 'string' &&
+      typeof event.contentBlockIndex === 'number' &&
+      typeof event.contentBlockDeltaIndex === 'number'
+    ) {
       let blocks = this.chunks.get(key)
 
       if (!blocks) {
