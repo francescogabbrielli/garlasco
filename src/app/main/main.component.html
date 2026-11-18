@@ -45,7 +45,7 @@
         [attr.aria-pressed]="botChatOpened()"
         aria-label="Chat IA"
         title="Chat IA"
-        (click)="botChatOpened.set(!botChatOpened())"
+        (click)="isUserMenuOpen.set(false); botChatOpened.set(!botChatOpened())"
       >
         🤖
       </button>

@@ -59,7 +59,6 @@ export class MapPickerComponent implements OnInit, OnDestroy {
   private autocompleteInstance = signal<google.maps.places.PlaceAutocompleteElement | null>(null)
 
   constructor() {
-    // 🚀 L'EFFECT NEL COSTRUTTORE: Perfettamente legale in Angular 20
     effect(() => {
       const element = this.autocompleteInstance();
       const currentScheme = this.mapsLoader.colorScheme(); // Ritorna 'LIGHT' o 'DARK'
@@ -121,17 +120,18 @@ export class MapPickerComponent implements OnInit, OnDestroy {
       placeAutocomplete.locationBias = map.getBounds()?.toJSON() as google.maps.places.LocationBias
     })    
 
-    this.mapInstance = map
-    const initial = this.initialPosition()
-    if (!initial) return
-    if (initial.radius > 0) {
-      map.fitBounds(this.geoService.toBounds(initial), 0)
-    } else {
-      map.setCenter({ lat: initial.latitude, lng: initial.longitude })
-      map.setZoom(16)
-      this.selectedPoint.set({ lat: initial.latitude, lng: initial.longitude })
-    }
-
+    setTimeout(() => {
+      this.mapInstance = map
+      const initial = this.initialPosition()
+      if (!initial) return
+      if (initial.radius > 0) {
+        map.fitBounds(this.geoService.toBounds(initial), 0)
+      } else {
+        map.setCenter({ lat: initial.latitude, lng: initial.longitude })
+        map.setZoom(16)
+        this.selectedPoint.set({ lat: initial.latitude, lng: initial.longitude })
+      }
+      }, 100)
 
   }
 
