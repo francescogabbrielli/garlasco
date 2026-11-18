@@ -20,7 +20,7 @@ import { createBotEventFn } from '../functions/create-bot-event/resource';
 import { searchEventsByPersonFn } from '../functions/search-events-by-person/resource';
 
 const BotEventActorInput = a.customType({
-  personId: a.id(),
+  personId: a.id(), //optional because FALLBACK person can be used
   role: a.string().required()
 });
 
@@ -64,8 +64,8 @@ const createEventByAnalyst = a.query()
     endDate: a.string(),
     startPosition: a.ref('Coordinates'),
     endPosition: a.ref('Coordinates'),
-    sources: a.string().array().required(),
-    actors: a.ref('BotEventActorInput').array()
+    actors: a.ref('BotEventActorInput').array().required(),
+    sources: a.string().array(),
   })
   .returns(a.ref('BotEventCreated'))
   .handler(a.handler.function(createBotEventFn))

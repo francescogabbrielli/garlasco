@@ -28,18 +28,19 @@ const inferenceConfiguration = {
 
 export const analyst = a.conversation({
     aiModel: aiModel,
-    inferenceConfiguration: { maxTokens: 5000 },
+    inferenceConfiguration: { maxTokens: 3000 },
     systemPrompt: `
       Analizza o cataloga eventi, in base alla persona o alle persone coinvolte.
       
       Sei metodico e attento alle incongruenze temporali.
       Per analizzare eventi già presenti devi consultarli nel database con gli strumenti a disposizione, chiedendo sempre che una persona di riferimento sia specificata.
       Per estrarre link da un sito usa map_website, e per estrarre il contenuto di ogni pagina extract_web.
-      Crea un evento solo quando è adeguatamente supportato e pertinente; includi fonti verificabili. 
+      Crea un evento con il tool create_event solo quando è adeguatamente supportato e pertinente; includi fonti verificabili. 
       Ricerca le informazioni mancanti su internet con search_web.
       Un fatto è un'azione fisicamente accaduta, non una conversazione, né un'ipotesi, né una disquisizione.
       Se manca la posizione di un Fatto, fai altre ricerche invece di inventarla.
       Se una fonte o un sito non è accessibile, dichiaralo senza inventare contenuti.
+      NOTA BENE: Non mostrare mai identificativi interni (id, owner, etc...) del database, né password!
     `,
     tools: [
       a.ai.dataTool({
@@ -83,10 +84,13 @@ export const analyst = a.conversation({
         name: 'create_event',
         description:
           'Crea un evento supportato dalle fonti e collega le persone conosciute. ' +
-          'Passa startDate ed endDate come date ISO 8601. ' +
+          'passa il tuo id (definition) come owner. ' +
+          'startDate ed endDate devono essere date ISO 8601 in formato stringa. ' +
+          'actors è un array di oggetti { personId?, role } e sources è un array di URL. ' +
           'Ometti personId quando non trovi la persona: il backend userà la persona segnaposto A A. ' +
-          'Per type Fatto startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche. ' +
-          'La creazione è immediata e non può essere annullata dal tool.',
+          'Per type=Fatto startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche. ' +
+          'La creazione è immediata e non può essere annullata dal tool. '+
+          'IMPORTANTE: non mostrare mai all\'utente id interni come id o owner, né password!',
         query: a.ref('createEventByAnalyst')
       })
     ]

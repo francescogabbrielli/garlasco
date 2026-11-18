@@ -235,8 +235,7 @@ export class EventMaskComponent extends CaseMaskComponent {
       endDate: end.date ? new Date(end.date).toISOString() : null,
       startPosition: startPosition,
       endPosition: endPosition,
-      geoHash: this.geoService.computeGeoHash(
-        this.geoService.computeCenterPosition(startPosition, endPosition)),
+      geoHash: this.geoService.computeGeoHash(startPosition, endPosition),
       sources: this.sources(),
       reliability: this.isAdmin() ? this.eventForm.controls.reliability.value : 0,
       relevance: this.isAdmin() ? this.eventForm.controls.relevance.value : 0,

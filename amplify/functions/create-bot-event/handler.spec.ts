@@ -1,11 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Client } from 'aws-amplify/data';
 import type { Schema } from '../../data/resource';
-import { createBotEvent } from './handler';
+
+const { amplifyConfigure, generateClient, getAmplifyDataClientConfig } = vi.hoisted(() => ({
+  amplifyConfigure: vi.fn(),
+  generateClient: vi.fn(),
+  getAmplifyDataClientConfig: vi.fn()
+}));
+
+vi.mock('aws-amplify', () => ({
+  Amplify: { configure: amplifyConfigure }
+}));
+vi.mock('aws-amplify/data', () => ({ generateClient }));
+vi.mock('@aws-amplify/backend/function/runtime', () => ({
+  getAmplifyDataClientConfig
+}));
+
+import { createBotEvent, handler } from './handler';
 
 const FALLBACK_PERSON_ID = '45f03321-c6f4-466b-8417-ba99fb785a86';
-type CreateBotEventArgs = Parameters<typeof createBotEvent>[0]['arguments'];
-type CreateBotEventResolverEvent = Parameters<typeof createBotEvent>[0];
+type CreateBotEventArgs = Parameters<typeof createBotEvent>[0];
 
 function createClient() {
   const personGet = vi.fn();
@@ -30,18 +44,15 @@ function createClient() {
   return { client, personGet, eventCreate, eventPersonCreate };
 }
 
-function resolverEvent(
-  args: CreateBotEventArgs,
-  fieldName = 'createEventByAnalyst'
-): CreateBotEventResolverEvent {
+function resolverEvent(args: CreateBotEventArgs) {
   return {
     arguments: args,
-    info: { fieldName }
   };
 }
 
 function validInput(overrides: Partial<CreateBotEventArgs> = {}): CreateBotEventArgs {
   return {
+    botDefinition: 'analyst',
     type: 'Fatto',
     name: 'Evento',
     description: 'Descrizione verificata',
@@ -55,7 +66,34 @@ function validInput(overrides: Partial<CreateBotEventArgs> = {}): CreateBotEvent
 
 describe('create-bot-event handler', () => {
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
+  });
+
+  it('logs and rethrows asynchronous handler failures', async () => {
+    for (const key of [
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'AWS_SESSION_TOKEN',
+      'AWS_REGION',
+      'AMPLIFY_DATA_DEFAULT_NAME'
+    ]) {
+      vi.stubEnv(key, 'test');
+    }
+
+    getAmplifyDataClientConfig.mockResolvedValue({
+      resourceConfig: {},
+      libraryOptions: {}
+    });
+    generateClient.mockReturnValue({});
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const event = resolverEvent(validInput({ startPosition: undefined }));
+
+    await expect(handler(event)).rejects.toThrow('La posizione iniziale è richiesta');
+    expect(errorLog).toHaveBeenCalledWith(
+      'create-bot-event failed',
+      expect.objectContaining({ message: 'La posizione iniziale è richiesta per gli eventi di tipo \'Fatto\'. Ricerca la posizione dell\'evento prima di riprovare.' })
+    );
   });
 
   it('creates an analyst-owned event and links existing people without admin fields', async () => {
@@ -63,7 +101,7 @@ describe('create-bot-event handler', () => {
     personGet.mockResolvedValue({ data: { id: 'person-1' } });
 
     const result = await createBotEvent(
-      resolverEvent(validInput()),
+      validInput(),
       client,
       FALLBACK_PERSON_ID
     );
@@ -98,7 +136,7 @@ describe('create-bot-event handler', () => {
       .mockResolvedValueOnce({ data: { id: FALLBACK_PERSON_ID } });
 
     await createBotEvent(
-      resolverEvent(validInput({ actors: [{ personId: 'missing-person', role: 'testimone' }] })),
+      validInput({ actors: [{ personId: 'missing-person', role: 'testimone' }] }),
       client,
       FALLBACK_PERSON_ID
     );
@@ -114,7 +152,7 @@ describe('create-bot-event handler', () => {
     const { client, eventCreate, eventPersonCreate } = createClient();
 
     await expect(createBotEvent(
-      resolverEvent(validInput({ startPosition: undefined })),
+      validInput({ startPosition: undefined }),
       client,
       FALLBACK_PERSON_ID
     )).rejects.toThrow("La posizione iniziale è richiesta per gli eventi di tipo 'Fatto'. Ricerca la posizione dell'evento prima di riprovare.");
@@ -123,26 +161,13 @@ describe('create-bot-event handler', () => {
     expect(eventPersonCreate).not.toHaveBeenCalled();
   });
 
-  it('does not create events for other bots', async () => {
-    const { client, eventCreate } = createClient();
-
-    await expect(createBotEvent(
-      resolverEvent(validInput(), 'createEventByDetective'),
-      client,
-      FALLBACK_PERSON_ID
-    )).rejects.toThrow('La creazione di eventi non è abilitata per questo bot.');
-
-    expect(eventCreate).not.toHaveBeenCalled();
-  });
-
   it('rejects the import if the configured fallback person is missing', async () => {
     const { client, personGet, eventCreate } = createClient();
     personGet
       .mockResolvedValueOnce({ data: null })
       .mockResolvedValueOnce({ data: null });
 
-    await expect(createBotEvent(
-      resolverEvent(validInput({ actors: [{ role: 'testimone' }] })),
+    await expect(createBotEvent(validInput({ actors: [{ role: 'testimone' }] }),
       client,
       FALLBACK_PERSON_ID
     )).rejects.toThrow(`La persona di fallback 45f03321-c6f4-466b-8417-ba99fb785a86 non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);

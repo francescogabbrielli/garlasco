@@ -294,7 +294,7 @@ export class DataService {
     }
   }
 
-  async savePerson(person: { id?: string; name: string; surname: string; type: Person['type']; profession?: string; initials: string }): Promise<Person> {
+  async savePerson(person: { id?: string; name: string; surname: string; type: Person['type']; profession?: string | null; initials: string }): Promise<Person> {
     const { data, errors } = person.id
       ? await client.models.Person.update({ ...person, id: person.id })
       : await client.models.Person.create(person)

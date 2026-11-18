@@ -169,19 +169,20 @@ export class ExportComponent {
     try {
       const actorsByEvent = await this.getActorsByEvent()
       const records = (await this.getEvents()).map((event) => ({
-        ...(event.id ? { id: event.id } : {}),
+        id: event.id,
         owner: event.owner,
         name: event.name,
         type: event.type,
         description: event.description,
         startDate: event.startDate,
-        startPosition: event.startPosition,
+        ...(event.startPosition ? { startPosition: event.startPosition } : {}),
         ...(event.endDate ? { endDate: event.endDate } : {}),
         ...(event.endPosition ? { endPosition: event.endPosition } : {}),
         actors: actorsByEvent.get(event.id) ?? [],
-        sources: event.sources,
+        sources: event.sources || undefined,
         relevance: event.relevance,
         reliability: event.reliability,
+        coldCase: event.coldCase ? true : undefined
       }))
 
       this.download(records, 'events.json')

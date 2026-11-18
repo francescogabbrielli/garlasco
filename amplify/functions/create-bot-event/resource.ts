@@ -1,4 +1,4 @@
-import { defineFunction } from '@aws-amplify/backend';
+import { defineFunction, secret } from '@aws-amplify/backend';
 
 export const createBotEventFn = defineFunction({
   name: 'create-bot-event',
@@ -6,6 +6,6 @@ export const createBotEventFn = defineFunction({
   resourceGroupName: 'data',
   logging: { retention: '1 month' },
   environment: {
-    BOT_FALLBACK_PERSON_ID: '45f03321-c6f4-466b-8417-ba99fb785a86'
+    BOT_FALLBACK_PERSON_ID: secret('BOT_FALLBACK_PERSON_ID')
   }
 });

@@ -173,8 +173,8 @@ export class ImportService {
         typeof event.name !== 'string' || !event.name.trim()
         || typeof event.startDate !== 'string' || !event.startDate
         || !isValidEventType(event.type, event.startPosition)
-        || !Array.isArray(event.sources)
-        || !event.sources.every(source => typeof source === 'string')
+        || (event.sources && !Array.isArray(event.sources))
+        || (event.sources && !event.sources.every(source => typeof source === 'string'))
       ) {
         return { imported: false, reason: 'campi obbligatori o tipo evento non validi' };
       }
@@ -204,13 +204,11 @@ export class ImportService {
         startPosition: event.startPosition,
         endDate: event.endDate,
         endPosition: event.endPosition,
-        geoHash: this.geoService.computeGeoHash(
-          this.geoService.computeCenterPosition(event.startPosition, event.endPosition)
-        ),
-        sources: event.sources,
+        geoHash: this.geoService.computeGeoHash(event.startPosition || null, event.endPosition || null),
+        sources: event.sources || undefined,
         relevance: event.relevance || 0,
         reliability: event.reliability || 0,
-        coldCase: event.coldCase ? 'true' : null
+        coldCase: event.coldCase ? 'true' : undefined
       });
 
       if (eventErrors?.length || !createdEvent?.id) {
@@ -342,10 +340,12 @@ export class ImportService {
           if (result.imported) {
             summary.imported++;
           } else {
+            console.log("IMPORT SKIP", itemName, result.reason)
             summary.skipped++;
             summary.issues.push(`${itemName}: ${result.reason}`);
           }
         } catch (error) {
+          console.error("IMPORT ERROR", error)
           summary.failed++;
           summary.issues.push(`${itemName}: ${errorMessage(error)}`);
         }

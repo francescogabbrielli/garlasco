@@ -16,7 +16,6 @@ describe('ImportService', () => {
   const hypothesisPersonCreate = vi.fn();
   const logIn = vi.fn();
   const computeGeoHash = vi.fn();
-  const computeCenterPosition = vi.fn();
 
   beforeEach(() => {
     personCreate.mockReset().mockResolvedValue({ data: { id: 'person-1' } });
@@ -32,7 +31,6 @@ describe('ImportService', () => {
     hypothesisPersonCreate.mockReset().mockResolvedValue({ data: { id: 'link-1' } });
     logIn.mockReset().mockResolvedValue({ getId: () => 'current-user' });
     computeGeoHash.mockReset().mockReturnValue('hash');
-    computeCenterPosition.mockReset().mockReturnValue(null);
 
     const client = {
       models: {
@@ -49,7 +47,7 @@ describe('ImportService', () => {
         ImportService,
         { provide: IMPORT_CLIENT, useValue: client },
         { provide: UserProfileService, useValue: { logIn } },
-        { provide: GeoService, useValue: { computeGeoHash, computeCenterPosition } }
+        { provide: GeoService, useValue: { computeGeoHash } }
       ]
     });
   });
@@ -119,7 +117,11 @@ describe('ImportService', () => {
 
     expect(result.imported).toBe(1);
     expect(logIn).toHaveBeenCalledOnce();
-    expect(computeGeoHash).toHaveBeenCalledWith(null);
+    expect(computeGeoHash).toHaveBeenCalledWith({
+      "latitude": 45,
+      "longitude": 9,
+      "radius": 0
+    }, null);
     expect(eventCreate).toHaveBeenCalledWith(expect.objectContaining({
       owner: 'current-user',
       name: 'Evento',
