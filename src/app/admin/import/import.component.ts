@@ -2,26 +2,24 @@ import { Component, inject, model, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
 import { ImportService, type ImportSummary } from './import.service';
+import { ClientErrorService } from '../../client-error.service';
 
 @Component({
   selector: 'app-import',
-  imports: [CommonModule, FormsModule, SplashDialogComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './import.component.html',
   styleUrl: './import.component.css',
 })
 export class ImportComponent {
-  private readonly importService = inject(ImportService);
+  private readonly importService = inject(ImportService)
+  private readonly logService = inject(ClientErrorService)
 
   readonly progress = this.importService.progress;
-  jsonInput = signal('');
-  peopleJsonInput = signal('');
-  hypothesesJsonInput = signal('');
-  isWorking = model(false);
-
-  @ViewChild('importSplash')
-  splash!: SplashDialogComponent;
+  jsonInput = signal('')
+  peopleJsonInput = signal('')
+  hypothesesJsonInput = signal('')
+  isWorking = model(false)
 
   async eseguiUploadDaTextarea(): Promise<void> {
     await this.import(
@@ -29,7 +27,7 @@ export class ImportComponent {
       this.jsonInput(),
       json => this.importService.importEvents(json),
       () => this.cleanInputData()
-    );
+    )
   }
 
   async importaPersoneDaTextarea(): Promise<void> {
@@ -38,7 +36,7 @@ export class ImportComponent {
       this.peopleJsonInput(),
       json => this.importService.importPeople(json),
       () => this.cleanPeopleInput()
-    );
+    )
   }
 
   async importaIpotesiDaTextarea(): Promise<void> {
@@ -47,19 +45,19 @@ export class ImportComponent {
       this.hypothesesJsonInput(),
       json => this.importService.importHypotheses(json),
       () => this.cleanHypothesesInput()
-    );
+    )
   }
 
   cleanInputData(): void {
-    this.jsonInput.set('');
+    this.jsonInput.set('')
   }
 
   cleanPeopleInput(): void {
-    this.peopleJsonInput.set('');
+    this.peopleJsonInput.set('')
   }
 
   cleanHypothesesInput(): void {
-    this.hypothesesJsonInput.set('');
+    this.hypothesesJsonInput.set('')
   }
 
   private async import(
@@ -69,18 +67,18 @@ export class ImportComponent {
     clearInput: () => void
   ): Promise<void> {
     if (!json.trim()) {
-      this.splash.show(`Incolla prima il JSON ${label}.`);
-      return;
+      alert(`Incolla prima il JSON ${label}.`)
+      return
     }
 
     this.isWorking.set(true);
     try {
-      const summary = await operation(json);
-      this.splash.show(this.formatSummary(label, summary));
+      const summary = await operation(json)
+      console.log(this.formatSummary(label, summary))
       if (summary.failed === 0 && summary.skipped === 0) clearInput();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.splash.show(`Importazione ${label} non riuscita: ${message}`);
+      this.logService.report(`Importazione ${label} non riuscita: ${message}`);
     } finally {
       this.isWorking.set(false);
     }

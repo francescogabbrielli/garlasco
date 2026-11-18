@@ -7,7 +7,7 @@ TODO: 0.2.3
 -----------
 - bugfix:
     - bot chat: first command is ignored (session corrupted?) &check;
-    - avoid splash for import jobs (will use notifications)
+    - avoid splash for import jobs (will use notifications) &check;
     - save person issue &check;
 
 TODO: 0.2.2
