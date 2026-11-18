@@ -1,13 +1,20 @@
-NEXT
-----
+NEXT: 0.3.0
+-----------
 - implement notification system
 - hypothesis publication
+
+TODO: 0.2.3
+-----------
+- bugfix:
+    - bot chat: first command is ignored
+    - avoid splash for import jobs (will use notifications)
+    - save person issue &check;
 
 TODO: 0.2.2
 -----------
 - improve bots capabilities and fine tune limitations &check;
 - add bot presentation &check;
-- chat history prelaod &check;
+- chat history preload &check;
 
 TODO: 0.2.1
 -----------

@@ -6,6 +6,7 @@ import type { Schema } from '../../../../amplify/data/resource';
 import { EscapeStack } from '../../escape-stack.service';
 import { DataService } from '../../data.service';
 import { SplashDialogComponent } from '../../ui/splash-dialog/splash-dialog.component';
+import { ClientErrorService } from '../../client-error.service';
 
 type Person = Schema['Person']['type']
 
@@ -19,6 +20,8 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
 
   private escapeStack = inject(EscapeStack)
   private dataService = inject(DataService)
+  private logService = inject(ClientErrorService)
+
   private offEscape?: () => void
 
   @ViewChild('personSplash')
@@ -76,15 +79,16 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
     try {
       const person = await this.dataService.savePerson({
         id: this.edited()?.id,
-        name: name.trim(),
-        surname: surname.trim(),
+        name: name!.trim(),
+        surname: surname!.trim(),
         type: type!,
-        profession: profession.trim() || undefined,
+        profession: profession?.trim() || this.edited()?.profession ? null : undefined,
         initials: initials?.trim() || `${name.trim()[0] ? name.trim()[0] : ''}${surname.trim().substring(0, 1)}${surname.trim().substring(1, 3).toLowerCase() + '.'}`,
       })
       await this.splash.show(`Persona ${this.edited() ? 'modificata' : 'creata'} con successo!`)
       this.saved.emit(person)
     } catch (e) {
+      this.logService.report(e)
       this.error.set(e instanceof Error ? e.message : 'Impossibile salvare la persona.')
     } finally {
       this.isSaving.set(false)
@@ -109,6 +113,7 @@ export class PersonDialogComponent implements OnInit, OnDestroy {
       await this.splash.show('Persona eliminata!')
       this.deleted.emit(existingId)
     } catch (e) {
+      this.logService.report(e)
       this.error.set(e instanceof Error ? e.message : 'Impossibile eliminare la persona.')
     } finally {
       this.isSaving.set(false)
