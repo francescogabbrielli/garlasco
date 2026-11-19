@@ -1,16 +1,4 @@
-import {
-  afterRenderEffect,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-  computed,
-  effect,
-  signal,
-  inject,
-  model,
-  OnInit
-} from '@angular/core';
-import { Component } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, afterRenderEffect, computed, effect, signal, inject,  model, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { bots, BotError } from '../../../../amplify/data/bots';
@@ -20,6 +8,7 @@ import { MainComponent } from '../main.component';
 import { CHAT_CLIENT } from './chat-client';
 import { EscapeStack } from '../../escape-stack.service';
 import { ClientErrorService } from '../../client-error.service';
+import { MessageTemplateType$ } from '@aws-sdk/client-cognito-identity-provider';
 
 type BotId = (typeof bots)[number]['definition'];
 
@@ -60,7 +49,7 @@ interface ChatMessage {
   templateUrl: './bot-chat.component.html',
   styleUrl: './bot-chat.component.css'
 })
-export class BotChatComponent implements OnInit, OnDestroy {
+export class BotChatComponent implements OnDestroy {
 
   private readonly client = inject(CHAT_CLIENT)
   private readonly logService = inject(ClientErrorService)
@@ -76,14 +65,17 @@ export class BotChatComponent implements OnInit, OnDestroy {
   readonly botId = signal<BotId>(bots ? bots[0].definition : '' as BotId)
   readonly text = signal('')
 
-  offEscape?: () => void
+  offEscape?: (() => void) | null
 
   constructor() {
     effect(onCleanup => {
+      const id = untracked(() => this.botId())
       if (!this.opened()) {
         this.offEscape?.()
-      } else {
+        this.offEscape = null
+      } else if (!this.offEscape) {
         this.offEscape = this.escapeStack.push(() => this.opened.set(false))
+        this.selectBot(id)
       }
       // if (!this.opened()) return
       // const unregister = this.escapeStack.push(() => this.opened.set(false))
@@ -238,7 +230,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
   }
 
   async selectBot(id: BotId): Promise<void> {
-
+    console.log("SELECT BOT "+id, this.session())
     this.shouldFollowMessages = true
     this.botId.set(id)
     this.closeBotMenu()
@@ -420,6 +412,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
     const latest = conversations?.[0]
     if (!latest) {
+      // console.log("NEW CHAT!")
       this.updateSession(id, { busy: false, restored: true, messages: []})
       return
     }
@@ -472,7 +465,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
       this.updateSession(id, {
         conversation,
         startNewConversation: false,
-        introductionSent: this.sessions()[id]?.introductionSent || messages.some(message => message.hidden),
+        introductionSent: this.sessions()[id]?.introductionSent || (messages.some(message => message.hidden) && messages.some(message => !(message.hidden))),
         messages,
         busy: false,
         restored: true
@@ -576,11 +569,6 @@ export class BotChatComponent implements OnInit, OnDestroy {
         )
       })
     }
-  }
-
-  ngOnInit(): void {
-    const id = this.bots[0]?.definition
-    if (id) this.selectBot(id)
   }
 
   ngOnDestroy(): void {

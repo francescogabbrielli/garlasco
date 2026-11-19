@@ -1,7 +1,10 @@
 import { defineBackend } from '@aws-amplify/backend';
+import { Stack } from 'aws-cdk-lib';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Function as LambdaFunction } from 'aws-cdk-lib/aws-lambda';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
+import { inferenceModelId } from './data/bots-defs';
 import { storage } from './storage/resource';
 import { generateEventFn } from './functions/generate-event/resource';
 import { sendEmailFn } from './functions/send-email/resource';
@@ -43,6 +46,37 @@ backend.generateEventFn.resources.lambda.addToRolePolicy(
     resources: ['*'], // È consigliabile limitare la risorsa all'ARN SES in produzione
   }),
 )
+
+const conversationHandler = backend.data.node.findAll().find(
+  (construct) => construct.node.path.endsWith(
+    'AnalystConversationDirectiveLambdaStack/AnalystDefaultConversationHandler/conversationHandlerFunction'
+  )
+);
+if (!(conversationHandler instanceof LambdaFunction)) {
+  throw new Error('Could not find the analyst conversation handler Lambda.');
+}
+
+const foundationModelId = inferenceModelId.replace(/^eu\./, '');
+const backendStack = Stack.of(backend.data);
+conversationHandler.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
+    resources: [
+      backendStack.formatArn({
+        service: 'bedrock',
+        resource: 'inference-profile',
+        resourceName: inferenceModelId,
+      }),
+      backendStack.formatArn({
+        service: 'bedrock',
+        region: '*',
+        account: '',
+        resource: 'foundation-model',
+        resourceName: foundationModelId,
+      }),
+    ],
+  })
+);
 
 // Aggiunge i permessi SES alla Lambda
 backend.sendEmailFn.resources.lambda.addToRolePolicy(
