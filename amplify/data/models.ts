@@ -38,7 +38,7 @@ export const Person = a.model({
   hypotheses: a.hasMany('HypothesisPerson', 'personId'),
   publishedHypotheses: a.hasMany('HypothesisPublishedPerson', 'personId'),
 })
-  .authorization(memberPermissions);
+  .authorization(memberPermissions)
 
 export const Event = a.model({
   owner: a.id().required(), //Cognito ID or Bot ID

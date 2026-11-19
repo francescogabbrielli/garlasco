@@ -2,13 +2,17 @@ NEXT: 0.3.0
 -----------
 - implement notification system
 - hypothesis publication
+- define retention policy (ttl) for conversation data
+- define AI rate limits
 
 TODO: 0.2.3
 -----------
 - bugfix:
+    - DB tools: interface misalignment with backend + required env vars ...
     - bot chat: first command is ignored (session corrupted?) &check;
     - avoid splash for import jobs (will use notifications) &check;
     - save person issue &check;
+- minor CSS changes &check;
 
 TODO: 0.2.2
 -----------

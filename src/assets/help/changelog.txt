@@ -1,4 +1,10 @@
 <div class="changelog">
+
+    <h2>0.2.3 - Bugfixes bot</h2>
+    <ul>
+        <li>Bot inserimento eventi</li>
+        <li>Carciamento storia chat e presentazione bot</li>
+    </ul>
     
     <h2>0.2.2 - Bot potenziato per inserimento automatico di eventi</h2>
     <ul>

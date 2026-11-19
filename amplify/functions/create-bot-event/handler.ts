@@ -18,6 +18,9 @@ interface DataClientEnv {
   AWS_SESSION_TOKEN: string
   AWS_REGION: string
   AMPLIFY_DATA_DEFAULT_NAME: string
+  AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME: string
+  AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY: string
+  AMPLIFY_DATA_GRAPHQL_ENDPOINT: string
 }
 
 interface BotEventActor {
@@ -28,19 +31,6 @@ interface BotEventActor {
 interface ResolvedBotEventActor {
   personId: string
   role: string
-}
-
-interface CreateBotEventInput {
-  botDefinition: string
-  type: EventType
-  name: string
-  description: string
-  startDate: string
-  endDate?: string
-  startPosition?: Coordinates
-  endPosition?: Coordinates
-  actors: BotEventActor[]
-  sources?: string[]
 }
 
 const MAX_ACTORS = 5
@@ -59,7 +49,10 @@ function getDataClientEnvironment(): DataClientEnv {
     AWS_SECRET_ACCESS_KEY: required('AWS_SECRET_ACCESS_KEY'),
     AWS_SESSION_TOKEN: required('AWS_SESSION_TOKEN'),
     AWS_REGION: required('AWS_REGION'),
-    AMPLIFY_DATA_DEFAULT_NAME: required('AMPLIFY_DATA_DEFAULT_NAME')
+    AMPLIFY_DATA_DEFAULT_NAME: required('AMPLIFY_DATA_DEFAULT_NAME'),
+    AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME: required('AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME'),
+    AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY: required('AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY'),
+    AMPLIFY_DATA_GRAPHQL_ENDPOINT: required('AMPLIFY_DATA_GRAPHQL_ENDPOINT')
   }
 }
 
@@ -97,7 +90,7 @@ function normalizeCoordinates(value: unknown, field: string): Coordinates | unde
   if (value == null) return undefined
   if (!isRecord(value)) throw new Error(`Invalid ${field}.`)
 
-  const { latitude, longitude, radius } = value;
+  const { latitude, longitude, radius } = value
   if (
     typeof latitude !== 'number' || !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
     typeof longitude !== 'number' || !Number.isFinite(longitude) || longitude < -180 || longitude > 180 ||
@@ -106,24 +99,24 @@ function normalizeCoordinates(value: unknown, field: string): Coordinates | unde
     throw new Error(`Campo '${field}' non valido: latitude, longitudine, e raggio non-negativo sono richiesti.`);
   }
 
-  return { latitude, longitude, radius };
+  return { latitude, longitude, radius }
 }
 
 function normalizeActors(value: unknown): BotEventActor[] {
   if (value == null) return [];
   if (!Array.isArray(value) || value.length > MAX_ACTORS) {
-    throw new Error(`Attori non validi: attesi al massimo ${MAX_ACTORS}.`);
+    throw new Error(`Attori non validi: attesi al massimo ${MAX_ACTORS}.`)
   }
 
   return value.map((actor, index) => {
-    if (!isRecord(actor)) throw new Error(`Attore n. ${index + 1} non valido`);
-    const personId = actor['personId'];
-    const role = requireText(actor['role'], `actors[${index}].role`, 200);
+    if (!isRecord(actor)) throw new Error(`Attore n. ${index + 1} non valido`)
+    const personId = actor['personId']
+    const role = requireText(actor['role'], `actors[${index}].role`, 200)
     if (personId !== undefined && (typeof personId !== 'string' || !personId.trim())) {
-      throw new Error(`Invalid personId at position ${index + 1}.`);
+      throw new Error(`Invalid personId at position ${index + 1}.`)
     }
-    return { ...(typeof personId === 'string' ? { personId: personId.trim() } : {}), role };
-  });
+    return { ...(typeof personId === 'string' ? { personId: personId.trim() } : {}), role }
+  })
 }
 
 function normalizeSources(value: unknown): string[] {
@@ -136,14 +129,14 @@ function normalizeSources(value: unknown): string[] {
       throw new Error(`Fonte n. ${index + 1} non valida.`)
     }
     return source.trim()
-  });
+  })
 }
 
 function isEventType(value: unknown): value is typeof EVENT_TYPES[number] {
   return typeof value === 'string' && EVENT_TYPES.some(type => type === value)
 }
 
-function validateInput(input: CreateBotEventInput) {
+function validateInput(input: any) {
   if (!isEventType(input.type)) {
     throw new Error(`Tipo di evento non valido. Atteso uno fra: ${EVENT_TYPES.join(', ')}.`)
   }
@@ -155,14 +148,15 @@ function validateInput(input: CreateBotEventInput) {
   }
 
   return {
-    type: input.type,
+    owner: input.botDefinition as string,
+    type: input.type as EventType,
     name: requireText(input.name, 'name', 200),
     description: requireText(input.description, 'description', 10000),
     startDate: normalizeDate(input.startDate, 'startDate'),
     endDate: normalizeOptionalDate(input.endDate, 'endDate'),
     startPosition,
     endPosition,
-    sources: normalizeSources(input.sources),
+    sources: input.sources ? normalizeSources(input.sources) : undefined,
     actors: normalizeActors(input.actors)
   }
 }
@@ -180,13 +174,18 @@ async function resolveActorIds(
   let fallbackExists: boolean | undefined;
 
   for (const actor of actors) {
-    let personId = actor.personId;
+    let personId = actor.personId?.trim()
     if (personId) {
       const { data, errors } = await client.models.Person.get({ id: personId });
       if (errors?.length) {
-        throw new Error(`Impossibile verificare la persona ${personId}: ${errors.map(error => error.message).join(', ')}`);
+        throw new Error(`Impossibile verificare la persona '${personId}': ${errors.map(error => error.message).join(', ')}`);
       }
-      if (!data) personId = undefined;
+      if (!data) {
+        console.log(`Persona non trovata: '${personId}'`)
+        personId = undefined;
+      } else {
+        console.log(`Persona (${actor.role}) associata all'evento:`, data)
+      }
     }
 
     if (!personId) {
@@ -198,8 +197,9 @@ async function resolveActorIds(
         fallbackExists = Boolean(data);
       }
       if (!fallbackExists) {
-        throw new Error(`La persona di fallback ${fallbackPersonId} non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);
+        throw new Error(`La persona di fallback '${fallbackPersonId}' non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);
       }
+      console.log(`Persona di fallback (${actor.role}) associata all'evento`)
       personId = fallbackPersonId;
     }
 
@@ -210,19 +210,20 @@ async function resolveActorIds(
 }
 
 export async function createBotEvent(
-  input: CreateBotEventInput,
+  input: any,
   client: DataClient,
   fallbackPersonId: string
 ): Promise<{ id: string; owner: string; name: string; linkedPeople: number }> {
 
   const normalized = validateInput(input)
+  fallbackPersonId = fallbackPersonId.trim()
   const actors = await resolveActorIds(client, normalized.actors, fallbackPersonId)
 
   const geoHash = computeGeoHash(
     computeCenterPosition(normalized.startPosition, normalized.endPosition))
   
   const { data: createdEvent, errors: createErrors } = await client.models.Event.create({
-    owner: input.botDefinition,
+    owner: normalized.owner,
     type: normalized.type,
     name: normalized.name,
     description: normalized.description,
@@ -254,6 +255,8 @@ export async function createBotEvent(
         `dopo ${createdLinks} link(s): ${errors.map(error => error.message).join(', ')}`
       )
     }
+
+    console.log("Evento creato!", createdEvent)
     createdLinks++
   }
 
@@ -265,7 +268,18 @@ export async function createBotEvent(
   }
 }
 
-export const handler = async (event: { arguments: CreateBotEventInput}) => {
+export const handler = async (event: { arguments: {
+  botDefinition: string
+  type: string
+  name: string
+  description: string
+  startDate: string
+  endDate?: string
+  startPosition?: Coordinates
+  endPosition?: Coordinates
+  actors: any
+  sources?: any
+}}) => {
   try {
     const client = await getDataClient()
     return await createBotEvent(event.arguments, client, env.BOT_FALLBACK_PERSON_ID ?? '')

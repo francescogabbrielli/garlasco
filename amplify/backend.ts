@@ -103,3 +103,8 @@ backend.updateUserGroupsFn.resources.cfnResources.cfnFunction.addPropertyOverrid
   'Environment.Variables.AUTH_USERPOOL_ID',
   userPoolId
 )
+
+// Permetti alla Lambda di invocare l'API GraphQL
+backend.data.resources.graphqlApi.grantQuery(backend.searchEventsByPersonFn.resources.lambda)
+backend.data.resources.graphqlApi.grantQuery(backend.createBotEventFn.resources.lambda)
+backend.data.resources.graphqlApi.grantMutation(backend.createBotEventFn.resources.lambda)

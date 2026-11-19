@@ -19,6 +19,7 @@ import { MainComponent } from '../main.component';
 
 import { CHAT_CLIENT } from './chat-client';
 import { EscapeStack } from '../../escape-stack.service';
+import { ClientErrorService } from '../../client-error.service';
 
 type BotId = (typeof bots)[number]['definition'];
 
@@ -62,7 +63,7 @@ interface ChatMessage {
 export class BotChatComponent implements OnInit, OnDestroy {
 
   private readonly client = inject(CHAT_CLIENT)
-
+  private readonly logService = inject(ClientErrorService)
   private readonly escapeStack = inject(EscapeStack)
 
   @ViewChild('messages') private messagesContainer?: ElementRef<HTMLDivElement>
@@ -237,30 +238,25 @@ export class BotChatComponent implements OnInit, OnDestroy {
   }
 
   async selectBot(id: BotId): Promise<void> {
+
     this.shouldFollowMessages = true
     this.botId.set(id)
     this.closeBotMenu()
 
-    const session = this.session()
-
-    if (session.busy && !session.restored) {
-      this.updateSession(id, {
-        busy: false,
-        error: '',
-        notice: undefined,
-        activeRequestId: crypto.randomUUID(),
-        activeAssistantId: undefined,
-        conversation: await this.restoreLatestConversation(id)
-      })
-    }
-
-    if (
-      !session.busy &&
-      !session.introductionSent
-      // !this.introductionsRequested.has(id)
-    ) {
-      // this.introductionsRequested.add(id)
-      void this.sendMessage(id, INTRODUCTION_PROMPT, true)
+    try {
+      if (!this.session().restored) {
+        this.updateSession(id, {
+          busy: false,
+          error: '',
+          notice: undefined,
+          activeRequestId: crypto.randomUUID(),
+          activeAssistantId: undefined,
+          conversation: await this.restoreLatestConversation(id)
+        })
+      }
+    } finally {
+      if (!this.session().introductionSent)
+        this.sendMessage(id, INTRODUCTION_PROMPT, true)
     }
   }
 
@@ -289,7 +285,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
         ...patch
       }
     }))
-    console.log("UPDATE CHAT SESSION " + id, this.sessions()[id])
+    // console.log("UPDATE CHAT SESSION " + id, this.sessions()[id], patch)
   }
 
   async send(): Promise<void> {
@@ -306,7 +302,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
 
   private async sendMessage(id: BotId, text: string, hidden: boolean): Promise<void> {
     const session = this.sessions()[id]
-    console.log("MSG CHAT " + id, { text, busy: session.busy, hidden })
+    // console.log("MSG CHAT " + id, { text, busy: session.busy, hidden })
     if (session.busy) return
     const localId = crypto.randomUUID()
 
@@ -358,7 +354,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
             if (!session?.busy) return
             const timeout = botError.code === 'RESPONSE_TIMEOUT'
             const assistantId = session?.activeAssistantId
-            console.error('Errore nello streaming del messaggio.', e)
+            this.logService.report(e)
             this.updateSession(id, {
               busy: false,
               activeRequestId: undefined,
@@ -380,7 +376,8 @@ export class BotChatComponent implements OnInit, OnDestroy {
       }
 
       const { errors } = await conversation.sendMessage({
-        content: [{ text }]
+        content: [{ text }],
+        aiContext: { botDefinition: id }
       })
 
       if (errors?.length) {
@@ -393,14 +390,14 @@ export class BotChatComponent implements OnInit, OnDestroy {
     } catch (error) {
       if (this.destroyed || !this.isActiveRequest(id, localId)) return
       const botError = this.normalizeBotError(error)
-      console.error('Errore invio', botError)
+      this.logService.report(error)
       this.updateSession(id, {
         busy: false,
         activeRequestId: undefined,
         error: botError.message,
         messages: hidden
           ? this.sessions()[id].messages.filter(message => message.id !== localId)
-          : this.sessions()[id].messages
+          : this.sessions()[id].messages,
       })
       // if (hidden) this.introductionsRequested.delete(id)
     }
@@ -410,7 +407,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
     id: BotId
   ): Promise<Conversation | undefined> {
   
-    console.log("RESTORE CHAT", id)
+    // console.log("RESTORE CHAT", id)
 
     const { data: conversations, errors: listErrors } =
       await this.client.conversations[id].list({ limit: 1 })
@@ -422,7 +419,10 @@ export class BotChatComponent implements OnInit, OnDestroy {
     if (this.destroyed) return
 
     const latest = conversations?.[0]
-    if (!latest) return
+    if (!latest) {
+      this.updateSession(id, { busy: false, restored: true, messages: []})
+      return
+    }
 
     const { data: conversation, errors: getErrors } =
       await this.client.conversations[id].get({ id: latest.id })
@@ -469,41 +469,43 @@ export class BotChatComponent implements OnInit, OnDestroy {
       })
       .filter(message => message.text.length > 0)
 
-    this.updateSession(id, {
-      conversation,
-      startNewConversation: false,
-      introductionSent: this.sessions()[id]?.introductionSent || messages.some(message => message.hidden),
-      messages,
-      restored: true
-    })
+      this.updateSession(id, {
+        conversation,
+        startNewConversation: false,
+        introductionSent: this.sessions()[id]?.introductionSent || messages.some(message => message.hidden),
+        messages,
+        busy: false,
+        restored: true
+      })
 
-    return conversation
-  }
-
-  stopResponse(): void {
-    const id = this.botId()
-    const session = this.sessions()[id]
-    if (!session?.busy) return
-
-    session.subscription?.unsubscribe()
-    if (session.activeAssistantId) {
-      this.chunks.delete(`${id}:${session.activeAssistantId}`)
+      return conversation
     }
 
-    this.updateSession(id, {
-      conversation: undefined,
-      subscription: undefined,
-      startNewConversation: true,
-      busy: false,
-      activeRequestId: undefined,
-      activeAssistantId: undefined,
-      notice: 'La prossima domanda inizierà una nuova conversazione.',
-      messages: session.messages.map(message =>
-        message.id === session.activeAssistantId
-          ? { ...message, interrupted: true }
-          : message
-      )
-    })
+    stopResponse(): void {
+      const id = this.botId()
+      const session = this.sessions()[id]
+      if (!session?.busy) return
+
+      session.subscription?.unsubscribe()
+      if (session.activeAssistantId) {
+        this.chunks.delete(`${id}:${session.activeAssistantId}`)
+      }
+
+      this.updateSession(id, {
+        conversation: undefined,
+        subscription: undefined,
+        startNewConversation: true,
+        busy: false,
+        activeRequestId: undefined,
+        activeAssistantId: undefined,
+        notice: 'La prossima domanda inizierà una nuova conversazione.',
+        messages: session.messages.map(message =>
+          message.id === session.activeAssistantId
+            ? { ...message, interrupted: true }
+            : message
+        )
+      })
+
   }
 
   private isActiveRequest(id: BotId, requestId: string): boolean {
@@ -511,7 +513,7 @@ export class BotChatComponent implements OnInit, OnDestroy {
   }
 
   private onStream(botId: BotId, event: StreamEvent): void {
-    console.log("ON STREAM "+ botId, event.associatedUserMessageId)
+    // console.log("ON STREAM "+ botId, event.associatedUserMessageId)
     if (this.destroyed) return
     if (!this.sessions()[botId]?.busy) return
 

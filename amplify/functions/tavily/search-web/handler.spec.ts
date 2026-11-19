@@ -44,148 +44,6 @@ describe('search-web handler', () => {
     expect(body.max_results).toBe(5);
   });
 
-  it('crawls a requested site and maps page content', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({
-      base_url: 'https://example.com/',
-      results: [
-        { url: 'https://example.com/page', raw_content: 'Page content', extra: 'ignored' }
-      ]
-    }));
-
-    const result = await handler({
-      arguments: {
-        url: 'https://example.com',
-        query: 'Find pages about the event',
-        maxDepth: 3,
-        maxResults: 8
-      }
-    }, context);
-
-    expect(result).toEqual({
-      baseUrl: 'https://example.com/',
-      pages: [{ url: 'https://example.com/page', content: 'Page content' }]
-    });
-
-    expect(fetchMock.mock.calls[0][0]).toBe('https://api.tavily.com/crawl');
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
-      url: 'https://example.com/',
-      instructions: 'Find pages about the event',
-      max_depth: 3,
-      limit: 8,
-      allow_external: false,
-      extract_depth: 'basic',
-      format: 'markdown',
-      timeout: 45,
-      chunks_per_source: 3
-    });
-  });
-
-  it('maps a requested site and returns only same-host URLs', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({
-      base_url: 'https://example.com/',
-      results: [
-        'https://example.com/page-1',
-        'https://other.example/page',
-        'https://example.com/page-2'
-      ]
-    }));
-
-    const result = await handler({
-      arguments: {
-        url: 'https://example.com',
-        query: 'Find pages about the event',
-        maxDepth: 3,
-        maxResults: 8
-      }
-    }, context);
-
-    expect(result).toEqual({
-      baseUrl: 'https://example.com/',
-      urls: ['https://example.com/page-1', 'https://example.com/page-2']
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toBe('https://api.tavily.com/map');
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
-      url: 'https://example.com/',
-      max_depth: 3,
-      limit: 8,
-      select_domains: ['^example\\.com$'],
-      allow_external: false,
-      timeout: 90,
-      instructions: 'Find pages about the event'
-    });
-  });
-
-  it('extracts supplied URLs and includes per-URL failures', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({
-      results: [
-        { url: 'https://example.com/page', raw_content: 'Page content' }
-      ],
-      failed_results: [
-        { url: 'https://example.com/missing', error: 'Page unavailable' }
-      ]
-    }));
-
-    const result = await handler({
-      arguments: {
-        url: 'https://example.com/page',
-        query: 'Find the relevant details'
-      }
-    }, context);
-
-    expect(result).toEqual({
-      pages: [{ url: 'https://example.com/page', content: 'Page content' }],
-      failedResults: [{ url: 'https://example.com/missing', error: 'Page unavailable' }]
-    });
-    expect(fetchMock.mock.calls[0][0]).toBe('https://api.tavily.com/extract');
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
-      urls: ['https://example.com/page', 'https://example.com/missing'],
-      extract_depth: 'advanced',
-      format: 'markdown',
-      query: 'Find the relevant details',
-      chunks_per_source: 3
-    });
-  });
-
-  it('rejects invalid URLs for map_website without calling Tavily', async () => {
-    const details = await failure(handler({
-      arguments: { url: 'file:///etc/passwd' }
-    }, context));
-
-    expect(details.code).toBe('INVALID_MAP_URL');
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('rejects invalid extract URL lists without calling Tavily', async () => {
-    const details = await failure(handler({
-      arguments: { url: '' }
-    }, context));
-
-    expect(details.code).toBe('INVALID_EXTRACT_URL');
-    expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('bounds crawl depth and page count and rejects invalid URLs', async () => {
-    fetchMock.mockResolvedValue(jsonResponse({
-      base_url: 'https://example.com/',
-      results: []
-    }));
-
-    await handler({
-      arguments: { url: 'https://example.com', maxDepth: 8, maxResults: 50 }
-    }, context);
-
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
-      max_depth: 3,
-      limit: 10
-    });
-
-    const details = await failure(handler({ arguments: { url: 'file:///etc/passwd' } }, context));
-
-    expect(details.code).toBe('INVALID_CRAWL_URL');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
   it.each([
     [undefined, 5],
     [0, 1],
@@ -212,6 +70,14 @@ describe('search-web handler', () => {
     const details = await failure(handler({ arguments: { query } }, context));
 
     expect(details.code).toBe('INVALID_SEARCH_QUERY');
+    expect(details.requestId).toBe('req-1');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('rejects requests without a query', async () => {
+    const details = await failure(handler({ arguments: {} }, context));
+
+    expect(details.code).toBe('INVALID_SEARCH_REQUEST');
     expect(details.requestId).toBe('req-1');
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -262,7 +128,9 @@ describe('search-web handler', () => {
   });
 
   it('wraps unexpected errors as SEARCH_INTERNAL_ERROR', async () => {
-    const details = await failure(handler({ arguments: { query: undefined as any } }, context));
+    const details = await failure(handler({
+      arguments: { query: 'q', maxResults: Symbol('invalid') as any }
+    }, context));
 
     expect(details.code).toBe('SEARCH_INTERNAL_ERROR');
     expect(details.source).toBe('APPLICATION');

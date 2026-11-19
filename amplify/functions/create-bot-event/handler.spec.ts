@@ -20,12 +20,14 @@ import { createBotEvent, handler } from './handler';
 
 const FALLBACK_PERSON_ID = '45f03321-c6f4-466b-8417-ba99fb785a86';
 type CreateBotEventArgs = Parameters<typeof createBotEvent>[0];
+//type CreateBotEventArgsInput = Parameters<typeof createBotEvent>[0]['input'];
 
 function createClient() {
   const personGet = vi.fn();
   const eventCreate = vi.fn().mockResolvedValue({
     data: {
       id: 'event-1',
+      owner: 'analyst',
       name: 'Evento',
       startDate: '2024-01-01T00:00:00.000Z',
       geoHash: 'u0nd'
@@ -76,7 +78,10 @@ describe('create-bot-event handler', () => {
       'AWS_SECRET_ACCESS_KEY',
       'AWS_SESSION_TOKEN',
       'AWS_REGION',
-      'AMPLIFY_DATA_DEFAULT_NAME'
+      'AMPLIFY_DATA_DEFAULT_NAME',
+      'AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME',
+      'AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY',
+      'AMPLIFY_DATA_GRAPHQL_ENDPOINT'
     ]) {
       vi.stubEnv(key, 'test');
     }
@@ -90,6 +95,11 @@ describe('create-bot-event handler', () => {
     const event = resolverEvent(validInput({ startPosition: undefined }));
 
     await expect(handler(event)).rejects.toThrow('La posizione iniziale è richiesta');
+    expect(getAmplifyDataClientConfig).toHaveBeenCalledWith(expect.objectContaining({
+      AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_BUCKET_NAME: 'test',
+      AMPLIFY_DATA_MODEL_INTROSPECTION_SCHEMA_KEY: 'test',
+      AMPLIFY_DATA_GRAPHQL_ENDPOINT: 'test'
+    }));
     expect(errorLog).toHaveBeenCalledWith(
       'create-bot-event failed',
       expect.objectContaining({ message: 'La posizione iniziale è richiesta per gli eventi di tipo \'Fatto\'. Ricerca la posizione dell\'evento prima di riprovare.' })
@@ -138,7 +148,7 @@ describe('create-bot-event handler', () => {
     await createBotEvent(
       validInput({ actors: [{ personId: 'missing-person', role: 'testimone' }] }),
       client,
-      FALLBACK_PERSON_ID
+      `  ${FALLBACK_PERSON_ID} \n`
     );
 
     expect(personGet).toHaveBeenNthCalledWith(1, { id: 'missing-person' });
@@ -170,7 +180,10 @@ describe('create-bot-event handler', () => {
     await expect(createBotEvent(validInput({ actors: [{ role: 'testimone' }] }),
       client,
       FALLBACK_PERSON_ID
-    )).rejects.toThrow(`La persona di fallback 45f03321-c6f4-466b-8417-ba99fb785a86 non è stata trovata. Richiedere la creazione della persona nel DB prima di procedere.`);
+    )).rejects.toThrow(
+      `La persona di fallback '${FALLBACK_PERSON_ID}' non è stata trovata. ` +
+      `Richiedere la creazione della persona nel DB prima di procedere.`
+    );
 
     expect(eventCreate).not.toHaveBeenCalled();
   });

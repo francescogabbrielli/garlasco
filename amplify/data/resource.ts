@@ -19,17 +19,29 @@ import { reportClientErrorFn } from '../functions/report-client-error/resource';
 import { createBotEventFn } from '../functions/create-bot-event/resource';
 import { searchEventsByPersonFn } from '../functions/search-events-by-person/resource';
 
-const BotEventActorInput = a.customType({
-  personId: a.id(), //optional because FALLBACK person can be used
-  role: a.string().required()
-});
-
 const BotEventCreated = a.customType({
   id: a.id().required(),
   owner: a.string().required(),
   name: a.string().required(),
   linkedPeople: a.integer().required()
-});
+})
+
+const createBotEvent = a.query()
+  .arguments({
+    botDefinition: a.id(),
+    type: a.string().required(),
+    name: a.string().required(),
+    description: a.string().required(),
+    startDate: a.string().required(),
+    endDate: a.string(),
+    startPosition: a.ref('Coordinates'),
+    endPosition: a.ref('Coordinates'),
+    actors: a.json().required(),
+    sources: a.json(),
+  })
+  .returns(a.ref('BotEventCreated'))
+  .handler(a.handler.function(createBotEventFn))
+  .authorization(allow => allow.groups(['Member', 'Editor', 'Admin']))
 
 const PersonEventSearchItem = a.customType({
   eventId: a.id().required(),
@@ -43,33 +55,17 @@ const PersonEventSearchItem = a.customType({
   startPosition: a.ref('Coordinates'),
   endPosition: a.ref('Coordinates'),
   sources: a.string().array()
-});
+})
 
 const PersonEventSearchResult = a.customType({
   events: a.ref('PersonEventSearchItem').array().required(),
   nextToken: a.string()
-});
+})
 
 const EventStartDateRangeInput = a.customType({
   from: a.string().required(),
   to: a.string().required()
-});
-
-const createEventByAnalyst = a.query()
-  .arguments({
-    type: a.ref('EventType').required(),
-    name: a.string().required(),
-    description: a.string().required(),
-    startDate: a.string().required(),
-    endDate: a.string(),
-    startPosition: a.ref('Coordinates'),
-    endPosition: a.ref('Coordinates'),
-    actors: a.ref('BotEventActorInput').array().required(),
-    sources: a.string().array(),
-  })
-  .returns(a.ref('BotEventCreated'))
-  .handler(a.handler.function(createBotEventFn))
-  .authorization(allow => allow.groups(['Member', 'Editor', 'Admin']))
+})
 
 const searchEventsByPerson = a.query()
   .arguments({
@@ -189,9 +185,8 @@ const schema = a.schema({
   getTableCount,
 
   reportClientError,
-  BotEventActorInput,
   BotEventCreated,
-  createEventByAnalyst,
+  createBotEvent,
   PersonEventSearchItem,
   PersonEventSearchResult,
   EventStartDateRangeInput,

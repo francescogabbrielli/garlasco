@@ -57,7 +57,7 @@ export class TimelineSliderComponent implements OnInit {
   }
 
   private updateViewRange(viewHalfWidth: number, middlePoint: number): void {
-    const viewCenter = (this.currentAbsoluteMax - this.currentAbsoluteMin) * middlePoint + this.currentAbsoluteMin; 
+    const viewCenter = (this.currentAbsoluteMax - this.currentAbsoluteMin) * middlePoint + this.currentAbsoluteMin;
 
     const availableMin = this.minimum().getTime();
     const availableMax = this.maximum().getTime();

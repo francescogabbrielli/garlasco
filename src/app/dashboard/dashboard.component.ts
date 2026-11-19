@@ -49,7 +49,7 @@ export class DashboardComponent implements OnInit {
   protected mainComponent = inject(MainComponent)
 
   readonly MAX_DATE = new Date()
-  readonly MIN_DATE = new Date(2007, 1, 1)
+  readonly MIN_DATE = new Date(2006, 1, 1)
 
   // L'unico accumulatore locale per Mappa + Lista
   events = signal<Event[]>([])

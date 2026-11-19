@@ -19,7 +19,7 @@ Rispondi sinteticamente entro max 3000 caratteri.
 `;
 
 const aiModel = {
-  resourcePath: 'global.anthropic.claude-haiku-4-5-20251001-v1:0'
+  resourcePath: 'anthropic.claude-sonnet-4-5-20250929-v1:0'
 }
 
 const inferenceConfiguration = {
@@ -33,14 +33,15 @@ export const analyst = a.conversation({
       Analizza o cataloga eventi, in base alla persona o alle persone coinvolte.
       
       Sei metodico e attento alle incongruenze temporali.
-      Per analizzare eventi già presenti devi consultarli nel database con gli strumenti a disposizione, chiedendo sempre che una persona di riferimento sia specificata.
-      Per estrarre link da un sito usa map_website, e per estrarre il contenuto di ogni pagina extract_web.
-      Crea un evento con il tool create_event solo quando è adeguatamente supportato e pertinente; includi fonti verificabili. 
-      Ricerca le informazioni mancanti su internet con search_web.
+      Per analizzare eventi già presenti devi consultarli nel database con i tool a disposizione 'serach_people' e 'search_events_by_person',
+        chiedendo sempre che una persona di riferimento sia specificata.
+      Per estrarre link da un sito usa 'map_website', e per estrarre il contenuto di ogni pagina 'extract_web'.
+      Crea un evento su richiesta dell'utente con il tool 'create_event' quando è adeguatamente supportato e pertinente; includi fonti verificabili. 
+      Ricerca le informazioni mancanti su internet con 'search_web'.
       Un fatto è un'azione fisicamente accaduta, non una conversazione, né un'ipotesi, né una disquisizione.
       Se manca la posizione di un Fatto, fai altre ricerche invece di inventarla.
       Se una fonte o un sito non è accessibile, dichiaralo senza inventare contenuti.
-      NOTA BENE: Non mostrare mai identificativi interni (id, owner, etc...) del database, né password!
+      NOTA BENE: Non mostrare mai identificativi interni (id, owner, etc...) dal database.
     `,
     tools: [
       a.ai.dataTool({
@@ -67,31 +68,33 @@ export const analyst = a.conversation({
       }),
       a.ai.dataTool({
         name: 'map_website',
-        description:
-          'Mappa un sito usando l\'endpoint Tavily \'map\' e restituisce gli URL trovati, senza estrarre il contenuto. ' +
-          'Usalo per scoprire le pagine pertinenti di un sito; passa URL e istruzioni mirate come {url: string, query: string}.',
+        description: `
+          Mappa un sito usando l'endpoint Tavily 'map' e restituisce gli URL trovati, senza estrarre il contenuto.
+          Usalo per scoprire le pagine pertinenti di un sito; passa URL e istruzioni mirate come {url: string, query: string}.
+          `,
         query: a.ref('mapWebsite')
       }),
       a.ai.dataTool({
         name: 'extract_web',
-        description:
-          'Estrae il contenuto di una pagina con l\'endpoint Tavily \'extract\'. ' +
-          'Passa input come oggetto { url: string, query: string }. ' +
-          'La risposta è direttamente una stringa',
+        description: `
+          Estrae il contenuto di una pagina con l'endpoint Tavily 'extract'.
+          Passa i parametri come oggetto { url: string, query: string }.
+          La risposta è direttamente una stringa
+          `,
         query: a.ref('extractWebContent')
       }),
       a.ai.dataTool({
         name: 'create_event',
-        description:
-          'Crea un evento supportato dalle fonti e collega le persone conosciute. ' +
-          'passa il tuo id (definition) come owner. ' +
-          'startDate ed endDate devono essere date ISO 8601 in formato stringa. ' +
-          'actors è un array di oggetti { personId?, role } e sources è un array di URL. ' +
-          'Ometti personId quando non trovi la persona: il backend userà la persona segnaposto A A. ' +
-          'Per type=Fatto startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche. ' +
-          'La creazione è immediata e non può essere annullata dal tool. '+
-          'IMPORTANTE: non mostrare mai all\'utente id interni come id o owner, né password!',
-        query: a.ref('createEventByAnalyst')
+        description: `
+          Crea un evento supportato dalle fonti e collega le persone conosciute. 
+          passa il tuo id (definition) come owner. 
+          startDate ed endDate devono essere date ISO 8601 in formato stringa.
+          actors è un array di oggetti { personId?, role } e sources è un array di URL (ometti personId quando non trovi la persona: il backend userà la persona segnaposto).
+          Per type='Fatto' startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche.
+          La creazione è immediata e non può essere annullata dal tool.
+          IMPORTANTE: non mostrare mai all'utente id interni come id o owner, né password!
+          `,
+        query: a.ref('createBotEvent'),
       })
     ]
   }).authorization(allow => allow.owner())
