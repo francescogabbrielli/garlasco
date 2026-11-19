@@ -29,11 +29,10 @@ const inferenceConfiguration = {
 export const analyst = a.conversation({
     aiModel: aiModel,
     inferenceConfiguration: { maxTokens: 3000 },
-    systemPrompt: `
-      Analizza o cataloga eventi, in base alla persona o alle persone coinvolte.
+    systemPrompt: `Analizza o cataloga eventi, in base alla persona o alle persone coinvolte.
       
       Sei metodico e attento alle incongruenze temporali.
-      Per analizzare eventi già presenti devi consultarli nel database con i tool a disposizione 'serach_people' e 'search_events_by_person',
+      Per analizzare eventi già presenti devi consultarli nel database con i tool a disposizione 'search_people' e 'search_events_by_person',
         chiedendo sempre che una persona di riferimento sia specificata.
       Per estrarre link da un sito usa 'map_website', e per estrarre il contenuto di ogni pagina 'extract_web'.
       Crea un evento su richiesta dell'utente con il tool 'create_event' quando è adeguatamente supportato e pertinente; includi fonti verificabili. 
@@ -68,32 +67,17 @@ export const analyst = a.conversation({
       }),
       a.ai.dataTool({
         name: 'map_website',
-        description: `
-          Mappa un sito usando l'endpoint Tavily 'map' e restituisce gli URL trovati, senza estrarre il contenuto.
-          Usalo per scoprire le pagine pertinenti di un sito; passa URL e istruzioni mirate come {url: string, query: string}.
-          `,
+        description: `Mappa un sito usando l'endpoint Tavily 'map' e restituisce gli URL trovati, senza estrarre il contenuto. Usalo per scoprire le pagine pertinenti di un sito; passa URL e istruzioni mirate come {url: string, query: string}.`,
         query: a.ref('mapWebsite')
       }),
       a.ai.dataTool({
         name: 'extract_web',
-        description: `
-          Estrae il contenuto di una pagina con l'endpoint Tavily 'extract'.
-          Passa i parametri come oggetto { url: string, query: string }.
-          La risposta è direttamente una stringa
-          `,
+        description: `Estrae il contenuto di una pagina con l'endpoint Tavily 'extract'. Passa i parametri come oggetto { url: string, query: string }. La risposta è direttamente una stringa.`,
         query: a.ref('extractWebContent')
       }),
       a.ai.dataTool({
         name: 'create_event',
-        description: `
-          Crea un evento supportato dalle fonti e collega le persone conosciute. 
-          passa il tuo id (definition) come owner. 
-          startDate ed endDate devono essere date ISO 8601 in formato stringa.
-          actors è un array di oggetti { personId?, role } e sources è un array di URL (ometti personId quando non trovi la persona: il backend userà la persona segnaposto).
-          Per type='Fatto' startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche.
-          La creazione è immediata e non può essere annullata dal tool.
-          IMPORTANTE: non mostrare mai all'utente id interni come id o owner, né password!
-          `,
+        description: `Crea un evento supportato dalle fonti e collega le persone conosciute. Passa il tuo id (definition) come botDefinition. startDate ed endDate devono essere date ISO 8601 in formato stringa. actors è un array di oggetti { personId?, role } e sources è un array di URL (ometti personId quando non trovi la persona: il backend userà la persona segnaposto). Per type='Fatto' startPosition è obbligatoria: se non è verificabile, non chiamare il tool e fai ulteriori ricerche. La creazione è immediata e non può essere annullata dal tool. IMPORTANTE: non mostrare mai all'utente id interni come id o owner, né password!`,
         query: a.ref('createBotEvent'),
       })
     ]

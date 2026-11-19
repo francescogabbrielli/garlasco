@@ -28,7 +28,7 @@ const BotEventCreated = a.customType({
 
 const createBotEvent = a.query()
   .arguments({
-    botDefinition: a.id(),
+    botDefinition: a.id().required(),
     type: a.string().required(),
     name: a.string().required(),
     description: a.string().required(),
